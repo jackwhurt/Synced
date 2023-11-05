@@ -2,10 +2,14 @@ version: 0.2
 phases:
   install:
     commands:
+      # Navigate into the directory where your AWS SAM template and other build files are located
+      - cd SyncedBackend
       # Install all dependencies (including dependencies for running tests)
       - npm install
   pre_build:
     commands:
+      # Navigate into the directory where package.json is located
+      - cd SyncedBackend
       # Discover and run unit tests in the '__tests__' directory
       - npm run test
       # Remove all unit tests to reduce the size of the package that will be ultimately uploaded to Lambda
@@ -14,6 +18,8 @@ phases:
       - npm prune --production
   build:
     commands:
+      # Navigate into the directory where your AWS SAM template and other build files are located
+      - cd SyncedBackend
       # Use AWS SAM to package the application by using AWS CloudFormation
       - aws cloudformation package --template template.yaml --s3-bucket $synced-cicd --output-template template-export.yml
 artifacts:
