@@ -24,4 +24,4 @@ phases:
 artifacts:
   type: zip
   files:
-    - template-export.yml
+    - SyncedBackend/template-export.yml
