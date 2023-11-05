@@ -18,6 +18,9 @@ phases:
     commands:
       # Use AWS SAM to package the application by using AWS CloudFormation
       - aws cloudformation package --template template.yaml --s3-bucket synced-cicd --output-template template-export.yml
+  post_build:
+    commands:
+      - aws cloudformation deploy --template-file template-export.yml --stack-name synced
 artifacts:
   type: zip
   files:
