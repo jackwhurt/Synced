@@ -4,7 +4,6 @@ Description: Stack for Collaborative Playlists
 Parameters:
   CollaborativePlaylistTableName:
     Type: String
-    Description: The name of the DynamoDB table for collaborative playlists.
   RestApiId:
     Type: String
     
@@ -34,3 +33,8 @@ Resources:
             Path: /collaborative-playlists
             Method: GET
             RestApiId: RestApiId
+
+Outputs:
+  GetAllCollaborativePlaylistsResourceId:
+    Description: "Id of the CollaborativePlaylistTable"
+    Value: !Ref GetAllCollaborativePlaylists

@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Main Stack for SyncedBackend
 
 Resources:
-  CollaborativePlaylistsStacks:
+  CollaborativePlaylistsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'services/collaborative-playlists-service/template.yaml'
@@ -19,3 +19,5 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'shared/api.yaml'
+      Parameters:
+        GetAllCollaborativePlaylistsResourceId: !GetAtt CollaborativePlaylistsStack.Outputs.GetAllCollaborativePlaylistsResourceId
