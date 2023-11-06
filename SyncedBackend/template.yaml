@@ -7,7 +7,7 @@ Resources:
     Properties:
       TemplateURL: 'src/get-all-collaborative-playlists/template.yaml'  # Adjust this path if you host it on S3 or another location
       Parameters:
-        SampleTableArn: !GetAtt DatabaseStack.Outputs.SampleTableArn
+        CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableArn
 
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
