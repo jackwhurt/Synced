@@ -2,7 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Main Stack for SyncedBackend
 
 Resources:
-  ApiGateway:
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'shared/database.yaml'
+
+  ApiGatewayStack:
       Type: AWS::CloudFormation::Stack
       Properties:
         TemplateURL: 'shared/api.yaml'
@@ -13,9 +18,14 @@ Resources:
       TemplateURL: 'services/collaborative-playlists-service/template.yaml'
       Parameters:
         CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
-        # RestApiId: !GetAtt ApiGateway.Outputs.ApiGatewayRestApiId
+        RestApiId: !GetAtt ApiGatewayStack.Outputs.ApiGatewayRestApiId
 
-  DatabaseStack:
-    Type: AWS::CloudFormation::Stack
+  # Define the deployment for the API Gateway
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
     Properties:
-      TemplateURL: 'shared/database.yaml'
+      RestApiId: !GetAtt ApiGatewayStack.Outputs.ApiGatewayRestApiId
+      # The StageName is set directly on the Deployment resource.
+      # For more control, you can create an AWS::ApiGateway::Stage resource
+      StageName: dev
+      Description: 'Deployment for the development stage'
