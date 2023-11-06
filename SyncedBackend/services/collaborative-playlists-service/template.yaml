@@ -4,9 +4,9 @@ Description: Stack for Collaborative Playlists
 Parameters:
   CollaborativePlaylistTableName:
     Type: String
-  RestApiId:
+  GetAllCollaborativePlaylistsFunction:
     Type: String
-    
+
 Resources:
   GetAllCollaborativePlaylistsFunction:
     Type: AWS::Serverless::Function
@@ -26,15 +26,9 @@ Resources:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           SAMPLE_TABLE: CollaborativePlaylistTableName
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /collaborative-playlists
-            Method: GET
-            RestApiId: RestApiId
 
 Outputs:
   GetAllCollaborativePlaylistsResourceId:
-    Description: "Id of the CollaborativePlaylistTable"
     Value: !Ref GetAllCollaborativePlaylistsFunction
+  GetAllCollaborativePlaylistsResourceArn:
+    Value: !GetAtt GetAllCollaborativePlaylistsFunction

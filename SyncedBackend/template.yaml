@@ -11,6 +11,8 @@ Resources:
       Type: AWS::CloudFormation::Stack
       Properties:
         TemplateURL: 'shared/api.yaml'
+        Parameters: 
+          GetAllCollaborativePlaylistsResourceArn: CollaborativePlaylistsStack.Outputs.GetAllCollaborativePlaylistsResourceArn
 
   CollaborativePlaylistsStack:
     Type: AWS::CloudFormation::Stack
@@ -18,15 +20,3 @@ Resources:
       TemplateURL: 'services/collaborative-playlists-service/template.yaml'
       Parameters:
         CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
-        RestApiId: !GetAtt ApiGatewayStack.Outputs.ApiGatewayRestApiId
-
-  # Define the deployment for the API Gateway
-  ApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn: CollaborativePlaylistsStack
-    Properties:
-      RestApiId: !GetAtt ApiGatewayStack.Outputs.ApiGatewayRestApiId
-      # The StageName is set directly on the Deployment resource.
-      # For more control, you can create an AWS::ApiGateway::Stage resource
-      StageName: dev
-      Description: 'Deployment for the development stage'

@@ -1,15 +1,47 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Main API Stack for Synced Backend
-
+Parameters:
+  GetAllCollaborativePlaylistsResourceArn:
+    Type: String
+    
 Resources:
   # Define the API Gateway
   ApiGateway:
-    Type: AWS::Serverless::Api
+    Type: AWS::ApiGateway::RestApi
     Properties:
       Name: SyncedApiGateway
       Description: 'API Gateway for Synced Backend services'
       # More properties like binary media types, endpoint configuration, etc., can be added if needed.
+
+  CollaborativePlaylistsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: playlists
+      RestApiId: !Ref ApiGateway
+
+  GetAllCollaborativePlaylistsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref CollaborativePlaylistsResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsResourceArn}/invocations
+
+  # Define the deployment for the API Gateway
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref ApiGateway
+      # The StageName is set directly on the Deployment resource.
+      # For more control, you can create an AWS::ApiGateway::Stage resource
+      StageName: dev
+      Description: 'Deployment for the development stage'
 
 Outputs:
   ApiGatewayRestApiId:
