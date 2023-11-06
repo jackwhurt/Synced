@@ -16,4 +16,4 @@ Resources:
 Outputs:
   CollaborativePlaylistTableName:
     Description: "Name of the CollaborativePlaylistTable"
-    Value: !GetAtt CollaborativePlaylistTable.Name
+    Value: !Ref CollaborativePlaylistTable
