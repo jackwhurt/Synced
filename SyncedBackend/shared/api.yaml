@@ -1,7 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Example SAM template for an API backed by a Lambda function.
-
+Parameters:
+  GetAllCollaborativePlaylistsResourceArn:
+    Type: String
+    Description: The ARN of the Lambda function for the GetAllCollaborativePlaylists resource
+    
 Globals:
   Api:
     Cors:
