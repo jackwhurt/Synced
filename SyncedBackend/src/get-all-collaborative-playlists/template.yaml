@@ -1,7 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: Lambda Function for getting all Collaborative Playlists
-
+Parameters:
+  CollaborativePlaylistTableName:
+    Type: String
+    Description: The name of the DynamoDB table for collaborative playlists.
+    
 Resources:
   GetAllCollaborativePlaylists:
     Type: AWS::Serverless::Function
