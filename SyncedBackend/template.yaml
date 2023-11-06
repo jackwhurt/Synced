@@ -7,12 +7,12 @@ Resources:
     Properties:
       TemplateURL: 'shared/database.yaml'
 
-  ApiGatewayStack:
-      Type: AWS::CloudFormation::Stack
-      Properties:
-        TemplateURL: 'shared/api.yaml'
-        Parameters: 
-          GetAllCollaborativePlaylistsResourceArn: CollaborativePlaylistsStack.Outputs.GetAllCollaborativePlaylistsResourceArn
+  # ApiGatewayStack:
+  #     Type: AWS::CloudFormation::Stack
+  #     Properties:
+  #       TemplateURL: 'shared/api.yaml'
+  #       Parameters: 
+  #         GetAllCollaborativePlaylistsResourceArn: CollaborativePlaylistsStack.Outputs.GetAllCollaborativePlaylistsResourceArn
 
   CollaborativePlaylistsStack:
     Type: AWS::CloudFormation::Stack
