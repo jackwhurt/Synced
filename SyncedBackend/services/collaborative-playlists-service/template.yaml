@@ -4,8 +4,6 @@ Description: Stack for Collaborative Playlists
 Parameters:
   CollaborativePlaylistTableName:
     Type: String
-  GetAllCollaborativePlaylistsFunction:
-    Type: String
 
 Resources:
   GetAllCollaborativePlaylistsFunction:
