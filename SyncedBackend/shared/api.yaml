@@ -5,7 +5,7 @@ Description: Main API Stack for Synced Backend
 Resources:
   # Define the API Gateway
   ApiGateway:
-    Type: AWS::Serverless::RestApi
+    Type: AWS::Serverless::Api
     Properties:
       Name: SyncedApiGateway
       Description: 'API Gateway for Synced Backend services'
