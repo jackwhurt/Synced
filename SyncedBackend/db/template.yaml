@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: DynamoDB Table Stack for SyncedBackend
 
 Resources:
-  SampleTable:
+  CollaborativePlaylistTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       PrimaryKey:
@@ -14,6 +14,11 @@ Resources:
         WriteCapacityUnits: 2
 
 Outputs:
-  SampleTableArn:
-    Description: "ARN of the SampleTable"
-    Value: !GetAtt SampleTable.Arn
+  CollaborativePlaylistTableArn:
+    Description: "ARN of the CollaborativePlaylistTable"
+    Value: !GetAtt CollaborativePlaylistTable.Arn
+  CollaborativePlaylistTableName:
+      Description: "Name of the CollaborativePlaylistTable"
+      Value: !Ref CollaborativePlaylistTable
+      Export:
+        Name: !Sub "${AWS::StackName}-CollaborativePlaylistTableName"
