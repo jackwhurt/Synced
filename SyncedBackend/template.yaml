@@ -13,9 +13,9 @@ Resources:
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: shared/database.yaml'
+      TemplateURL: 'shared/database.yaml'
 
   ApiGateway:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: shared/api.yaml'
+      TemplateURL: 'shared/api.yaml'
