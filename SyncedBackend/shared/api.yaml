@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Main API Stack for Synced Backend
+
+Resources:
+  # Define the API Gateway
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: SyncedApiGateway
+      Description: 'API Gateway for Synced Backend services'
+      # More properties like binary media types, endpoint configuration, etc., can be added if needed.
+
+  # Define the deployment for the API Gateway
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: 
+      - LambdaCollaborativePlaylists  # Ensures that all methods are set up before deployment
+    Properties:
+      RestApiId: !Ref ApiGateway
+      # The StageName is set directly on the Deployment resource.
+      # For more control, you can create an AWS::ApiGateway::Stage resource
+      StageName: dev
+      Description: 'Deployment for the development stage'
+
+Outputs:
+  ApiGatewayRestApiId:
+    Description: "API Gateway REST API ID"
+    Value: !Ref ApiGateway
+

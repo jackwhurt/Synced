@@ -2,15 +2,20 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Main Stack for SyncedBackend
 
 Resources:
-  LambdaGetAllCollaborativePlaylists:
+  LambdaCollaborativePlaylists:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'src/get-all-collaborative-playlists/template.yaml'  # Adjust this path if you host it on S3 or another location
+      TemplateURL: 'services/collaborative-playlists-service/template.yaml'
       Parameters:
         CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
+        RestApiId: !Ref ApiGateway.Outputs.ApiGatewayRestApiId
 
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'db/template.yaml'  # Adjust this path if you host it on S3 or another location
+      TemplateURL: shared/database.yaml'
 
+  ApiGateway:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: shared/api.yaml'

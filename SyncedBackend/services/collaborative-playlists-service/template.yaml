@@ -1,10 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Lambda Function for getting all Collaborative Playlists
+Description: Stack for Collaborative Playlists
 Parameters:
   CollaborativePlaylistTableName:
     Type: String
     Description: The name of the DynamoDB table for collaborative playlists.
+  RestApiId:
+    Type: String
     
 Resources:
   GetAllCollaborativePlaylists:
@@ -20,14 +22,15 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: CollaborativePlaylistTable
+            TableName: CollaborativePlaylistTableName
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: CollaborativePlaylistTable
+          SAMPLE_TABLE: CollaborativePlaylistTableName
       Events:
         Api:
           Type: Api
           Properties:
-            Path: /
+            Path: /collaborative-playlists
             Method: GET
+            RestApiId: RestApiId

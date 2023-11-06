@@ -5,6 +5,8 @@ Description: DynamoDB Table Stack for SyncedBackend
 Resources:
   CollaborativePlaylistTable:
     Type: AWS::Serverless::SimpleTable
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       PrimaryKey:
         Name: id
