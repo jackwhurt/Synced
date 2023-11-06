@@ -17,4 +17,4 @@ Resources:
 Outputs:
   WebEndpoint:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: !GetAtt LambdaStack.Outputs.WebEndpoint
+    Value: !GetAtt LambdaGetAllCollaborativePlaylists.Outputs.WebEndpoint
