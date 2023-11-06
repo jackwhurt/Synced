@@ -14,8 +14,6 @@ Resources:
   # Define the deployment for the API Gateway
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
-    DependsOn: 
-      - LambdaCollaborativePlaylists  # Ensures that all methods are set up before deployment
     Properties:
       RestApiId: !Ref ApiGateway
       # The StageName is set directly on the Deployment resource.

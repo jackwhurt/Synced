@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Main Stack for SyncedBackend
 
 Resources:
-  LambdaCollaborativePlaylists:
+  CollaborativePlaylistsStacks:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'services/collaborative-playlists-service/template.yaml'
