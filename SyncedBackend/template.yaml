@@ -14,7 +14,3 @@ Resources:
     Properties:
       TemplateURL: 'db/template.yaml'  # Adjust this path if you host it on S3 or another location
 
-Outputs:
-  WebEndpoint:
-    Description: "API Gateway endpoint URL for Prod stage"
-    Value: !GetAtt LambdaGetAllCollaborativePlaylists.Outputs.WebEndpoint
