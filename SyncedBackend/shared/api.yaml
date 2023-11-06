@@ -15,7 +15,7 @@ Resources:
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     Properties:
-      RestApiId: ApiGateway
+      RestApiId: !Ref ApiGateway
       # The StageName is set directly on the Deployment resource.
       # For more control, you can create an AWS::ApiGateway::Stage resource
       StageName: dev

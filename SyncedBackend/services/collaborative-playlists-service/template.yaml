@@ -4,8 +4,8 @@ Description: Stack for Collaborative Playlists
 Parameters:
   CollaborativePlaylistTableName:
     Type: String
-  RestApiId:
-    Type: String
+  # RestApiId:
+  #   Type: String
     
 Resources:
   GetAllCollaborativePlaylists:
@@ -32,7 +32,7 @@ Resources:
           Properties:
             Path: /collaborative-playlists
             Method: GET
-            RestApiId: RestApiId
+            # RestApiId: RestApiId
 
 Outputs:
   GetAllCollaborativePlaylistsResourceId:

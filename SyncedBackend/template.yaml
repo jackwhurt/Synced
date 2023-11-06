@@ -13,7 +13,7 @@ Resources:
       TemplateURL: 'services/collaborative-playlists-service/template.yaml'
       Parameters:
         CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
-        RestApiId: !GetAtt ApiGateway.Outputs.ApiGatewayRestApiId
+        # RestApiId: !GetAtt ApiGateway.Outputs.ApiGatewayRestApiId
 
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
