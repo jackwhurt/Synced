@@ -32,7 +32,7 @@ Resources:
           Properties:
             Path: /collaborative-playlists
             Method: GET
-            # RestApiId: RestApiId
+            RestApiId: RestApiId
 
 Outputs:
   GetAllCollaborativePlaylistsResourceId:
