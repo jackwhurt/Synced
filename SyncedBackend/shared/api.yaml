@@ -16,17 +16,11 @@ Resources:
         openapi: '3.0'
         info: {}
         paths:
-          /items:
+          /collaborative-playlists:
             get:
               x-amazon-apigateway-integration:
                 httpMethod: GET
                 type: aws_proxy
                 uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsResourceArn}/invocations
               responses: {}
-
-
-Outputs:
-  ApiGatewayRestApiId:
-    Description: "API Gateway REST API ID"
-    Value: !Ref ApiGateway
 
