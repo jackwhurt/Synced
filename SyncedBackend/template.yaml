@@ -23,6 +23,7 @@ Resources:
   # Define the deployment for the API Gateway
   ApiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
+    DependsOn: CollaborativePlaylistsStack
     Properties:
       RestApiId: !GetAtt ApiGatewayStack.Outputs.ApiGatewayRestApiId
       # The StageName is set directly on the Deployment resource.
