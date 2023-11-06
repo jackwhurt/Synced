@@ -1,50 +1,35 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Main API Stack for Synced Backend
-Parameters:
-  GetAllCollaborativePlaylistsResourceArn:
-    Type: String
-    Description: The ARN of the Lambda function for the GetAllCollaborativePlaylists resource
+Description: Example SAM template for an API backed by a Lambda function.
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+      AllowOrigin: "'*'"
 
 Resources:
-  MyApi:
-    Type: AWS::Serverless::Api
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      StageName: prod
-      DefinitionBody:
-        swagger: '2.0'
-        info:
-          title: MyAPI
-        paths:
-          /collaborative-playlists:
-            get:
-              produces:
-                - application/json
-              responses:
-                '200':
-                  description: '200 response'
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsResourceArn}/invocations
-                responses:
-                  default:
-                    statusCode: '200'
-                passthroughBehavior: 'when_no_match'
-                httpMethod: POST
-                type: aws_proxy
-
-  GetAllCollaborativePlaylistsFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: 
-        Ref: GetAllCollaborativePlaylistsResourceArn
-      Principal: apigateway.amazonaws.com
-      SourceArn: 
-        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/prod/GET/collaborative-playlists
+      Handler: index.handler
+      Runtime: nodejs14.x
+      CodeUri: '../services/collaborative-playlists-service/template.yaml'
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            Path: /myresource
+            Method: get
 
 Outputs:
-  ApiEndpoint:
+  MyApi:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: 
-      Fn::Sub: https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/myresource"
+  MyLambdaFunction:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt MyLambdaFunction.Arn
+  MyLambdaFunctionIamRole:
+    Description: "Implicit IAM Role created for My Lambda function"
+    Value: !GetAtt MyLambdaFunctionRole.Arn
