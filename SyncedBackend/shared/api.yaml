@@ -4,23 +4,47 @@ Description: Main API Stack for Synced Backend
 Parameters:
   GetAllCollaborativePlaylistsResourceArn:
     Type: String
-    
+    Description: The ARN of the Lambda function for the GetAllCollaborativePlaylists resource
+
 Resources:
-  # Define the API Gateway
-  Api:
+  MyApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: Synced API
-      StageName: Prod
+      StageName: prod
       DefinitionBody:
-        openapi: '3.0'
-        info: {}
+        swagger: '2.0'
+        info:
+          title: MyAPI
         paths:
           /collaborative-playlists:
             get:
+              produces:
+                - application/json
+              responses:
+                '200':
+                  description: '200 response'
               x-amazon-apigateway-integration:
-                httpMethod: GET
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsResourceArn}/invocations
+                responses:
+                  default:
+                    statusCode: '200'
+                passthroughBehavior: 'when_no_match'
+                httpMethod: POST
                 type: aws_proxy
-                uri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsResourceArn}/invocations
-              responses: {}
 
+  GetAllCollaborativePlaylistsFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: 
+        Ref: GetAllCollaborativePlaylistsResourceArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: 
+        Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/prod/GET/collaborative-playlists
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: 
+      Fn::Sub: https://${MyApi}.execute-api.${AWS::Region}.amazonaws.com/prod/
