@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: DynamoDB Table Stack for SyncedBackend
 
 Resources:
-  CollaborativePlaylistTable:
+  CollaborativePlaylistsTable:
     Type: AWS::Serverless::SimpleTable
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -15,7 +15,45 @@ Resources:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
 
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: cognito_user_id
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: CognitoUserIdIndex
+          KeySchema:
+            - AttributeName: cognito_user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
 Outputs:
   CollaborativePlaylistTableName:
-    Description: "Name of the CollaborativePlaylistTable"
-    Value: !Ref CollaborativePlaylistTable
+    Description: "Name of the CollaborativePlaylistsTable"
+    Value: !Ref CollaborativePlaylistsTable

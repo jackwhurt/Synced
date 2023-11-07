@@ -5,18 +5,26 @@ Resources:
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'shared/database.yaml'
+      TemplateURL: 'stacks/database.yaml'
 
-  # ApiGatewayStack:
-  #     Type: AWS::CloudFormation::Stack
-  #     Properties:
-  #       TemplateURL: 'shared/api.yaml'
-  #       Parameters: 
-  #         GetAllCollaborativePlaylistsResourceArn: CollaborativePlaylistsStack.Outputs.GetAllCollaborativePlaylistsResourceArn
-
-  CollaborativePlaylistsStack:
+  CognitoStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'services/collaborative-playlists-service/template.yaml'
+      TemplateURL: 'stacks/cognito.yaml'
+
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/api.yaml'
+      Parameters:
+        GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
+        UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
+
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/lambda.yaml'
       Parameters:
         CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
+    
+      

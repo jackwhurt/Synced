@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main Stack for SyncedBackend
+Resources:
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/synced-cicd/9c0629609ee6a8a7d6038f25e453ebf2.template
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/synced-cicd/e5991a5ea7dd02354c0c5c2cd42e4ce5.template
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/synced-cicd/d3329a8bf46d7193372cb477e00f0dc3.template
+      Parameters:
+        GetAllCollaborativePlaylistsFunctionArn:
+          Fn::GetAtt:
+          - LambdaStack
+          - Outputs.GetAllCollaborativePlaylistsFunctionArn
+        UserPoolId:
+          Fn::GetAtt:
+          - CognitoStack
+          - Outputs.UserPoolId
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.eu-west-2.amazonaws.com/synced-cicd/50076844e27f75bb2f19129810ac69f9.template
+      Parameters:
+        CollaborativePlaylistTableName:
+          Fn::GetAtt:
+          - DatabaseStack
+          - Outputs.CollaborativePlaylistTableName
