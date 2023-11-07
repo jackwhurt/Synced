@@ -2,15 +2,32 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Main Stack for SyncedBackend
 
 Resources:
-  LambdaGetAllCollaborativePlaylists:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: 'src/get-all-collaborative-playlists/template.yaml'  # Adjust this path if you host it on S3 or another location
-      Parameters:
-        CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
-
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: 'db/template.yaml'  # Adjust this path if you host it on S3 or another location
+      TemplateURL: 'stacks/database.yaml'
 
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/lambda.yaml'
+      Parameters:
+        CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
+        UsersTableName: !GetAtt DatabaseStack.Outputs.UsersTableName
+
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/cognito.yaml'
+      Parameters:
+        CognitoTriggerFunctionArn: !GetAtt LambdaStack.Outputs.CognitoTriggerFunctionArn
+
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/api.yaml'
+      Parameters:
+        GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
+        UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
+
+      
