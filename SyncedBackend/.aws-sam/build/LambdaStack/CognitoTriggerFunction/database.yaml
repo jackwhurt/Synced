@@ -21,28 +21,28 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
         - AttributeName: cognito_user_id
           AttributeType: S
         - AttributeName: email
           AttributeType: S
-        - AttributeName: username
-          AttributeType: S
       KeySchema:
-        - AttributeName: cognito_user_id
+        - AttributeName: user_id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: EmailIndex
+        - IndexName: CognitoUserIdIndex
           KeySchema:
-            - AttributeName: email
+            - AttributeName: cognito_user_id
               KeyType: HASH
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
-        - IndexName: UsernameIndex
+        - IndexName: EmailIndex
           KeySchema:
-            - AttributeName: username
+            - AttributeName: email
               KeyType: HASH
           Projection:
             ProjectionType: ALL

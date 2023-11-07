@@ -11,8 +11,7 @@ Resources:
   GetAllCollaborativePlaylistsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../services/collaborative-playlists-service/
-      Handler: get-all-collaborative-playlists.getAllCollaborativePlaylistsHandler
+      Handler: services/collaborative-playlists-service/get-all-collaborative-playlists.getAllCollaborativePlaylistsHandler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
@@ -31,8 +30,7 @@ Resources:
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../services/users-service/
-      Handler: add-user.addUserHandler
+      Handler: services/users-service/add-user.addUserHandler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
