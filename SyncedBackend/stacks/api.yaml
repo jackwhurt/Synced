@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: API Gateway for Synced
+Parameters:
+  GetAllCollaborativePlaylistsFunctionArn:
+    Type: String
+
+Resources:
+  # Define the REST API
+  MyApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: Synced
+      Description: API for Synced
+
+  PlaylistsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: playlists  # This is the path part for the new resource
+      RestApiId: !Ref MyApi
+
+  # Define the GET method for the /playlists resource
+  GetAllPlaylistsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE  # Or use an authorization type as needed
+      HttpMethod: GET
+      ResourceId: !Ref PlaylistsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsFunctionArn}/invocations"
+
+      # Grant permission to API Gateway to invoke the Lambda function
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetAllCollaborativePlaylistsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/playlists" 
