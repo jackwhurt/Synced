@@ -51,3 +51,27 @@ Resources:
       FunctionName: !Ref GetAllCollaborativePlaylistsFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/collaborative-playlists" 
+
+  DevStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: dev
+      Description: Development stage for the API
+      RestApiId: !Ref MyApi
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          DataTraceEnabled: true
+          LoggingLevel: INFO
+
+  # Deployment of the API
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref MyApi
+
+  ApiGatewayAccount:
+    Type: 'AWS::ApiGateway::Account'
+    Properties:
+      CloudWatchRoleArn: 'arn:aws:iam::534328153983:role/ApiGatewayCloudWatchLogsRole'
