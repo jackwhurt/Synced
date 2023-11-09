@@ -1,36 +1,50 @@
-// Create clients and set shared const values outside of the handler.
-
-// Create a DocumentClient that represents the query to add an item
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+
+// Create a DocumentClient that represents the query to get items by cognito_user_id
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 // Get the DynamoDB table name from environment variables
 const tableName = process.env.COLLABORATIVE_PLAYLISTS_TABLE;
 
-/**
- * A simple example includes a HTTP get method to get all items from a DynamoDB table.
- */
 export const getAllCollaborativePlaylistsHandler = async (event) => {
     if (event.httpMethod !== 'GET') {
-        throw new Error(`getAllItems only accept GET method, you tried: ${event.httpMethod}`);
+        throw new Error(`getAllCollaborativePlaylistsForUserHandler only accepts GET method, you tried: ${event.httpMethod}`);
     }
+
     // All log statements are written to CloudWatch
     console.info('received:', event);
 
-    // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
-    // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
-    // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
+    // Extract the Cognito User ID from the Lambda event object
+    const claims = event.requestContext.authorizer?.claims;
+    if (!claims) {
+        return {
+            statusCode: 401,
+            body: JSON.stringify({ message: 'Unauthorized' })
+        };
+    }
+
+    const cognitoUserId = claims['sub']; // The subject claim contains the Cognito User ID
+
     var params = {
-        TableName : tableName
-    };
+        TableName: tableName,
+        IndexName: 'CognitoUserIdIndex', // Replace with your GSI name
+        KeyConditionExpression: 'cognito_user_id = :cognitoUserId',
+        ExpressionAttributeValues: {
+            ':cognitoUserId': cognitoUserId
+        }
+    };    
 
     try {
-        const data = await ddbDocClient.send(new ScanCommand(params));
+        const data = await ddbDocClient.send(new QueryCommand(params));
         var items = data.Items;
     } catch (err) {
-        console.log("Error", err);
+        console.error("Error", err);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error retrieving items' })
+        };
     }
 
     const response = {
@@ -41,4 +55,4 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
     // All log statements are written to CloudWatch
     console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
     return response;
-}
+};
