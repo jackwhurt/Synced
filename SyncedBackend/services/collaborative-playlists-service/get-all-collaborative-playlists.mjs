@@ -29,7 +29,7 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
 
     var params = {
         TableName: tableName,
-        IndexName: 'CognitoUserIdIndex', // Replace with your GSI name
+        IndexName: 'CognitoUserIdIndex',
         KeyConditionExpression: 'cognito_user_id = :cognitoUserId',
         ExpressionAttributeValues: {
             ':cognitoUserId': cognitoUserId
