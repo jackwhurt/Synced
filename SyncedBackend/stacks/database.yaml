@@ -9,17 +9,21 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       AttributeDefinitions:
-        - AttributeName: id
+        - AttributeName: PK
           AttributeType: S
-        - AttributeName: collaborator_id
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
           AttributeType: S
       KeySchema:
-        - AttributeName: id
+        - AttributeName: PK
           KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
       GlobalSecondaryIndexes:
         - IndexName: CollaboratorIndex
           KeySchema:
-            - AttributeName: collaborator_id
+            - AttributeName: GSI1PK
               KeyType: HASH
           Projection:
             ProjectionType: ALL
@@ -59,35 +63,6 @@ Resources:
           KeySchema:
             - AttributeName: username
               KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1
-            WriteCapacityUnits: 1
-      ProvisionedThroughput:
-        ReadCapacityUnits: 2
-        WriteCapacityUnits: 2
-
-  SongsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: song_id
-          AttributeType: S
-        - AttributeName: playlist_id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: song_id
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: PlaylistIdIndex
-          KeySchema:
-            - AttributeName: playlist_id
-              KeyType: HASH
-            - AttributeName: song_id
-              KeyType: RANGE
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
