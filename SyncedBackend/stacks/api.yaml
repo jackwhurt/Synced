@@ -52,6 +52,14 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/collaborative-playlists" 
 
+# Deployment of the API
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - "GetAllPlaylistsMethod"
+    Properties:
+      RestApiId: !Ref MyApi
+
   DevStage:
     Type: AWS::ApiGateway::Stage
     Properties:
@@ -64,12 +72,6 @@ Resources:
           HttpMethod: '*'
           DataTraceEnabled: true
           LoggingLevel: INFO
-
-  # Deployment of the API
-  ApiDeployment:
-    Type: AWS::ApiGateway::Deployment
-    Properties:
-      RestApiId: !Ref MyApi
 
   ApiGatewayAccount:
     Type: 'AWS::ApiGateway::Account'
