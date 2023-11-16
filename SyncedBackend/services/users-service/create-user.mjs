@@ -36,10 +36,10 @@ export const createUserHandler = async (event) => {
 
     const response = {
         statusCode: 200,
-        body: JSON.stringify({
+        body: {
             userId: cognitoUserId,
             email: email,
-        }),
+        },
     };
 
     console.info('Successfully processed Cognito event:', JSON.stringify(event, null, 2));

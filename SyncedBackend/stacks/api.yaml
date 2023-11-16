@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: API Gateway for Synced
 Parameters:
+  GetCollaborativePlaylistByIdFunctionArn:
+    Type: String
   GetAllCollaborativePlaylistsFunctionArn:
     Type: String
   CreateCollaborativePlaylistFunctionArn:
@@ -25,14 +27,14 @@ Resources:
       ProviderARNs: 
         - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}"
 
-  # Collaborative Playlists
+# Collaborative Playlists
   PlaylistsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt MyApi.RootResourceId
       PathPart: collaborative-playlists  # This is the path part for the new resource
       RestApiId: !Ref MyApi
- 
+
   GetAllCollaborativePlaylistsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -46,7 +48,7 @@ Resources:
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAllCollaborativePlaylistsFunctionArn}/invocations"
      
-  LambdaInvokePermission:
+  GetAllCollaborativePlaylistsLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -67,13 +69,41 @@ Resources:
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateCollaborativePlaylistFunctionArn}/invocations"
      
-  LambdaInvokePermission:
+  CreateCollaborativePlaylistLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref CreateCollaborativePlaylistFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/collaborative-playlists" 
+
+  PlaylistIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref PlaylistsResource
+      PathPart: '{id}'
+      RestApiId: !Ref MyApi
+
+  GetCollaborativePlaylistByIdMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref PlaylistIdResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCollaborativePlaylistByIdFunctionArn}/invocations"
+     
+  GetCollaborativePlaylistByIdLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetCollaborativePlaylistByIdFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/collaborative-playlists/{id}"
 
 # Deployment of the API
   ApiDeployment:

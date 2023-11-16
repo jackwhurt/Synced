@@ -1,0 +1,55 @@
+{
+    "create-cp": {
+        "body": {
+            "playlist": {
+                "name": "My Playlist",
+                "description": "A collaborative playlist"
+            },
+            "collaborators": [
+                "user1",
+                "user2"
+            ],
+            "songs": [
+                {
+                    "title": "Song 1",
+                    "artist": "Artist 1"
+                },
+                {
+                    "title": "Song 2",
+                    "artist": "Artist 2"
+                }
+            ]
+        },
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        },
+        "httpMethod": "POST",
+        "path": "/create-playlist",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    },
+    "get-cp-by-id": {
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "id": "cp#18854f60-18c6-49e1-a856-dbd20b2fac63"
+        },
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        },
+        "pathParameters": {
+            "id": "cp#18854f60-18c6-49e1-a856-dbd20b2fac63"
+        },
+        "stageVariables": null,
+        "body": null,
+        "resource": "/collaborative-playlists/{id}"
+    }
+}

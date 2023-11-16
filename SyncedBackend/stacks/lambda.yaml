@@ -8,6 +8,28 @@ Parameters:
     Type: String
 
 Resources:
+  GetCollaborativePlaylistByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/   
+      Handler: get-collaborative-playlist-by-id.getCollaborativePlaylistByIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get all items for a given playlist ID.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          PLAYLISTS_TABLE: !Ref PlaylistTableName
+          USERS_TABLE: !Ref UsersTableName
+
   GetAllCollaborativePlaylistsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -52,13 +74,13 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../services/users-service/
-      Handler: add-user.addUserHandler
+      Handler: create-user.createUserHandler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A function to add new Cognito users to the Users database.
+      Description: A function to create new Cognito users to the Users database.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
@@ -69,6 +91,8 @@ Resources:
           USERS_TABLE: !Ref UsersTableName
 
 Outputs:
+  GetCollaborativePlaylistByIdFunctionArn:
+    Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
   GetAllCollaborativePlaylistsFunctionArn:
     Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
   CreateCollaborativePlaylistFunctionArn:

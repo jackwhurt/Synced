@@ -12,7 +12,7 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
     if (event.httpMethod !== 'GET') {
         return {
             statusCode: 405,
-            body: JSON.stringify({ message: `Method Not Allowed, expected GET, received ${event.httpMethod}` })
+            body: { message: `Method Not Allowed, expected GET, received ${event.httpMethod}` }
         };
     }
 
@@ -22,7 +22,7 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
     if (!claims) {
         return {
             statusCode: 401,
-            body: JSON.stringify({ message: 'Unauthorized' })
+            body: { message: 'Unauthorized' }
         };
     }
 
@@ -54,13 +54,13 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
         const playlistMetadataData = await ddbDocClient.send(new BatchGetCommand(playlistMetadataParams));
         return {
             statusCode: 200,
-            body: JSON.stringify(playlistMetadataData.Responses[tableName])
+            body: playlistMetadataData.Responses[tableName]
         };
     } catch (err) {
         console.error("Error", err);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error retrieving collaborative playlists' })
+            body: { message: 'Error retrieving collaborative playlists' }
         };
     }
 };

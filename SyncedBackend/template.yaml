@@ -27,6 +27,7 @@ Resources:
     Properties:
       TemplateURL: 'stacks/api.yaml'
       Parameters:
+        GetCollaborativePlaylistByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistByIdFunctionArn
         GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
         CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId

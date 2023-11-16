@@ -13,14 +13,14 @@ export const createCollaborativePlaylistHandler = async (event) => {
 
     const { playlist, collaborators, songs } = JSON.parse(event.body);
     if (!playlist || !collaborators) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
+        return { statusCode: 400, body: { message: 'Missing required fields' } };
     }
 
     const claims = event.requestContext.authorizer?.claims;
     if (!claims) {
         return {
             statusCode: 401,
-            body: JSON.stringify({ message: 'Unauthorised' })
+            body: { message: 'Unauthorised' }
         };
     }
 
@@ -53,7 +53,6 @@ export const createCollaborativePlaylistHandler = async (event) => {
                     SK: `song#${songId}`,
                     ...song,
                     createdAt: timestamp,
-                    updatedAt: timestamp,
                 }
             }
         });
@@ -69,7 +68,6 @@ export const createCollaborativePlaylistHandler = async (event) => {
                     GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
                     createdAt: timestamp,
-                    updatedAt: timestamp,
                 }
             }
         });
@@ -79,13 +77,13 @@ export const createCollaborativePlaylistHandler = async (event) => {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
         return {
             statusCode: 200,
-            body: JSON.stringify({ id: playlistId, createdAt: timestamp })
+            body: { id: playlistId, createdAt: timestamp }
         };
     } catch (err) {
         console.error("Error", err);
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating the collaborative playlist' })
+            body: { message: 'Error creating the collaborative playlist' }
         };
     }
 };
