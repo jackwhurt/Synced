@@ -12,7 +12,7 @@ Resources:
     Properties:
       TemplateURL: 'stacks/lambda.yaml'
       Parameters:
-        CollaborativePlaylistTableName: !GetAtt DatabaseStack.Outputs.CollaborativePlaylistTableName
+        PlaylistTableName: !GetAtt DatabaseStack.Outputs.PlaylistTableName
         UsersTableName: !GetAtt DatabaseStack.Outputs.UsersTableName
 
   CognitoStack:
@@ -28,6 +28,7 @@ Resources:
       TemplateURL: 'stacks/api.yaml'
       Parameters:
         GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
+        CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

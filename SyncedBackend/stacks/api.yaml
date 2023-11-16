@@ -3,6 +3,8 @@ Description: API Gateway for Synced
 Parameters:
   GetAllCollaborativePlaylistsFunctionArn:
     Type: String
+  CreateCollaborativePlaylistFunctionArn:
+    Type: String
   UserPoolId: 
     Type: String
 
@@ -31,7 +33,7 @@ Resources:
       PathPart: collaborative-playlists  # This is the path part for the new resource
       RestApiId: !Ref MyApi
  
-  GetAllPlaylistsMethod:
+  GetAllCollaborativePlaylistsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: COGNITO_USER_POOLS
@@ -52,11 +54,33 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/collaborative-playlists" 
 
+  CreateCollaborativePlaylistMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref PlaylistsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CreateCollaborativePlaylistFunctionArn}/invocations"
+     
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref CreateCollaborativePlaylistFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/*/collaborative-playlists" 
+
 # Deployment of the API
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - "GetAllPlaylistsMethod"
+      - "GetAllCollaborativePlaylistsMethod"
+      - "CreateCollaborativePlaylistMethod"
     Properties:
       RestApiId: !Ref MyApi
 

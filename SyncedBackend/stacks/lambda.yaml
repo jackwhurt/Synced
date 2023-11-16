@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Stack for Collaborative Playlists
+Description: Stack for Synced Lambda functions
 Parameters:
   UsersTableName:
     Type: String
-  CollaborativePlaylistTableName:
+  PlaylistTableName:
     Type: String
 
 Resources:
@@ -22,11 +22,31 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref CollaborativePlaylistTableName
+            TableName: !Ref PlaylistTableName
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
-          COLLABORATIVE_PLAYLISTS_TABLE: !Ref CollaborativePlaylistTableName
+          PLAYLISTS_TABLE: !Ref PlaylistTableName
+
+  CreateCollaborativePlaylistFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: create-collaborative-playlist.createCollaborativePlaylistHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to create a Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistTableName
 
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
@@ -51,5 +71,7 @@ Resources:
 Outputs:
   GetAllCollaborativePlaylistsFunctionArn:
     Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
+  CreateCollaborativePlaylistFunctionArn:
+    Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

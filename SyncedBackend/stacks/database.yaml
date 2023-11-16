@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: DynamoDB Table Stack for SyncedBackend
 
 Resources:
-  CollaborativePlaylistsTable:
+  PlaylistsTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
@@ -73,7 +73,7 @@ Resources:
         WriteCapacityUnits: 2
 
 Outputs:
-  CollaborativePlaylistTableName:
-    Value: !Ref CollaborativePlaylistsTable
+  PlaylistTableName:
+    Value: !Ref PlaylistsTable
   UsersTableName:
     Value: !Ref UsersTable

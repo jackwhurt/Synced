@@ -1,21 +1,30 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 
 // Create a DocumentClient that represents the query to put an item
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 // Get the DynamoDB table name from environment variables
-const tableName = process.env.COLLABORATIVE_PLAYLISTS_TABLE;
+const tableName = process.env.PLAYLISTS_TABLE;
 
-export const handler = async (event) => {
+export const createCollaborativePlaylistHandler = async (event) => {
     console.info('received:', event);
 
-    const { cognitoUserId, playlistName, description, collaborators, songs } = JSON.parse(event.body);
-    if (!cognitoUserId || !playlistName || !collaborators || !songs) {
+    const { playlist, collaborators, songs } = JSON.parse(event.body);
+    if (!playlist || !collaborators) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
     }
 
+    const claims = event.requestContext.authorizer?.claims;
+    if (!claims) {
+        return {
+            statusCode: 401,
+            body: JSON.stringify({ message: 'Unauthorised' })
+        };
+    }
+
+    const cognitoUserId = claims['sub'];
     const timestamp = new Date().toISOString();
     const playlistId = uuidv4();
     const transactItems = [];
@@ -26,10 +35,8 @@ export const handler = async (event) => {
             Item: {
                 PK: `cp#${playlistId}`,
                 SK: `metadata`,
-                cognitoUserId,
-                playlistName,
-                description,
-                playlistId,
+                createdBy: cognitoUserId,
+                ...playlist,
                 createdAt: timestamp,
                 updatedAt: timestamp,
             }
@@ -52,14 +59,14 @@ export const handler = async (event) => {
         });
     });
 
-    collaborators.forEach((collaboratorUserId) => {
+    collaborators.forEach((collaboratorId) => {
         transactItems.push({
             Put: {
                 TableName: tableName,
                 Item: {
                     PK: `cp#${playlistId}`,
-                    SK: `collaborator#${collaboratorUserId}`,
-                    GSI1PK: `collaborator#${collaboratorUserId}`,
+                    SK: `collaborator#${collaboratorId}`,
+                    GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
                     createdAt: timestamp,
                     updatedAt: timestamp,
@@ -72,7 +79,7 @@ export const handler = async (event) => {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
         return {
             statusCode: 200,
-            body: JSON.stringify({ playlistId, playlistName, description, collaborators, songs, createdAt: timestamp, updatedAt: timestamp })
+            body: JSON.stringify({ id: playlistId, createdAt: timestamp })
         };
     } catch (err) {
         console.error("Error", err);
@@ -82,3 +89,13 @@ export const handler = async (event) => {
         };
     }
 };
+
+function uuidv4() {
+  var dt = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (dt + Math.random()*16)%16 | 0;
+        dt = Math.floor(dt/16);
+        return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+}
