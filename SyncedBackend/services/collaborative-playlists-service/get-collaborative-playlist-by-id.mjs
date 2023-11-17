@@ -10,30 +10,35 @@ export const getCollaborativePlaylistByIdHandler = async (event) => {
     if (!playlistsTableName || !usersTableName) {
         console.error('Environment variables for table names are not set');
 
-        return { statusCode: 500, body: 'Server Configuration Error' };
+        return { statusCode: 500, body: JSON.stringify('Server Configuration Error') };
     }
 
     if (event.httpMethod !== 'GET') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+        return { statusCode: 405, body: JSON.stringify('Method Not Allowed') };
     }
 
-    const playlistId = event.queryStringParameters?.id;
-    if (!playlistId) {
-        return { statusCode: 400, body: 'No playlist ID provided' };
+    const playlistUuid = event.pathParameters?.id;
+    if (!playlistUuid) {
+        return { statusCode: 400, body: JSON.stringify('No playlist ID provided') };
     }
+    const playlistId = 'cp#' + playlistUuid;
 
     try {
         const playlistItemsData = await queryPlaylistItems(playlistId);
         const { collaborators, playlistMetadata, songs } = await processPlaylistItems(playlistItemsData.Items);
 
+        if (!playlistMetadata && collaborators.length === 0 && songs.length === 0) {
+            return { statusCode: 404, body: JSON.stringify('Playlist not found') };
+        }
+
         return {
             statusCode: 200,
-            body: { playlistId: playlistId, metadata: playlistMetadata, collaborators: collaborators, songs: songs }
+            body: JSON.stringify({ playlistId: playlistId, metadata: playlistMetadata, collaborators: collaborators, songs: songs })
         };
     } catch (err) {
         console.error("Error", err);
 
-        return { statusCode: 500, body: 'Error retrieving playlist items' };
+        return { statusCode: 500, body: JSON.stringify('Error retrieving playlist items') };
     }
 };
 

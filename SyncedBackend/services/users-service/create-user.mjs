@@ -18,7 +18,7 @@ export const createUserHandler = async (event) => {
     const params = {
         TableName: tableName,
         Item: {
-            id: cognitoUserId, 
+            cognito_user_id: cognitoUserId, 
             email: email,     
             createdAt: timestamp,
             updatedAt: timestamp
