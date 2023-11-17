@@ -39,7 +39,9 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const cognitoUserId = claims['sub'];
     const timestamp = new Date().toISOString();
     const playlistId = uuidv4();
-    const transactItems = [];
+    const transactItems = [];   
+    const collaboratorCount = collaborators ? collaborators.length + 1 : 1;
+    const songCount = songs ? songs.length : 0;
 
     transactItems.push({
         Put: {
@@ -49,6 +51,8 @@ export const createCollaborativePlaylistHandler = async (event) => {
                 SK: `metadata`,
                 createdBy: cognitoUserId,
                 ...playlist,
+                collaboratorCount: collaboratorCount,
+                songCount: songsCount,
                 createdAt: timestamp,
                 updatedAt: timestamp,
             }

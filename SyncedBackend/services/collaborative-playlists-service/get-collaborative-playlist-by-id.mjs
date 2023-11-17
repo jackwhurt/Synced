@@ -7,15 +7,7 @@ const playlistsTableName = process.env.PLAYLISTS_TABLE;
 const usersTableName = process.env.USERS_TABLE;
 
 export const getCollaborativePlaylistByIdHandler = async (event) => {
-    if (!playlistsTableName || !usersTableName) {
-        console.error('Environment variables for table names are not set');
-
-        return { statusCode: 500, body: JSON.stringify('Server Configuration Error') };
-    }
-
-    if (event.httpMethod !== 'GET') {
-        return { statusCode: 405, body: JSON.stringify('Method Not Allowed') };
-    }
+    console.info('received:', event);
 
     const playlistUuid = event.pathParameters?.id;
     if (!playlistUuid) {

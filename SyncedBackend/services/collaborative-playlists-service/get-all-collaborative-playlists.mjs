@@ -9,13 +9,6 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 const tableName = process.env.PLAYLISTS_TABLE;
 
 export const getAllCollaborativePlaylistsHandler = async (event) => {
-    if (event.httpMethod !== 'GET') {
-        return {
-            statusCode: 405,
-            body: JSON.stringify({ message: `Method Not Allowed, expected GET, received ${event.httpMethod}` })
-        };
-    }
-
     console.info('received:', event);
 
     const claims = event.requestContext.authorizer?.claims;

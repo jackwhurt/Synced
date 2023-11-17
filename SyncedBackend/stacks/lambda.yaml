@@ -4,7 +4,7 @@ Description: Stack for Synced Lambda functions
 Parameters:
   UsersTableName:
     Type: String
-  PlaylistTableName:
+  PlaylistsTableName:
     Type: String
 
 Resources:
@@ -22,12 +22,12 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the PlaylistTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref PlaylistTableName
+            TableName: !Ref PlaylistsTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTableName
       Environment:
         Variables:
-          PLAYLISTS_TABLE: !Ref PlaylistTableName
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
 
   GetAllCollaborativePlaylistsFunction:
@@ -44,11 +44,11 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref PlaylistTableName
+            TableName: !Ref PlaylistsTableName
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
-          PLAYLISTS_TABLE: !Ref PlaylistTableName
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
   CreateCollaborativePlaylistFunction:
     Type: AWS::Serverless::Function
@@ -64,11 +64,34 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref PlaylistTableName
+            TableName: !Ref PlaylistsTableName
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
-          PLAYLISTS_TABLE: !Ref PlaylistTableName
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  AddCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: add-collaborators.addCollaboratorsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to add Collaborators to Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
 
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
@@ -97,5 +120,7 @@ Outputs:
     Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
   CreateCollaborativePlaylistFunctionArn:
     Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
+  AddCollaboratorsFunctionArn:
+    Value: !GetAtt AddCollaboratorsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

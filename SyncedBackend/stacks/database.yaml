@@ -73,7 +73,7 @@ Resources:
         WriteCapacityUnits: 2
 
 Outputs:
-  PlaylistTableName:
+  PlaylistsTableName:
     Value: !Ref PlaylistsTable
   UsersTableName:
     Value: !Ref UsersTable
