@@ -40,6 +40,17 @@ export const deleteCollaboratorsHandler = async (event) => {
     }
 
     try {
+        // Retrieve existing collaborators
+        const existingCollaborators = await getPlaylistCollaborators(playlistId);
+        const isValidRequest = collaboratorIds.every(id => existingCollaborators.includes(id));
+
+        if (!isValidRequest) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Invalid collaborator ID(s)' })
+            };
+        }
+
         await deleteCollaborators(playlistId, collaboratorIds);
 
         return {
@@ -118,5 +129,24 @@ async function getPlaylistMetadata(playlistId) {
         console.error("Error retrieving playlist metadata:", err);
 
         return null;
+    }
+}
+
+async function getPlaylistCollaborators(playlistId) {
+    const params = {
+        TableName: playlistsTable,
+        KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+        ExpressionAttributeValues: {
+            ':pk': `cp#${playlistId}`,
+            ':sk': 'collaborator#'
+        }
+    };
+
+    try {
+        const { Items } = await ddbDocClient.send(new QueryCommand(params));
+        return Items.map(item => item.SK.split('#')[1]);
+    } catch (err) {
+        console.error("Error retrieving collaborators:", err);
+        return [];
     }
 }
