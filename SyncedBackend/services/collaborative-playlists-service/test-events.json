@@ -75,11 +75,22 @@
     "delete-collaborators": {
         "body": "{\"playlistId\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"collaboratorIds\": [\"user1\", \"user2\"]}",
         "requestContext": {
-          "authorizer": {
-            "claims": {
-              "sub": "cognitoIdentityId"
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoIdentityId"
+                }
             }
-          }
         }
-      }
+    },
+    "update-collaborative-playlist": {
+        "body": "{\"playlist\": {\"id\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"title\": \"New Playlist Title\", \"description\": \"Updated description\", \"coverImageUrl\": \"http://example.com/image.jpg\"}}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "70f23806-2368-4be9-a1a1-f078d9660b1d"
+                }
+            }
+        },
+        "httpMethod": "PUT"
+    }
 }

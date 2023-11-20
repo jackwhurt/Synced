@@ -5,7 +5,7 @@ const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 const tableName = process.env.PLAYLISTS_TABLE;
 
-export const updateCollaborativePlaylistHandler = async (event) => {
+export const updateCollaborativePlaylistMetadataHandler = async (event) => {
     console.info('received:', event);
 
     if (!event.body) {
@@ -61,7 +61,7 @@ export const updateCollaborativePlaylistHandler = async (event) => {
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Playlist updated successfully' })
+            body: JSON.stringify({ message: 'Playlist updated successfully', playlist: playlist })
         };
     } catch (err) {
         if (err.name === 'ConditionalCheckFailedException') {
