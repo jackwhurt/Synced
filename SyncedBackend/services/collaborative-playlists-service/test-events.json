@@ -1,0 +1,96 @@
+{
+    "create-cp": {
+        "body": {
+            "playlist": {
+                "title": "My Playlist",
+                "description": "A collaborative playlist"
+            },
+            "collaborators": [
+                "user1",
+                "user2"
+            ],
+            "songs": [
+                {
+                    "title": "Song 1",
+                    "artist": "Artist 1"
+                },
+                {
+                    "title": "Song 2",
+                    "artist": "Artist 2"
+                }
+            ]
+        },
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        },
+        "httpMethod": "POST",
+        "path": "/create-playlist",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    },
+    "get-cp-by-id": {
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "id": "cp#18854f60-18c6-49e1-a856-dbd20b2fac63"
+        },
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        },
+        "pathParameters": {
+            "id": "cp#18854f60-18c6-49e1-a856-dbd20b2fac63"
+        },
+        "stageVariables": null,
+        "body": null,
+        "resource": "/collaborative-playlists/{id}"
+    },
+    "get-all-cps": {
+        "httpMethod": "GET",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        }
+    },
+    "add-collaborators": {
+        "body": "{\"playlistId\":\"playlist123\", \"collaboratorIds\":[\"user1\", \"user2\", \"user3\"]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoUserId123"
+                }
+            }
+        }
+    },
+    "delete-collaborators": {
+        "body": "{\"playlistId\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"collaboratorIds\": [\"user1\", \"user2\"]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoIdentityId"
+                }
+            }
+        }
+    },
+    "update-collaborative-playlist": {
+        "body": "{\"playlist\": {\"id\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"title\": \"New Playlist Title\", \"description\": \"Updated description\", \"coverImageUrl\": \"http://example.com/image.jpg\"}}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "70f23806-2368-4be9-a1a1-f078d9660b1d"
+                }
+            }
+        },
+        "httpMethod": "PUT"
+    }
+}

@@ -1,13 +1,35 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Stack for Collaborative Playlists
+Description: Stack for Synced Lambda functions
 Parameters:
   UsersTableName:
     Type: String
-  CollaborativePlaylistTableName:
+  PlaylistsTableName:
     Type: String
 
 Resources:
+  GetCollaborativePlaylistByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/   
+      Handler: get-collaborative-playlist-by-id.getCollaborativePlaylistByIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get all items for a given playlist ID.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+
   GetAllCollaborativePlaylistsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -22,23 +44,106 @@ Resources:
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref CollaborativePlaylistTableName
+            TableName: !Ref PlaylistsTableName
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
-          COLLABORATIVE_PLAYLISTS_TABLE: !Ref CollaborativePlaylistTableName
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
-  CognitoTriggerFunction:
+  CreateCollaborativePlaylistFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../services/users-service/
-      Handler: add-user.addUserHandler
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: create-collaborative-playlist.createCollaborativePlaylistHandler
       Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A function to add new Cognito users to the Users database.
+      Description: A function to create a Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  UpdateCollaborativePlaylistMetadataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: update-collaborative-playlist-metadata.updateCollaborativePlaylistMetadataHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update Collaborative Playlists metadata.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  AddCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: add-collaborators.addCollaboratorsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to add Collaborators to Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+
+  DeleteCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-collaborators.deleteCollaboratorsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete from Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  CognitoTriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/users-service/
+      Handler: create-user.createUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to create new Cognito users to the Users database.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the SampleTable
         - DynamoDBCrudPolicy:
@@ -49,7 +154,17 @@ Resources:
           USERS_TABLE: !Ref UsersTableName
 
 Outputs:
+  GetCollaborativePlaylistByIdFunctionArn:
+    Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
   GetAllCollaborativePlaylistsFunctionArn:
     Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
+  CreateCollaborativePlaylistFunctionArn:
+    Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
+  UpdateCollaborativePlaylistMetadataFunctionArn:
+    Value: !GetAtt UpdateCollaborativePlaylistMetadataFunction.Arn
+  AddCollaboratorsFunctionArn:
+    Value: !GetAtt AddCollaboratorsFunction.Arn
+  DeleteCollaboratorsFunctionArn:
+    Value: !GetAtt DeleteCollaboratorsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

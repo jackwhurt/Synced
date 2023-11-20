@@ -6,19 +6,22 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const tableName = process.env.USERS_TABLE;
 
-export const addUserHandler = async (event) => {
+export const createUserHandler = async (event) => {
     // This function is triggered by a Cognito event, not an API Gateway event, 
     // so we don't check for `event.httpMethod` here.
     console.info('Received Cognito event:', JSON.stringify(event, null, 2));
 
     const cognitoUserId = event.request.userAttributes.sub;
     const email = event.request.userAttributes.email;
+    const timestamp = new Date().toISOString();
 
     const params = {
         TableName: tableName,
         Item: {
-            id: cognitoUserId, // Primary Key
-            email: email,      // User email
+            cognito_user_id: cognitoUserId, 
+            email: email,     
+            createdAt: timestamp,
+            updatedAt: timestamp
         }
     };
 
@@ -33,13 +36,13 @@ export const addUserHandler = async (event) => {
 
     const response = {
         statusCode: 200,
-        body: JSON.stringify({
+        body: {
             userId: cognitoUserId,
             email: email,
-        }),
+        },
     };
 
     console.info('Successfully processed Cognito event:', JSON.stringify(event, null, 2));
-    
+
     return response;
 };

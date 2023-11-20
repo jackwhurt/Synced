@@ -1,44 +1,66 @@
-// Create clients and set shared const values outside of the handler.
-
-// Create a DocumentClient that represents the query to add an item
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+
+// Create a DocumentClient that represents the query to get items by cognito_user_id
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 // Get the DynamoDB table name from environment variables
-const tableName = process.env.COLLABORATIVE_PLAYLISTS_TABLE;
+const tableName = process.env.PLAYLISTS_TABLE;
 
-/**
- * A simple example includes a HTTP get method to get all items from a DynamoDB table.
- */
 export const getAllCollaborativePlaylistsHandler = async (event) => {
-    if (event.httpMethod !== 'GET') {
-        throw new Error(`getAllItems only accept GET method, you tried: ${event.httpMethod}`);
-    }
-    // All log statements are written to CloudWatch
     console.info('received:', event);
 
-    // get all items from the table (only first 1MB data, you can use `LastEvaluatedKey` to get the rest of data)
-    // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html#scan-property
-    // https://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_Scan.html
-    var params = {
-        TableName : tableName
+    const claims = event.requestContext.authorizer?.claims;
+    if (!claims) {
+        return {
+            statusCode: 401,
+            body: JSON.stringify({ message: 'Unauthorized' })
+        };
+    }
+
+    const cognitoUserId = claims['sub'];
+
+    const playlistIdsParams = {
+        TableName: tableName,
+        IndexName: 'CollaboratorIndex',
+        KeyConditionExpression: 'GSI1PK = :gsi1pk',
+        ExpressionAttributeValues: {
+            ':gsi1pk': `collaborator#${cognitoUserId}`
+        }
     };
 
     try {
-        const data = await ddbDocClient.send(new ScanCommand(params));
-        var items = data.Items;
+        const playlistIdsData = await ddbDocClient.send(new QueryCommand(playlistIdsParams));
+        const playlistIds = playlistIdsData.Items.map(item => item.PK);
+
+        if (playlistIds.length === 0) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: 'No collaborative playlists found' })
+            };
+        }
+
+        // Second query to get playlist metadata
+        const playlistMetadataParams = {
+            RequestItems: {
+                [tableName]: {
+                    Keys: playlistIds.map(id => ({ PK: id, SK: 'metadata' })),
+                    ConsistentRead: false // Change to true if strong consistency is needed
+                }
+            }
+        };
+
+        const playlistMetadataData = await ddbDocClient.send(new BatchGetCommand(playlistMetadataParams));
+        return {
+            statusCode: 200,
+            body: JSON.stringify(playlistMetadataData.Responses[tableName])
+        };
     } catch (err) {
-        console.log("Error", err);
+        console.error("Error", err);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error retrieving collaborative playlists' })
+        };
     }
-
-    const response = {
-        statusCode: 200,
-        body: JSON.stringify(items)
-    };
-
-    // All log statements are written to CloudWatch
-    console.info(`response from: ${event.path} statusCode: ${response.statusCode} body: ${response.body}`);
-    return response;
-}
+};
