@@ -71,5 +71,15 @@
                 }
             }
         }
-    }
+    },
+    "delete-collaborators": {
+        "body": "{\"playlistId\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"collaboratorIds\": [\"user1\", \"user2\"]}",
+        "requestContext": {
+          "authorizer": {
+            "claims": {
+              "sub": "cognitoIdentityId"
+            }
+          }
+        }
+      }
 }

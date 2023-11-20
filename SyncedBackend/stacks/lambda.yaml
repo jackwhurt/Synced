@@ -93,6 +93,26 @@ Resources:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
 
+  DeleteCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-collaborators.deleteCollaboratorsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete from Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -122,5 +142,7 @@ Outputs:
     Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
   AddCollaboratorsFunctionArn:
     Value: !GetAtt AddCollaboratorsFunction.Arn
+  DeleteCollaboratorsFunctionArn:
+    Value: !GetAtt DeleteCollaboratorsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

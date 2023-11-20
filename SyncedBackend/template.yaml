@@ -31,6 +31,7 @@ Resources:
         GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
         CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
+        DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

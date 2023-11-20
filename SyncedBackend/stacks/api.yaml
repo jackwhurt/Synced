@@ -9,6 +9,8 @@ Parameters:
     Type: String
   AddCollaboratorsFunctionArn:
     Type: String
+  DeleteCollaboratorsFunctionArn:
+    Type: String
   UserPoolId: 
     Type: String
 
@@ -81,12 +83,12 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists" 
 
-  # Collaborative Playlists / Add Collaborators
-  AddCollaboratorsResource:
+  # Collaborative Playlists / Collaborators
+  CollaboratorsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref PlaylistsResource 
-      PathPart: 'add-collaborators'
+      PathPart: 'collaborators'
       RestApiId: !Ref MyApi
 
   # Add Collaborators
@@ -96,7 +98,7 @@ Resources:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref CognitoAuthoriser
       HttpMethod: POST
-      ResourceId: !Ref AddCollaboratorsResource
+      ResourceId: !Ref CollaboratorsResource
       RestApiId: !Ref MyApi
       Integration:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
@@ -109,7 +111,29 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref AddCollaboratorsFunctionArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists/add-collaborators"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists/collaborators"
+
+  # Delete Collaborators
+  DeleteCollaboratorsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref CollaboratorsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteCollaboratorsFunctionArn}/invocations"
+
+  DeleteCollaboratorsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteCollaboratorsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/collaborators"
 
   # Collaborative Playlists / {id}
   PlaylistIdResource:
@@ -146,7 +170,6 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       - "GetAllCollaborativePlaylistsMethod"
-      - "CreateCollaborativePlaylistMethod"
     Properties:
       RestApiId: !Ref MyApi
 

@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
@@ -23,9 +23,25 @@ export const deleteCollaboratorsHandler = async (event) => {
         return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorised' }) };
     }
 
+    const cognitoUserId = claims['sub'];
+
+    // Retrieve playlist metadata
+    const playlistMetadata = await getPlaylistMetadata(playlistId);
+    if (!playlistMetadata) {
+        return { statusCode: 404, body: JSON.stringify({ message: 'Playlist not found' }) };
+    }
+
+    // Check if the user is authorised to modify the playlist
+    if (playlistMetadata.createdBy !== cognitoUserId) {
+        return {
+            statusCode: 403,
+            body: JSON.stringify({ message: 'Not authorised to modify this playlist' })
+        };
+    }
+
     try {
         await deleteCollaborators(playlistId, collaboratorIds);
-        
+
         return {
             statusCode: 200,
             body: JSON.stringify({
@@ -77,10 +93,30 @@ async function deleteCollaborators(playlistId, collaboratorIds) {
                 Key: {
                     PK: `cp#${playlistId}`,
                     SK: `collaborator#${collaboratorId}`,
-                },
+                }
             }
         });
     });
 
     await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+}
+
+async function getPlaylistMetadata(playlistId) {
+    const params = {
+        TableName: playlistsTable,
+        Key: {
+            PK: `cp#${playlistId}`,
+            SK: 'metadata'
+        }
+    };
+
+    try {
+        const { Item } = await ddbDocClient.send(new GetCommand(params));
+
+        return Item;
+    } catch (err) {
+        console.error("Error retrieving playlist metadata:", err);
+
+        return null;
+    }
 }

@@ -52,7 +52,7 @@ export const createCollaborativePlaylistHandler = async (event) => {
                 createdBy: cognitoUserId,
                 ...playlist,
                 collaboratorCount: collaboratorCount,
-                songCount: songsCount,
+                songCount: songCount,
                 createdAt: timestamp,
                 updatedAt: timestamp,
             }
