@@ -15,6 +15,6 @@ jobs:
     - name: Push to GitLab
       run: |
         git config --global user.name 'Jack Hurt'
-        git config --global user.email ${{ secrets.SECRET_NAME }}
+        git config --global user.email ${{ secrets.UNI_EMAIL }}
         git remote add gitlab https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@git.cs.bham.ac.uk/projects-2023-24/jxh1292.git
         git push gitlab main
