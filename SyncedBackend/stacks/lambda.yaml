@@ -1,12 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Stack for Synced Lambda functions
+Description: Lambda Stack for Synced
 Parameters:
   UsersTableName:
     Type: String
   PlaylistsTableName:
     Type: String
   TokensTableName:
+    Type: String
+  LambdaFailureTopicName:
     Type: String
 
 Resources:
@@ -190,6 +192,7 @@ Resources:
       Environment:
         Variables:
           TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
 
 Outputs:
   GetCollaborativePlaylistByIdFunctionArn:

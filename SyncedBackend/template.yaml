@@ -6,6 +6,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'stacks/database.yaml'
+  
+  SnsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/sns.yaml'
 
   LambdaStack:
     Type: AWS::CloudFormation::Stack
@@ -15,6 +20,7 @@ Resources:
         PlaylistsTableName: !GetAtt DatabaseStack.Outputs.PlaylistsTableName
         UsersTableName: !GetAtt DatabaseStack.Outputs.UsersTableName
         TokensTableName: !GetAtt DatabaseStack.Outputs.TokensTableName
+        LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
 
   CognitoStack:
     Type: AWS::CloudFormation::Stack
