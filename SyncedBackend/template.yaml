@@ -47,6 +47,7 @@ Resources:
         UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
         DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
+        GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

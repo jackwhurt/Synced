@@ -22,6 +22,7 @@ Resources:
         - nodejs18.x
       Description: "Common Node.js dependencies for Lambda"
 
+  # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -106,6 +107,7 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
+  # Collaborative Playlists - Collaborators
   AddCollaboratorsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -149,6 +151,7 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
+  # Create User Trigger
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -169,6 +172,7 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           USERS_TABLE: !Ref UsersTableName
 
+  # Tokens
   UpdateSpotifyDevTokenFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -189,7 +193,7 @@ Resources:
             - Effect: "Allow"
               Action:
                 - "ssm:GetParameter"
-              Resource: "*"  # Restrict this to specific resources if possible
+              Resource: "*" 
             - Effect: "Allow"
               Action:
                 - "sns:Publish"
@@ -199,6 +203,21 @@ Resources:
           TOKENS_TABLE: !Ref TokensTableName  
           LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
 
+  GetSpotifyAuthUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-spotify-auth-url.spotifyAuthUrlHandler
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to initiate Spotify authorisation flow
+      Policies:
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
 
 Outputs:
   GetCollaborativePlaylistByIdFunctionArn:
@@ -217,3 +236,5 @@ Outputs:
     Value: !GetAtt CognitoTriggerFunction.Arn
   UpdateSpotifyDevTokenFunctionArn:
     Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
+  GetSpotifyAuthUrlFunctionArn:
+    Value: !GetAtt GetSpotifyAuthUrlFunction.Arn

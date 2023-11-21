@@ -13,6 +13,8 @@ Parameters:
     Type: String
   DeleteCollaboratorsFunctionArn:
     Type: String
+  GetSpotifyAuthUrlFunctionArn:
+    Type: String
   UserPoolId: 
     Type: String
 
@@ -32,13 +34,51 @@ Resources:
       RestApiId: !Ref MyApi
       ProviderARNs: 
         - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${UserPoolId}"
+    
+  # Authorisation
+  AuthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: auth
+      RestApiId: !Ref MyApi
 
-# Collaborative Playlists
+  # Authorisation / Spotify
+  SpotifyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref AuthResource 
+      PathPart: 'spotify'
+      RestApiId: !Ref MyApi
+
+  # Get Spotify Auth Url
+  GetSpotifyAuthUrlMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref SpotifyResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSpotifyAuthUrlFunctionArn}/invocations"
+     
+  GetSpotifyAuthUrlLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetSpotifyAuthUrlFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/spotify" 
+
+  # Collaborative Playlists
   PlaylistsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt MyApi.RootResourceId
-      PathPart: collaborative-playlists  # This is the path part for the new resource
+      PathPart: collaborative-playlists
       RestApiId: !Ref MyApi
 
   # Get all Collaborative Playlists
