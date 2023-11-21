@@ -13,86 +13,96 @@ const snsTopic = process.env.LAMBDA_FAILURE_TOPIC;
 const MAX_RETRIES = 3;
 
 export const updateSpotifyDevTokenHandler = async () => {
-	let retryCount = 0;
+    let retryCount = 0;
 
-	while (retryCount < MAX_RETRIES) {
-		try {
-			// Retrieve Client ID and Client Secret from Parameter Store
-			const clientId = await getParameter('spotifyClientId');
-			const clientSecret = await getParameter('spotifyClientSecret');
+    while (retryCount < MAX_RETRIES) {
+        try {
+            const clientId = await getParameter('spotifyClientId');
+            const clientSecret = await getParameter('spotifyClientSecret');
+            const refreshToken = await getRefreshToken();
 
-			// Retrieve Refresh Token from DynamoDB
-			const refreshTokenData = await dynamoDBClient.send(new GetCommand({
-				TableName: tokensTable,
-				Key: { token_id: 'SpotifyDev' }
-			}));
-			const refreshToken = refreshTokenData.Item.refresh_token;
+            // Refresh the Spotify token
+            const { newAccessToken, expiresIn, newRefreshToken } = await refreshSpotifyToken(clientId, clientSecret, refreshToken);
 
-			// Prepare the request for token refresh
-			const tokenRefreshUrl = 'https://accounts.spotify.com/api/token';
-			const authHeader = 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-			const body = new URLSearchParams();
-			body.append('grant_type', 'refresh_token');
-			body.append('refresh_token', refreshToken);
+            // Update the access token (and refresh token, if new one is provided) in DynamoDB
+            await updateAccessToken(tokensTable, 'SpotifyDev', newAccessToken, expiresIn, newRefreshToken);
 
-			// Make the request to Spotify
-			const response = await axios.post(tokenRefreshUrl, body, {
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded',
-					'Authorization': authHeader
-				}
-			});
+            return { statusCode: 200, body: JSON.stringify({ message: 'Token refreshed successfully' }) };
+        } catch (apiError) {
+            console.error('Attempt', retryCount + 1, 'failed:', apiError);
+            retryCount++;
 
-			const newAccessToken = response.data.access_token;
-			const expiresIn = response.data.expires_in;
-			const newRefreshToken = response.data.refresh_token || refreshToken;
+            if (retryCount >= MAX_RETRIES) {
+                console.error('All attempts failed.');
 
-			// Update the access token (and refresh token, if new one is provided) in DynamoDB
-			await updateAccessToken(tokensTable, 'SpotifyDev', newAccessToken, expiresIn, newRefreshToken);
+                // Send alert using SNS
+                await sendSnsAlert('Update Spotify Dev Token function failed after max retries');
 
-			return { statusCode: 200, body: JSON.stringify({ message: 'Token refreshed successfully' }) };
-		} catch (apiError) {
-			console.error('Attempt', retryCount + 1, 'failed:', apiError);
-			retryCount++;
-
-			if (retryCount >= MAX_RETRIES) {
-				console.error('All attempts failed.');
-
-				// Send alert using SNS
-				await snsClient.send(new PublishCommand({
-					Message: 'Update Spotify Dev Token function failed after max retries',
-					TopicArn: snsTopic
-				}));
-
-				return { statusCode: 500, body: JSON.stringify({ message: 'Failed to refresh token after retries' }) };
-			}
-		}
-	}
+                return { statusCode: 500, body: JSON.stringify({ message: 'Failed to refresh token after retries' }) };
+            }
+        }
+    }
 };
 
-async function getParameter(name) {
-	const parameter = await ssmClient.send(new GetParameterCommand({ Name: name, WithDecryption: true }));
+async function getRefreshToken() {
+    const refreshTokenData = await dynamoDBClient.send(new GetCommand({
+        TableName: tokensTable,
+        Key: { token_id: 'SpotifyDev' }
+    }));
 
-	return parameter.Parameter.Value;
+    return refreshTokenData.Item.refresh_token;
+}
+
+async function refreshSpotifyToken(clientId, clientSecret, refreshToken) {
+    const tokenRefreshUrl = 'https://accounts.spotify.com/api/token';
+    const authHeader = 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    const body = new URLSearchParams();
+    body.append('grant_type', 'refresh_token');
+    body.append('refresh_token', refreshToken);
+
+    const response = await axios.post(tokenRefreshUrl, body, {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': authHeader
+        }
+    });
+
+    const newAccessToken = response.data.access_token;
+    const expiresIn = response.data.expires_in;
+    const newRefreshToken = response.data.refresh_token || refreshToken;
+
+    return { newAccessToken, expiresIn, newRefreshToken };
+}
+
+async function sendSnsAlert(message) {
+    await snsClient.send(new PublishCommand({
+        Message: message,
+        TopicArn: snsTopic
+    }));
+}
+
+async function getParameter(name) {
+    const parameter = await ssmClient.send(new GetParameterCommand({ Name: name, WithDecryption: true }));
+    return parameter.Parameter.Value;
 }
 
 async function updateAccessToken(tableName, primaryKeyValue, accessToken, expiresIn, newRefreshToken = null) {
-	const updateExpression = 'set access_token = :a, ExpiresAt = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
+    const updateExpression = 'set access_token = :a, ExpiresAt = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
 
-	const expressionAttributeValues = {
-		':a': accessToken,
-		':e': new Date().getTime() + expiresIn * 1000
-	};
-	if (newRefreshToken) {
-		expressionAttributeValues[':r'] = newRefreshToken;
-	}
+    const expressionAttributeValues = {
+        ':a': accessToken,
+        ':e': new Date().getTime() + expiresIn * 1000
+    };
+    if (newRefreshToken) {
+        expressionAttributeValues[':r'] = newRefreshToken;
+    }
 
-	const updateParams = {
-		TableName: tableName,
-		Key: { token_id: primaryKeyValue },
-		UpdateExpression: updateExpression,
-		ExpressionAttributeValues: expressionAttributeValues
-	};
+    const updateParams = {
+        TableName: tableName,
+        Key: { token_id: primaryKeyValue },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: expressionAttributeValues
+    };
 
-	await dynamoDBClient.send(new UpdateCommand(updateParams));
+    await dynamoDBClient.send(new UpdateCommand(updateParams));
 }

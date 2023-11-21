@@ -4,48 +4,29 @@ import { v4 as uuidv4 } from 'uuid';
 
 const ssmClient = new SSMClient({});
 const dynamoDbClient = new DynamoDBClient({});
-
 const tokensTable = process.env.TOKENS_TABLE;
 const redirectUrl = 'https://www.google.com';
 
 export const spotifyAuthUrlHandler = async (event) => {
-	const claims = event.requestContext.authorizer?.claims;
-	if (!claims) {
-		return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorised' }) };
-	}
-
-	const cognitoUserId = claims['sub'];
-	const clientId = await getParameter('spotifyClientId');
-	const redirectUri = redirectUrl;
-	const stateUuid = uuidv4();
-	const scopes = 'playlist-modify-private playlist-modify-public';
-
 	try {
-		await storeUuid(cognitoUserId, stateUuid);
-	} catch (error) {
-		console.error('Error storing UUID in DynamoDB:', error);
+        const claims = event.requestContext.authorizer?.claims;
+		const cognitoUserId = claims['sub'];
+		const clientId = await getParameter('spotifyClientId');
+        const stateUuid = uuidv4();
+
+		await storeState(cognitoUserId, stateUuid);
+
+		const authoriseURL = buildSpotifyAuthUrl(clientId, stateUuid);
+
 		return {
-			statusCode: 500,
-			body: JSON.stringify({ message: 'Internal Server Error' })
+			statusCode: 302,
+			headers: { Location: authoriseURL }
 		};
+	} catch (error) {
+		console.error('Error in spotifyAuthUrlHandler:', error);
+
+		return { statusCode: 500, body: JSON.stringify({ message: error.message || 'Internal Server Error' }) };
 	}
-
-	const params = new URLSearchParams({
-		response_type: 'code',
-		client_id: clientId,
-		scope: scopes,
-		redirect_uri: redirectUri,
-		state: stateUuid
-	}).toString();
-
-	const authoriseURL = `https://accounts.spotify.com/authorize?${params}`;
-
-	return {
-		statusCode: 302,
-		headers: {
-			Location: authoriseURL
-		}
-	};
 };
 
 async function getParameter(name) {
@@ -54,7 +35,7 @@ async function getParameter(name) {
 	return parameter.Parameter.Value;
 }
 
-async function storeUuid(cognitoId, stateUuid) {
+async function storeState(cognitoId, stateUuid) {
 	const params = {
 		TableName: tokensTable,
 		Item: {
@@ -63,6 +44,18 @@ async function storeUuid(cognitoId, stateUuid) {
 			Timestamp: { N: `${Date.now()}` }
 		}
 	};
-
 	await dynamoDbClient.send(new PutItemCommand(params));
+}
+
+function buildSpotifyAuthUrl(clientId, stateUuid) {
+	const scopes = 'playlist-modify-private playlist-modify-public';
+	const params = new URLSearchParams({
+		response_type: 'code',
+		client_id: clientId,
+		scope: scopes,
+		redirect_uri: redirectUrl,
+		state: stateUuid
+	}).toString();
+
+	return `https://accounts.spotify.com/authorize?${params}`;
 }

@@ -11,12 +11,9 @@ const redirectUri = 'https://www.google.com';
 export const spotifyTokenExchangeHandler = async (event) => {
 	try {
 		const { cognitoUserId, code, receivedState } = validateEvent(event);
-
 		await validateState(cognitoUserId, receivedState);
 
-		const clientId = await getParameter('spotifyClientId');
-		const clientSecret = await getParameter('spotifyClientSecret');
-		const tokenResponse = await exchangeCodeForTokens(clientId, clientSecret, code, redirectUri);
+		const tokenResponse = await exchangeCodeForTokens(code, redirectUri);
 		await storeTokens(cognitoUserId, tokenResponse);
 
 		return { statusCode: 200, body: JSON.stringify(tokenResponse) };
@@ -51,7 +48,10 @@ async function validateState(cognitoUserId, receivedState) {
 	}
 }
 
-async function exchangeCodeForTokens(clientId, clientSecret, code, redirectUri) {
+async function exchangeCodeForTokens(code, redirectUri) {
+	const clientId = await getParameter('spotifyClientId');
+	const clientSecret = await getParameter('spotifyClientSecret');
+
 	const response = await axios({
 		method: 'post',
 		url: 'https://accounts.spotify.com/api/token',
