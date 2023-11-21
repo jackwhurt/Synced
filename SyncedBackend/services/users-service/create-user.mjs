@@ -28,21 +28,26 @@ export const createUserHandler = async (event) => {
 	try {
 		const data = await ddbDocClient.send(new PutCommand(params));
 		console.log('Success - user added to DynamoDB', data);
+
+		return {
+			statusCode: 200,
+			body: JSON.stringify({
+				message: 'User successfully added',
+				userId: cognitoUserId,
+				email: email
+			})
+		};
+
 	} catch (err) {
 		console.error('Error adding user to DynamoDB', err);
-		// Handle the error here as necessary
-		throw err;
+
+		return {
+			statusCode: 500,
+			body: JSON.stringify({
+				message: 'Error adding user to DynamoDB',
+				userId: cognitoUserId,
+				email: email
+			})
+		};
 	}
-
-	const response = {
-		statusCode: 200,
-		body: {
-			userId: cognitoUserId,
-			email: email
-		}
-	};
-
-	console.info('Successfully processed Cognito event:', JSON.stringify(event, null, 2));
-
-	return response;
 };

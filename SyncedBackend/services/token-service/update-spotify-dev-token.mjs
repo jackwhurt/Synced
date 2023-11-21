@@ -1,6 +1,7 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import axios from 'axios';
 
 const ssmClient = new SSMClient({});
@@ -11,7 +12,7 @@ const tokensTable = process.env.TOKENS_TABLE;
 const snsTopic = process.env.LAMBDA_FAILURE_TOPIC;
 const MAX_RETRIES = 3;
 
-export const updateSpotifyDevTokenHandler = async (event) => {
+export const updateSpotifyDevTokenHandler = async () => {
 	let retryCount = 0;
 
 	while (retryCount < MAX_RETRIES) {
@@ -55,13 +56,14 @@ export const updateSpotifyDevTokenHandler = async (event) => {
 			retryCount++;
 
 			if (retryCount >= MAX_RETRIES) {
-				// Handle the case where all retries have failed
 				console.error('All attempts failed.');
-				// Send alert
-				await snsClient.publish({
+
+				// Send alert using SNS
+				await snsClient.send(new PublishCommand({
 					Message: 'Update Spotify Dev Token function failed after max retries',
 					TopicArn: snsTopic
-				}).promise();
+				}));
+
 				return { statusCode: 500, body: JSON.stringify({ message: 'Failed to refresh token after retries' }) };
 			}
 		}

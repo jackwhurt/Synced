@@ -2,10 +2,10 @@ import { SSMClient } from '@aws-sdk/client-ssm';
 
 const ssmClient = new SSMClient({});
 
-const clientId = process.env.SPOTIFY_CLIENT_ID; // Set this in your Lambda environment variables
-const redirectUri = process.env.SPOTIFY_REDIRECT_URI; // Set this in your Lambda environment variables
+export const spotifyAuthUrlHandler = async () => {
+	const clientId = await getParameter('spotifyClientId');
+	const redirectUri = await getParameter('spotifyClientSecret');
 
-export const spotifyAuthUrlHandler = async (event) => {
 	const scopes = 'playlist-modify-private playlist-modify-public'; // Adjust the scopes to your needs
 
 	const params = new URLSearchParams({
@@ -16,12 +16,12 @@ export const spotifyAuthUrlHandler = async (event) => {
 		state: 'yourUniqueStateString' // Optional, but recommended for security
 	}).toString();
 
-	const authorizeURL = `https://accounts.spotify.com/authorize?${params}`;
+	const authoriseURL = `https://accounts.spotify.com/authorize?${params}`;
 
 	return {
 		statusCode: 302,
 		headers: {
-			Location: authorizeURL
+			Location: authoriseURL
 		}
 	};
 };

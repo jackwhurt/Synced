@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
 
 // Create a DocumentClient that represents the query to put an item
 const client = new DynamoDBClient({});
@@ -128,13 +129,3 @@ export const createCollaborativePlaylistHandler = async (event) => {
 		};
 	}
 };
-
-function uuidv4() {
-	var dt = new Date().getTime();
-	var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		var r = (dt + Math.random() * 16) % 16 | 0;
-		dt = Math.floor(dt / 16);
-		return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-	});
-	return uuid;
-}

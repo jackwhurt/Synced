@@ -70,6 +70,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: create-collaborative-playlist.createCollaborativePlaylistHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -176,7 +178,7 @@ Resources:
       Layers:
         - !Ref CommonLayer
       Architectures:
-          - x86_64
+        - x86_64
       MemorySize: 128
       Timeout: 100
       Description: A function to update the Spotify Developer token in the Tokens database.
@@ -186,13 +188,17 @@ Resources:
         - Statement:
             - Effect: "Allow"
               Action:
-              # This permission is required to access SSM Parameter Store
                 - "ssm:GetParameter"
               Resource: "*"  # Restrict this to specific resources if possible
+            - Effect: "Allow"
+              Action:
+                - "sns:Publish"
+              Resource: !Ref LambdaFailureTopicName
       Environment:
         Variables:
           TOKENS_TABLE: !Ref TokensTableName  
           LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
+
 
 Outputs:
   GetCollaborativePlaylistByIdFunctionArn:
