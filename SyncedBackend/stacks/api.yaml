@@ -15,6 +15,8 @@ Parameters:
     Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
+  ExchangeSpotifyTokenFunctionArn:
+    Type: String
   UserPoolId: 
     Type: String
 
@@ -64,7 +66,7 @@ Resources:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSpotifyAuthUrlFunctionArn}/invocations"
-     
+
   GetSpotifyAuthUrlLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -72,6 +74,28 @@ Resources:
       FunctionName: !Ref GetSpotifyAuthUrlFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/spotify" 
+
+  # Exchange Spotify Tokens
+  ExchangeSpotifyTokenMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref SpotifyResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ExchangeSpotifyTokenFunctionArn}/invocations"
+     
+  ExchangeSpotifyTokenLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ExchangeSpotifyTokenFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/auth/spotify" 
 
   # Collaborative Playlists
   PlaylistsResource:

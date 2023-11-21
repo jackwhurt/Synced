@@ -22,6 +22,83 @@ Resources:
         - nodejs18.x
       Description: "Common Node.js dependencies for Lambda"
 
+  # Authorisation
+  UpdateSpotifyDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-spotify-dev-token.updateSpotifyDevTokenHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the Spotify Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
+            - Effect: "Allow"
+              Action:
+                - "sns:Publish"
+              Resource: !Ref LambdaFailureTopicName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
+
+  GetSpotifyAuthUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-spotify-auth-url.spotifyAuthUrlHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to initiate Spotify authorisation flow
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+  
+  ExchangeSpotifyTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: exchange-spotify-token.spotifyTokenExchangeHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to exchange Spotify tokens
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+
   # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
     Type: AWS::Serverless::Function
@@ -172,53 +249,6 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           USERS_TABLE: !Ref UsersTableName
 
-  # Tokens
-  UpdateSpotifyDevTokenFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ../services/token-service/
-      Handler: update-spotify-dev-token.updateSpotifyDevTokenHandler
-      Runtime: nodejs18.x
-      Layers:
-        - !Ref CommonLayer
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description: A function to update the Spotify Developer token in the Tokens database.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TokensTableName
-        - Statement:
-            - Effect: "Allow"
-              Action:
-                - "ssm:GetParameter"
-              Resource: "*" 
-            - Effect: "Allow"
-              Action:
-                - "sns:Publish"
-              Resource: !Ref LambdaFailureTopicName
-      Environment:
-        Variables:
-          TOKENS_TABLE: !Ref TokensTableName  
-          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
-
-  GetSpotifyAuthUrlFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ../services/token-service/
-      Handler: get-spotify-auth-url.spotifyAuthUrlHandler
-      Runtime: nodejs18.x
-      MemorySize: 128
-      Timeout: 100
-      Description: Lambda function to initiate Spotify authorisation flow
-      Policies:
-        - Statement:
-            - Effect: "Allow"
-              Action:
-                - "ssm:GetParameter"
-              Resource: "*"
-
 Outputs:
   GetCollaborativePlaylistByIdFunctionArn:
     Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
@@ -238,3 +268,5 @@ Outputs:
     Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
   GetSpotifyAuthUrlFunctionArn:
     Value: !GetAtt GetSpotifyAuthUrlFunction.Arn
+  ExchangeSpotifyTokenFunctionArn:
+    Value: !GetAtt ExchangeSpotifyTokenFunction.Arn
