@@ -1,6 +1,7 @@
 # Dependency directories
 node_modules/
 vendor/
+package-lock.json
 
 # Local development
 .env
