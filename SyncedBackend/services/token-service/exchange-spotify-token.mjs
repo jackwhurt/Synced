@@ -1,59 +1,54 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
-import { DynamoDBClient, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
 import axios from 'axios';
 
+// Initialize clients and environment variables
 const ssmClient = new SSMClient({});
 const dynamoDbClient = new DynamoDBClient({});
 const tokensTable = process.env.TOKENS_TABLE;
 const redirectUri = 'https://www.google.com';
 
 export const spotifyTokenExchangeHandler = async (event) => {
-	const claims = event.requestContext.authorizer?.claims;
-	if (!claims) {
-		return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorised' }) };
-	}
-	const cognitoUserId = claims['sub'];
-
-	const code = event.queryStringParameters?.code;
-	const receivedState = event.queryStringParameters?.state;
-	if (!code || !receivedState) {
-		return { statusCode: 400, body: JSON.stringify({ message: 'Missing required query parameters' }) };
-	}
-
 	try {
-		const storedState = await getStoredState(cognitoUserId);
-		if (receivedState !== storedState) {
-			return { statusCode: 400, body: JSON.stringify({ message: 'Invalid state parameter' }) };
-		}
+		const { cognitoUserId, code, receivedState } = validateEvent(event);
+
+		await validateState(cognitoUserId, receivedState);
 
 		const clientId = await getParameter('spotifyClientId');
 		const clientSecret = await getParameter('spotifyClientSecret');
-
 		const tokenResponse = await exchangeCodeForTokens(clientId, clientSecret, code, redirectUri);
-		await storeTokens(cognitoUserId, tokenResponse.access_token, tokenResponse.refresh_token);
+		await storeTokens(cognitoUserId, tokenResponse);
 
-		return {
-			statusCode: 200,
-			body: JSON.stringify(tokenResponse)
-		};
+		return { statusCode: 200, body: JSON.stringify(tokenResponse) };
 	} catch (error) {
 		console.error('Error during token exchange:', error);
 
-		return {
-			statusCode: 500,
-			body: JSON.stringify({ message: 'Internal Server Error' })
-		};
+		return { statusCode: 500, body: JSON.stringify({ message: error.message || 'Internal Server Error' }) };
 	}
 };
 
-async function getStoredState(cognitoUserId) {
+function validateEvent(event) {
+	const claims = event.requestContext.authorizer?.claims;
+	const code = event.queryStringParameters?.code;
+	const receivedState = event.queryStringParameters?.state;
+	if (!code || !receivedState) {
+		throw new Error('Missing required query parameters');
+	}
+
+	return { cognitoUserId: claims['sub'], code, receivedState };
+}
+
+async function validateState(cognitoUserId, receivedState) {
 	const params = {
 		TableName: tokensTable,
-		Key: { 'token_id': { S: `state#${cognitoUserId}` } }
+		Key: { 'token_id': { S: `spotifyState#${cognitoUserId}` } }
 	};
 	const response = await dynamoDbClient.send(new GetItemCommand(params));
 
-	return response.Item?.UUID?.S;
+	const storedState = response.Item?.UUID?.S;
+	if (receivedState !== storedState) {
+		throw new Error('Invalid state parameter');
+	}
 }
 
 async function exchangeCodeForTokens(clientId, clientSecret, code, redirectUri) {
@@ -70,6 +65,7 @@ async function exchangeCodeForTokens(clientId, clientSecret, code, redirectUri) 
 			'Authorization': 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 		}
 	});
+
 	return response.data;
 }
 
@@ -79,13 +75,13 @@ async function getParameter(name) {
 	return parameter.Parameter.Value;
 }
 
-async function storeTokens(cognitoId, accessToken, refreshToken) {
+async function storeTokens(cognitoId, tokenResponse) {
 	const params = {
 		TableName: tokensTable,
 		Item: {
 			token_id: { S: `spotify#${cognitoId}` },
-			access_token: { S: accessToken },
-			refresh_token: { S: refreshToken },
+			access_token: { S: tokenResponse.access_token },
+			refresh_token: { S: tokenResponse.refresh_token },
 			timestamp: { N: `${Date.now()}` }
 		}
 	};
