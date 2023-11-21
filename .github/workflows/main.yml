@@ -11,12 +11,12 @@ jobs:
     steps:
     - name: Checkout GitHub Repository
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # Fetches all history for all branches and tags
 
     - name: Push to GitLab
       run: |
-        git config --global user.name 'Jack Hurt'
-        git config --global user.email ${{ secrets.UNI_EMAIL }}
-        git remote add gitlab https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@git.cs.bham.ac.uk/projects-2023-24/jxh1292.git
-        git pull gitlab main
-        git commit -m"Merge"
+        git config --global user.name 'Your GitHub Username'
+        git config --global user.email ${{ secrets.GITHUB_EMAIL }}
+        git remote add gitlab https://oauth2:${{ secrets.GITLAB_ACCESS_TOKEN }}@git.cs.bham.ac.uk/your-gitlab-repo-path.git
         git push gitlab main
