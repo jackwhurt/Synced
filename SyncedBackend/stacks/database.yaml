@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: DynamoDB Table Stack for SyncedBackend
+Description: DynamoDB Stack for Synced
 
 Resources:
   PlaylistsTable:
@@ -72,8 +72,25 @@ Resources:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
 
+  TokensTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: token_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: token_id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
 Outputs:
   PlaylistsTableName:
     Value: !Ref PlaylistsTable
   UsersTableName:
     Value: !Ref UsersTable
+  TokensTableName:
+    Value: !Ref TokensTable

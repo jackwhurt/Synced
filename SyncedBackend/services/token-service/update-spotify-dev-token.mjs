@@ -1,7 +1,10 @@
-const AWS = require('aws-sdk');
-const axios = require('axios');
-const ssm = new AWS.SSM();
-const dynamoDB = new AWS.DynamoDB.DocumentClient();
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import axios from 'axios';
+
+const ssmClient = new SSMClient({});
+const dynamoDBClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const tokensTable = process.env.TOKENS_TABLE;
 
@@ -12,11 +15,11 @@ export const updateSpotifyDevTokenHandler = async (event) => {
         const clientSecret = await getParameter('spotifyClientSecret');
 
         // Retrieve Refresh Token from DynamoDB
-        const refreshTokenData = await dynamoDB.get({
+        const refreshTokenData = await dynamoDBClient.send(new GetCommand({
             TableName: tokensTable,
-            Key: { PK: 'SpotifyDev' }
-        }).promise();
-        const refreshToken = refreshTokenData.Item.refreshToken;
+            Key: { token_id: 'SpotifyDev' }
+        }));
+        const refreshToken = refreshTokenData.Item.refresh_token;
 
         // Prepare the request for token refresh
         const tokenRefreshUrl = 'https://accounts.spotify.com/api/token';
@@ -35,40 +38,42 @@ export const updateSpotifyDevTokenHandler = async (event) => {
 
         const newAccessToken = response.data.access_token;
         const expiresIn = response.data.expires_in;
-        const newRefreshToken = response.data.refresh_token;
+        const newRefreshToken = response.data.refresh_token || refreshToken;
 
+        // Update the access token (and refresh token, if new one is provided) in DynamoDB
         await updateAccessToken(tokensTable, 'SpotifyDev', newAccessToken, expiresIn, newRefreshToken);
 
         return { statusCode: 200, body: JSON.stringify({ message: 'Token refreshed successfully' }) };
     } catch (apiError) {
         console.error('Error refreshing token:', apiError);
-
+        
         return { statusCode: 500, body: JSON.stringify({ message: 'Failed to refresh token' }) };
     }
 };
 
 async function getParameter(name) {
-    const parameter = await ssm.getParameter({ Name: name, WithDecryption: true }).promise();
+    const parameter = await ssmClient.send(new GetParameterCommand({ Name: name, WithDecryption: true }));
 
     return parameter.Parameter.Value;
 }
 
 async function updateAccessToken(tableName, primaryKeyValue, accessToken, expiresIn, newRefreshToken = null) {
-    const updateExpression = newRefreshToken ? 
-        'set AccessToken = :a, ExpiresAt = :e, RefreshToken = :r' : 
-        'set AccessToken = :a, ExpiresAt = :e';
+    const updateExpression = 'set access_token = :a, ExpiresAt = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
     
-    const expressionAttributeValues = newRefreshToken ? 
-        { ':a': accessToken, ':e': new Date().getTime() + expiresIn * 1000, ':r': newRefreshToken } : 
-        { ':a': accessToken, ':e': new Date().getTime() + expiresIn * 1000 };
+    const expressionAttributeValues = {
+        ':a': accessToken,
+        ':e': new Date().getTime() + expiresIn * 1000
+    };
+    if (newRefreshToken) {
+        expressionAttributeValues[':r'] = newRefreshToken;
+    }
 
     const updateParams = {
         TableName: tableName,
         Key: { token_id: primaryKeyValue },
         UpdateExpression: updateExpression,
-        ExpressionAttributeValues: expressionAttributeValues,
-        ReturnValues: 'UPDATED_NEW'
+        ExpressionAttributeValues: expressionAttributeValues
     };
 
-    await dynamoDB.update(updateParams).promise();
+    await dynamoDBClient.send(new UpdateCommand(updateParams));
 }

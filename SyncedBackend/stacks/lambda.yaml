@@ -6,8 +6,20 @@ Parameters:
     Type: String
   PlaylistsTableName:
     Type: String
+  TokensTableName:
+    Type: String
 
 Resources:
+  CommonLayer:
+    Type: AWS::Lambda::LayerVersion
+    Properties:
+      Content:
+        S3Bucket: synced-static-storage
+        S3Key: layer.zip
+      CompatibleRuntimes:
+        - nodejs18.x
+      Description: "Common Node.js dependencies for Lambda"
+
   GetCollaborativePlaylistByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -153,6 +165,32 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           USERS_TABLE: !Ref UsersTableName
 
+  UpdateSpotifyDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-spotify-dev-token.updateSpotifyDevTokenHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+          - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the Spotify Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+              # This permission is required to access SSM Parameter Store
+                - "ssm:GetParameter"
+              Resource: "*"  # Restrict this to specific resources if possible
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+
 Outputs:
   GetCollaborativePlaylistByIdFunctionArn:
     Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
@@ -168,3 +206,5 @@ Outputs:
     Value: !GetAtt DeleteCollaboratorsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
+  UpdateSpotifyDevTokenFunctionArn:
+    Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
