@@ -15,9 +15,7 @@ Resources:
   CommonLayer:
     Type: AWS::Lambda::LayerVersion
     Properties:
-      Content:
-        S3Bucket: synced-static-storage
-        S3Key: layer.zip
+      ContentUri: ../lambda-layer
       CompatibleRuntimes:
         - nodejs18.x
       Description: "Common Node.js dependencies for Lambda"
