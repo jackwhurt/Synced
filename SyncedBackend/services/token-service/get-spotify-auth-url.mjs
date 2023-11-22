@@ -40,8 +40,8 @@ async function storeState(cognitoId, stateUuid) {
 		TableName: tokensTable,
 		Item: {
 			token_id: { S: `spotifyState#${cognitoId}` },
-			UUID: { S: stateUuid },
-			Timestamp: { N: `${Date.now()}` }
+			state: { S: stateUuid },
+			timestamp: { N: `${Date.now()}` }
 		}
 	};
 	await dynamoDbClient.send(new PutItemCommand(params));

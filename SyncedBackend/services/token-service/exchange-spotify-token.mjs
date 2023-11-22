@@ -42,7 +42,7 @@ async function validateState(cognitoUserId, receivedState) {
 	};
 	const response = await dynamoDbClient.send(new GetItemCommand(params));
 
-	const storedState = response.Item?.UUID?.S;
+	const storedState = response.Item?.state?.S;
 	if (receivedState !== storedState) {
 		throw new Error('Invalid state parameter');
 	}
@@ -80,8 +80,8 @@ async function storeTokens(cognitoId, tokenResponse) {
 		TableName: tokensTable,
 		Item: {
 			token_id: { S: `spotify#${cognitoId}` },
-			access_token: { S: tokenResponse.access_token },
-			refresh_token: { S: tokenResponse.refresh_token },
+			accessToken: { S: tokenResponse.accessToken },
+			refreshToken: { S: tokenResponse.refreshToken },
 			timestamp: { N: `${Date.now()}` }
 		}
 	};

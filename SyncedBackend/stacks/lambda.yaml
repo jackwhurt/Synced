@@ -13,7 +13,7 @@ Parameters:
 
 Resources:
   CommonLayer:
-    Type: AWS::Lambda::LayerVersion
+    Type: AWS::Serverless::LayerVersion
     Properties:
       ContentUri: ../lambda-layer
       CompatibleRuntimes:

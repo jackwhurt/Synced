@@ -50,7 +50,7 @@ async function getRefreshToken() {
         Key: { token_id: 'SpotifyDev' }
     }));
 
-    return refreshTokenData.Item.refresh_token;
+    return refreshTokenData.Item.refreshToken;
 }
 
 async function refreshSpotifyToken(clientId, clientSecret, refreshToken) {
@@ -83,11 +83,12 @@ async function sendSnsAlert(message) {
 
 async function getParameter(name) {
     const parameter = await ssmClient.send(new GetParameterCommand({ Name: name, WithDecryption: true }));
+
     return parameter.Parameter.Value;
 }
 
 async function updateAccessToken(tableName, primaryKeyValue, accessToken, expiresIn, newRefreshToken = null) {
-    const updateExpression = 'set access_token = :a, ExpiresAt = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
+    const updateExpression = 'set access_token = :a, expires_at = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
 
     const expressionAttributeValues = {
         ':a': accessToken,

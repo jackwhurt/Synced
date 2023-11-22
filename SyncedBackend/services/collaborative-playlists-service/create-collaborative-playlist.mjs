@@ -1,6 +1,7 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
+import { handleTokenRefresh } from '/opt/nodejs/spotifyUtils.mjs';
 
 // Create a DocumentClient that represents the query to put an item
 const client = new DynamoDBClient({});
