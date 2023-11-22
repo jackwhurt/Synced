@@ -37,14 +37,14 @@ async function getCurrentTokenInfo(tokenKey, tableName) {
 }
 
 // Function to update the new token info in DynamoDB
-async function updateTokenInfo(newTokenData, key, tableName) {
+async function updateTokenInfo(newToken, expiresIn, tokenKey, tableName) {
     const params = {
         TableName: tableName,
-        Key: key,
+        Key: tokenKey,
         UpdateExpression: 'set accessToken = :t, expiresAt = :e',
         ExpressionAttributeValues: {
-            ':t': newTokenData.token,
-            ':e': new Date().getTime() + (newTokenData.expiresIn * 1000)
+            ':t': newToken,
+            ':e': new Date().getTime() + (expiresIn * 1000)
         }
     };
 
@@ -75,10 +75,12 @@ async function refreshSpotifyToken(refreshToken) {
 
     try {
         const response = await axios(config);
+
         return { token: response.data.access_token, expiresIn: response.data.expires_in };
     } catch (error) {
         console.error('Error refreshing Spotify token:', error);
-        return { error: 'Failed to refresh Spotify token' };
+
+        throw new Error(`Error refreshing Spotify token: ${error}`);
     }
 }
 
@@ -93,7 +95,7 @@ async function getParameter(name) {
     }
 }
 
-export async function getSpotifyUserId(userId, usersTable) {
+async function getSpotifyUserId(userId, usersTable) {
     const params = {
         TableName: usersTable,
         Key: {
@@ -106,36 +108,51 @@ export async function getSpotifyUserId(userId, usersTable) {
         if (data.Item && data.Item.spotifyUserId) {
             return data.Item.spotifyUserId;
         } else {
-            console.log(`Spotify user ID not found for user ID: ${cognitoId}`);
-            return null; 
+            throw new Error(`Spotify user ID not found for user ID: ${userId}`);
         }
     } catch (error) {
-        console.error('Error fetching Spotify Id from DynamoDB:', error);
-        return null; 
+        throw new Error(`Error fetching Spotify Id for user ID ${userId}: ${error}`);
     }
 }
 
-// Main function to handle token validation and refresh
-export async function handleTokenRefresh(userId, tableName) {
+async function handleTokenRefresh(userId, tokensTable) {
     try {
-        const key = { token_id: `spotify#${userId}` };
-        const { currentToken, refreshToken, expiresAt } = await getCurrentTokenInfo(key, tableName);
+        const tokenKey = { token_id: `spotify#${userId}` };
+        const { currentToken, refreshToken, expiresAt } = await getCurrentTokenInfo(tokenKey, tokensTable);
 
         if (isTokenValid(expiresAt)) {
-            return { token: currentToken };
+            return { userId, token: currentToken };
         } else {
             const response = await refreshSpotifyToken(refreshToken);
             if (response.token) {
-                await updateTokenInfo(response, key, tableName);
-
-                return { token: response.token };
+                await updateTokenInfo(response.token, response.expiresIn, tokenKey, tokensTable);
+                return { userId, token: response.token };
             } else {
-                return { error: response.error };
+                throw new Error(`Failed to retrieve Spotify token for user ID ${userId}`);
             }
         }
     } catch (error) {
-        console.error('Error during token refresh process:', error);
+        console.error(`Error during token refresh process for user ID ${userId}:`, error);
+        throw error;
+    }
+}
 
-        return { error: 'Error during token handling' };
+export async function prepareSpotifyAccounts(userIds, usersTable, tokensTable) {
+    try {
+        const preparedAccounts = await Promise.all(userIds.map(async userId => {
+            const spotifyUserId = await getSpotifyUserId(userId, usersTable);
+            const token = await handleTokenRefresh(userId, tokensTable);
+
+            return {
+                userId,
+                spotifyUserId,
+                accessToken: token
+            };
+        }));
+
+        return preparedAccounts;
+    } catch (error) {
+        console.error('Error preparing Spotify accounts:', error);
+        throw new Error(`Error preparing Spotify accounts: ${error}`);
     }
 }
