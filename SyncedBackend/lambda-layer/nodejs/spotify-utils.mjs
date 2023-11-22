@@ -80,7 +80,7 @@ async function refreshSpotifyToken(refreshToken) {
     } catch (error) {
         console.error('Error refreshing Spotify token:', error);
 
-        throw new Error(`Error refreshing Spotify token: ${error}`);
+        throw error;
     }
 }
 
@@ -111,7 +111,7 @@ async function getSpotifyUserId(userId, usersTable) {
             throw new Error(`Spotify user ID not found for user ID: ${userId}`);
         }
     } catch (error) {
-        throw new Error(`Error fetching Spotify Id for user ID ${userId}: ${error}`);
+        throw error;
     }
 }
 
@@ -121,12 +121,12 @@ async function handleTokenRefresh(userId, tokensTable) {
         const { currentToken, refreshToken, expiresAt } = await getCurrentTokenInfo(tokenKey, tokensTable);
 
         if (isTokenValid(expiresAt)) {
-            return { userId, token: currentToken };
+            return currentToken;
         } else {
             const response = await refreshSpotifyToken(refreshToken);
             if (response.token) {
                 await updateTokenInfo(response.token, response.expiresIn, tokenKey, tokensTable);
-                return { userId, token: response.token };
+                return response.token;
             } else {
                 throw new Error(`Failed to retrieve Spotify token for user ID ${userId}`);
             }
@@ -146,13 +146,13 @@ export async function prepareSpotifyAccounts(userIds, usersTable, tokensTable) {
             return {
                 userId,
                 spotifyUserId,
-                accessToken: token
+                token
             };
         }));
 
         return preparedAccounts;
     } catch (error) {
         console.error('Error preparing Spotify accounts:', error);
-        throw new Error(`Error preparing Spotify accounts: ${error}`);
+        throw new error;
     }
 }
