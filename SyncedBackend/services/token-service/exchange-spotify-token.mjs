@@ -1,11 +1,12 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
-import { DynamoDBClient, GetItemCommand, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import axios from 'axios';
 
-// Initialize clients and environment variables
+const dynamoDbDocumentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const ssmClient = new SSMClient({});
-const dynamoDbClient = new DynamoDBClient({});
 const tokensTable = process.env.TOKENS_TABLE;
+const usersTable = process.env.USERS_TABLE;
 const redirectUri = 'https://www.google.com';
 
 export const spotifyTokenExchangeHandler = async (event) => {
@@ -15,6 +16,9 @@ export const spotifyTokenExchangeHandler = async (event) => {
 
 		const tokenResponse = await exchangeCodeForTokens(code, redirectUri);
 		await storeTokens(cognitoUserId, tokenResponse);
+
+        const spotifyUserId = await fetchSpotifyUserId(tokenResponse.access_token);
+        await storeUserCredentials(cognitoUserId, spotifyUserId);
 
 		return { statusCode: 200, body: JSON.stringify(tokenResponse) };
 	} catch (error) {
@@ -38,11 +42,11 @@ function validateEvent(event) {
 async function validateState(cognitoUserId, receivedState) {
 	const params = {
 		TableName: tokensTable,
-		Key: { 'token_id': { S: `spotifyState#${cognitoUserId}` } }
+		Key: { 'token_id': `spotifyState#${cognitoUserId}` }
 	};
-	const response = await dynamoDbClient.send(new GetItemCommand(params));
+	const response = await dynamoDbDocumentClient.send(new GetCommand(params));
 
-	const storedState = response.Item?.state?.S;
+	const storedState = response.Item?.state;
 	if (receivedState !== storedState) {
 		throw new Error('Invalid state parameter');
 	}
@@ -79,12 +83,38 @@ async function storeTokens(cognitoId, tokenResponse) {
 	const params = {
 		TableName: tokensTable,
 		Item: {
-			token_id: { S: `spotify#${cognitoId}` },
-			accessToken: { S: tokenResponse.accessToken },
-			refreshToken: { S: tokenResponse.refreshToken },
-			timestamp: { N: `${Date.now()}` }
+			token_id: `spotify#${cognitoId}`,
+			accessToken: tokenResponse.access_token,
+			refreshToken: tokenResponse.refresh_token,
+			timestamp: `${Date.now()}`
 		}
 	};
 
-	await dynamoDbClient.send(new PutItemCommand(params));
+	await dynamoDbDocumentClient.send(new PutCommand(params));
+}
+
+async function fetchSpotifyUserId(accessToken) {
+    const url = 'https://api.spotify.com/v1/me';
+    const headers = {
+        'Authorization': `Bearer ${accessToken}`
+    };
+
+    const response = await axios.get(url, { headers });
+    return response.data.id;
+}
+
+async function storeUserCredentials(cognitoId, spotifyUserId) {
+    const params = {
+        TableName: usersTable,
+        Key: {
+            cognito_user_id: cognitoId
+        },
+        UpdateExpression: "set spotifyUserId = :suid, updatedAt = :ts",
+        ExpressionAttributeValues: {
+            ":suid": spotifyUserId,
+            ":ts": Date.now()
+        }
+    };
+
+    await dynamoDbDocumentClient.send(new UpdateCommand(params));
 }

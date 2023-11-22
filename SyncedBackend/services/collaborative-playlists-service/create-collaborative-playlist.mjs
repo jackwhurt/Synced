@@ -1,12 +1,13 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import { handleTokenRefresh } from '/opt/nodejs/spotifyUtils.mjs';
+import { handleTokenRefresh, getSpotifyUserId } from '/opt/nodejs/spotify-utils.mjs';
+import axios from 'axios';
 
-const client = new DynamoDBClient({});
-const ddbDocClient = DynamoDBDocumentClient.from(client);
+const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
+const usersTable = process.env.USERS_TABLE;
 const MAX_SONGS = 50;
 const MAX_COLLABORATORS = 10;
 
@@ -24,8 +25,22 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const transactItems = buildTransactItems(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp);
 
     try {
-        handleTokenRefresh(cognitoUserId, tokensTable);
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+    } catch (err) {
+        console.error('Error', err);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error creating the collaborative playlist' })
+        };
+    }
+
+    try {
+        let tokenResponse = await handleTokenRefresh(cognitoUserId, tokensTable);
+        if(tokenResponse.error) {
+            throw new Error(tokenResponse.error);
+        }
+        let spotifyUserId = await getSpotifyUserId(cognitoUserId, usersTable);
+        await createSpotifyPlaylist(tokenResponse.token, playlist, spotifyUserId);
 
         return {
             statusCode: 200,
@@ -38,10 +53,12 @@ export const createCollaborativePlaylistHandler = async (event) => {
             })
         };
     } catch (err) {
+        await rollbackPlaylistData(transactItems);
         console.error('Error', err);
+        
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating the collaborative playlist' })
+            body: JSON.stringify({ message: 'Error creating the collaborative playlist on Spotify' })
         };
     }
 };
@@ -129,3 +146,49 @@ function createCollaboratorItem(playlistId, addedById, collaboratorId, timestamp
         }
     };
 }
+
+async function createSpotifyPlaylist(token, playlistDetails, spotifyUserId) {
+    const url = `https://api.spotify.com/v1/users/${spotifyUserId}/playlists`;
+    const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+    const data = {
+        name: playlistDetails.title,
+        description: playlistDetails.description || '',
+        public: false
+    };
+
+    try {
+        const response = await axios.post(url, data, { headers });
+
+        return response.data.id;
+    } catch (error) {
+        console.error('Error creating Spotify playlist:', error);
+        throw error;
+    }
+}
+
+async function rollbackPlaylistData(transactItems) {
+    // Convert Put operations to Delete operations
+    const deleteOperations = transactItems.map(item => ({
+        Delete: {
+            TableName: item.Put.TableName,
+            Key: {
+                PK: item.Put.Item.PK,
+                SK: item.Put.Item.SK
+            }
+        }
+    }));
+
+    const transactParams = {
+        TransactItems: deleteOperations
+    };
+
+    try {
+        await ddbDocClient.send(new TransactWriteCommand(transactParams));
+    } catch (error) {
+        console.error('Error during cleanup:', error);
+    }
+}
+

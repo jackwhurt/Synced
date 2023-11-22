@@ -88,6 +88,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
         - Statement:
             - Effect: "Allow"
               Action:
@@ -96,6 +98,7 @@ Resources:
       Environment:
         Variables:
           TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
 
   # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
@@ -132,7 +135,7 @@ Resources:
       Timeout: 100
       Description: A function to get all the Collaborative Playlists for a given user.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
       Environment:
@@ -154,13 +157,24 @@ Resources:
       Timeout: 100
       Description: A function to create a Collaborative Playlists.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
 
   UpdateCollaborativePlaylistMetadataFunction:
     Type: AWS::Serverless::Function
@@ -174,7 +188,7 @@ Resources:
       Timeout: 100
       Description: A function to update Collaborative Playlists metadata.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
       Environment:
@@ -195,7 +209,7 @@ Resources:
       Timeout: 100
       Description: A function to add Collaborators to Collaborative Playlists.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
         - DynamoDBCrudPolicy:
@@ -218,7 +232,7 @@ Resources:
       Timeout: 100
       Description: A function to delete from Collaborative Playlists.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
       Environment:
@@ -239,7 +253,7 @@ Resources:
       Timeout: 100
       Description: A function to create new Cognito users to the Users database.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTableName
       Environment:

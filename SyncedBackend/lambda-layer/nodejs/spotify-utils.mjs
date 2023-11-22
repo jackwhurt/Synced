@@ -1,6 +1,6 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import axios from 'axios';
 
 const ssmClient = new SSMClient({});
@@ -16,19 +16,19 @@ function isTokenValid(expiresAt) {
 }
 
 // Function to get current token info from DynamoDB
-async function getCurrentTokenInfo(key, tableName) {
+async function getCurrentTokenInfo(tokenKey, tableName) {
     const params = {
         TableName: tableName,
-        Key: key
+        Key: tokenKey
     };
 
     try {
-        const data = await dynamoDBClient.get(params);
+        const data = await dynamoDBClient.send(new GetCommand(params));
 
         return {
-            currentToken: data.Item.access_token,
-            refreshToken: data.Item.refresh_token,
-            expiresAt: data.Item.expires_at
+            currentToken: data.Item.accessToken,
+            refreshToken: data.Item.refreshToken,
+            expiresAt: data.Item.expiresAt
         };
     } catch (error) {
         console.error('Error getting token info from table:', error);
@@ -49,7 +49,7 @@ async function updateTokenInfo(newTokenData, key, tableName) {
     };
 
     try {
-        await dynamoDBClient.update(params);
+        await dynamoDBClient.send(new UpdateCommand(params));
     } catch (error) {
         console.error('Error updating token info:', error);
         throw error;
@@ -90,6 +90,28 @@ async function getParameter(name) {
     } catch (error) {
         console.error(`Error getting parameter ${name}:`, error);
         throw error;
+    }
+}
+
+export async function getSpotifyUserId(userId, usersTable) {
+    const params = {
+        TableName: usersTable,
+        Key: {
+            cognito_user_id: userId
+        }
+    };
+
+    try {
+        const data = await dynamoDBClient.send(new GetCommand(params));
+        if (data.Item && data.Item.spotifyUserId) {
+            return data.Item.spotifyUserId;
+        } else {
+            console.log(`Spotify user ID not found for user ID: ${cognitoId}`);
+            return null; 
+        }
+    } catch (error) {
+        console.error('Error fetching Spotify Id from DynamoDB:', error);
+        return null; 
     }
 }
 
