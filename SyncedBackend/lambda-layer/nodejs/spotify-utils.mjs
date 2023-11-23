@@ -132,7 +132,7 @@ async function handleTokenRefresh(userId, tokensTable) {
             }
         }
     } catch (error) {
-        console.error(`Error during token refresh process for user ID ${userId}:`, error);
+        console.error(`Error during token refresh process for user ID ${userId}`);
         throw error;
     }
 }
@@ -153,6 +153,6 @@ export async function prepareSpotifyAccounts(userIds, usersTable, tokensTable) {
         return preparedAccounts;
     } catch (error) {
         console.error('Error preparing Spotify accounts:', error);
-        throw new error;
+        throw error;
     }
 }

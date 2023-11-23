@@ -54,7 +54,7 @@ export const createCollaborativePlaylistHandler = async (event) => {
 
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating the collaborative playlist on Spotify' })
+            body: JSON.stringify({ message: 'Error creating the collaborative playlist on Streaming Service' })
         };
     }
 };
@@ -139,6 +139,7 @@ function createCollaboratorItem(playlistId, addedById, collaboratorId, timestamp
 }
 
 async function rollbackPlaylistData(transactItems) {
+    console.info('Rollback started');
     // Convert Put operations to Delete operations
     const deleteOperations = transactItems.map(item => ({
         Delete: {
@@ -156,6 +157,8 @@ async function rollbackPlaylistData(transactItems) {
 
     try {
         await ddbDocClient.send(new TransactWriteCommand(transactParams));
+
+        console.info('Rollback successful');
     } catch (error) {
         console.error('Error during cleanup:', error);
     }
