@@ -1,25 +1,29 @@
 PODS:
-  - AWSCognitoIdentityProvider (2.33.5):
-    - AWSCognitoIdentityProviderASF (= 2.33.5)
-    - AWSCore (= 2.33.5)
-  - AWSCognitoIdentityProviderASF (2.33.5):
-    - AWSCore (= 2.33.5)
-  - AWSCore (2.33.5)
+  - AWSCognito (2.19.1):
+    - AWSCore (= 2.19.1)
+  - AWSCognitoIdentityProvider (2.19.1):
+    - AWSCognitoIdentityProviderASF (= 2.19.1)
+    - AWSCore (= 2.19.1)
+  - AWSCognitoIdentityProviderASF (2.19.1)
+  - AWSCore (2.19.1)
 
 DEPENDENCIES:
+  - AWSCognito
   - AWSCognitoIdentityProvider
 
 SPEC REPOS:
   trunk:
+    - AWSCognito
     - AWSCognitoIdentityProvider
     - AWSCognitoIdentityProviderASF
     - AWSCore
 
 SPEC CHECKSUMS:
-  AWSCognitoIdentityProvider: 5eeb67304ea7ac853836d685f2b50c08d3194155
-  AWSCognitoIdentityProviderASF: aaa2eb46b9775090081b33fb5134090ba253e889
-  AWSCore: 6d8aa46c210e37f15c10509437a9c8570f7290bd
+  AWSCognito: f50de600804941d083af37a7568905f31a774727
+  AWSCognitoIdentityProvider: e6932c709d3e0b234128aeb5f2052c9bf1032d8d
+  AWSCognitoIdentityProviderASF: 749f58b75e69f7f0144b9d38539525562b843d34
+  AWSCore: 55c154ae27efc5c98bdc30a0eeea5a35d10a2ab5
 
-PODFILE CHECKSUM: 84d04062c6bbbcf4b2ade46e49c3721caa32f68f
+PODFILE CHECKSUM: 429d30c8e674e645639721c4ee84271aea6dbebe
 
 COCOAPODS: 1.14.3

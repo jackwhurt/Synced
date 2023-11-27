@@ -1,24 +1,27 @@
-//
-//  ContentView.swift
-//  SyncedFrontend
-//
-//  Created by Jack Hurt on 23/11/2023.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @State private var isLoggedIn = false
+
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            if isLoggedIn {
+                // Main content
+                Image(systemName: "globe")
+                    .imageScale(.large)
+                    .foregroundStyle(.tint)
+                Text("Hello, world!")
+            } else {
+                LoginView()
+            }
         }
         .padding()
     }
 }
 
-#Preview {
-    ContentView()
+// For preview
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }

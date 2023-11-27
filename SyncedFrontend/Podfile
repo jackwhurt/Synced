@@ -6,5 +6,6 @@ target 'SyncedFrontend' do
   use_frameworks!
 
   # Pods for SyncedFrontend
+  pod 'AWSCognito'
   pod 'AWSCognitoIdentityProvider'
 end

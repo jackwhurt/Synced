@@ -1,60 +1,113 @@
 import SwiftUI
 
-struct LoginView: View {
-    @State private var username: String = ""
-    @State private var password: String = ""
+// ViewModel for the LoginView
+class LoginViewModel: ObservableObject {
+    @Published var username: String = ""
+    @Published var password: String = ""
+    @Published var showingLoginError = false
+    @Published var isAuthenticated = false
 
-    let textFieldBackgroundColor = Color.gray.opacity(0.3)
-    let textFieldTextColor = Color.gray
-    let buttonBackgroundColor = Color("Primary")
-    let buttonForegroundColor = Color.white
+    private let authService: AuthenticationService
 
-    var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: geometry.size.height * 0.04) { // Dynamic spacing based on device height
-                Spacer()
-                    .frame(height: geometry.size.height * 0.1)
-                Image("Logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 250, height: 150)
-                
-                Spacer()
-                    .frame(height: geometry.size.height * 0.01)
-                
-                // Text fields
-                LongInputField(placeholder: "Username", text: $username)
-    
-                LongSecureInputField(placeholder: "Password", text: $password)
+    init(authService: AuthenticationService = AuthenticationService()) {
+        self.authService = authService
+    }
 
-                RoundButton(
-                    title: "Log In"
-                )
-                 {
-                    // Handle login action
+    func loginUser() {
+        authService.loginUser(username: username, password: password) { [weak self] result in
+            switch result {
+            case .success():
+                print("Login successful")
+                DispatchQueue.main.async {
+                    self?.isAuthenticated = true
                 }
-
-                // Navigation to sign up and forgot password links
-                HStack {
-                    Button("Forgot Password?") {
-                        // Handle forgot password action
-                    }
-                    .foregroundColor(.gray)
-
-                    Spacer()
-
-                    NavigationLink("Sign Up Here", destination: SignUpView())
-                        .foregroundColor(Color("Primary"))
+            case .failure(let error):
+                print("Login error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self?.showingLoginError = true
                 }
-                .padding(.horizontal, geometry.size.width * 0.05) // Dynamic horizontal padding
-
-                Spacer() // Pushes all content to the top
             }
         }
-        .padding()
     }
 }
 
+struct LoginView: View {
+    @ObservedObject var viewModel = LoginViewModel()
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        NavigationStack { // Changed from NavigationView to NavigationStack
+            GeometryReader { geometry in
+                VStack(spacing: 30) {
+                    Spacer(minLength: geometry.size.height * 0.01)
+                                
+                    LogoView()
+                        .padding(.bottom, geometry.size.height * 0.05)
+                    
+                    InputFields(viewModel: viewModel)
+                    LoginButton(action: viewModel.loginUser)
+                    ForgotPasswordAndSignUpLinks()
+                    
+                    Spacer(minLength: geometry.size.height * 0.1)
+                    
+                    if viewModel.isAuthenticated {
+                        NavigationLink("Collaborative Playlists", destination: CollaborativePlaylistsView())
+                    }
+                }
+                .padding()
+                .alert(isPresented: $viewModel.showingLoginError) {
+                    Alert(title: Text("Login Error"), message: Text("Failed to login. Please check your username and password and try again."), dismissButton: .default(Text("OK")))
+                }
+            }
+        }
+    }
+}
+
+struct LogoView: View {
+    var body: some View {
+        Image("Logo")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 250, height: 150)
+    }
+}
+
+struct InputFields: View {
+    @ObservedObject var viewModel: LoginViewModel
+
+    var body: some View {
+        VStack {
+            LongInputField(placeholder: "Username", text: $viewModel.username)
+            LongSecureInputField(placeholder: "Password", text: $viewModel.password)
+        }
+    }
+}
+
+struct LoginButton: View {
+    var action: () -> Void
+
+    var body: some View {
+        RoundButton(title: "Log In", action: action)
+    }
+}
+
+struct ForgotPasswordAndSignUpLinks: View {
+    var body: some View {
+        HStack {
+            Button("Forgot Password?") {
+                // Handle forgot password action
+            }
+            .foregroundColor(.gray)
+
+            Spacer()
+
+            NavigationLink("Sign Up Here", destination: SignUpView())
+                .foregroundColor(Color("Primary"))
+        }
+    }
+}
+
+// Preview
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView()

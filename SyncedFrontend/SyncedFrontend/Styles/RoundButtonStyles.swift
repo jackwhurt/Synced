@@ -21,8 +21,8 @@ struct RoundButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.headline) // You can adjust the font size here if needed
-                .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the button with text
+                .font(.headline)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(RoundButtonStyle(
             backgroundColor: Color("Primary"), // Set the background color to "Primary"

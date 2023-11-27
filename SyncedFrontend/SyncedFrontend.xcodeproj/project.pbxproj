@@ -16,6 +16,7 @@
 		805D49592B0FF31D0081B076 /* RoundButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805D49582B0FF31D0081B076 /* RoundButtonStyles.swift */; };
 		805D495C2B0FF8350081B076 /* LongInputStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805D495B2B0FF8350081B076 /* LongInputStyles.swift */; };
 		805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805D495E2B0FFDE70081B076 /* AuthenticationService.swift */; };
+		80AD235C2B154B94003A8E20 /* CollaborativePlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */; };
 		88D364029EE0CF4DB2748225 /* Pods_SyncedFrontend.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65AEA79B3EAAF55D51F1B205 /* Pods_SyncedFrontend.framework */; };
 /* End PBXBuildFile section */
 
@@ -33,6 +34,7 @@
 		805D49582B0FF31D0081B076 /* RoundButtonStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundButtonStyles.swift; sourceTree = "<group>"; };
 		805D495B2B0FF8350081B076 /* LongInputStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongInputStyles.swift; sourceTree = "<group>"; };
 		805D495E2B0FFDE70081B076 /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
+		80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,7 @@
 				805D49442B0FDE100081B076 /* ContentView.swift */,
 				805D49512B0FDEA60081B076 /* LoginView.swift */,
 				805D49532B0FDF370081B076 /* SignUpView.swift */,
+				80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -248,6 +251,7 @@
 				805D49522B0FDEA60081B076 /* LoginView.swift in Sources */,
 				805D495C2B0FF8350081B076 /* LongInputStyles.swift in Sources */,
 				805D49452B0FDE100081B076 /* ContentView.swift in Sources */,
+				80AD235C2B154B94003A8E20 /* CollaborativePlaylistsView.swift in Sources */,
 				805D49592B0FF31D0081B076 /* RoundButtonStyles.swift in Sources */,
 				805D49432B0FDE100081B076 /* SyncedFrontendApp.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,
