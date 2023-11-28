@@ -25,7 +25,7 @@ Resources:
           Required: true
           Mutable: false
       LambdaConfig:
-        PostConfirmation: !Ref CognitoTriggerFunctionArn
+        PreSignUp: !Ref CognitoTriggerFunctionArn
 
   MyUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
