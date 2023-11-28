@@ -9,7 +9,6 @@ import SwiftUI
 
 class SignUpViewModel: ObservableObject {
     @Published var email: String = ""
-    @Published var username: String = ""
     @Published var password: String = ""
     @Published var confirmPassword: String = ""
     @Published var showingSignUpError = false
@@ -23,17 +22,16 @@ class SignUpViewModel: ObservableObject {
     }
 
     func signUpUser() {
-        authService.signUpUser(username: username, password: password, email: email) { [weak self] result in
-            switch result {
-            case .success(let signUpResponse):
-                print("Sign up successful")
-                DispatchQueue.main.async {
-                    // You may want to handle email verification or other post-sign-up steps here
+        authService.signUpUser(email: email, password: password) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    print("Sign up successful")
                     self?.isSignedUp = true
-                }
-            case .failure(let error):
-                print("Sign up error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
+                    // Additional logic for post-sign-up can be added here
+
+                case .failure(let error):
+                    print("Sign up error: \(error.localizedDescription)")
                     self?.signUpErrorMessage = error.localizedDescription
                     self?.showingSignUpError = true
                 }

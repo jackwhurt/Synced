@@ -56,7 +56,6 @@ struct SignUpInputFields: View {
     var body: some View {
         VStack {
             LongInputField(placeholder: "Email", text: $viewModel.email)
-            LongInputField(placeholder: "Username", text: $viewModel.username)
             LongSecureInputField(placeholder: "Password", text: $viewModel.password)
             LongSecureInputField(placeholder: "Confirm Password", text: $viewModel.confirmPassword)
         }

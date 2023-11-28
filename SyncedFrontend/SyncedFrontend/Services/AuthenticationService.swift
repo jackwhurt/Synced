@@ -34,31 +34,31 @@ class AuthenticationService {
         }
     }
 
-    func signUpUser(username: String, password: String, email: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
-            // Ensure that userPool is initialized
-            guard let userPool = userPool else {
-                completion(.failure(NSError(domain: "UserPoolError", code: 0, userInfo: [NSLocalizedDescriptionKey: "User pool is not initialized"])))
-                return
-            }
-
-            var attributes = [AWSCognitoIdentityUserAttributeType]()
-            
-            // Add email attribute
-            let emailAttribute = AWSCognitoIdentityUserAttributeType()
-            emailAttribute?.name = "email"
-            emailAttribute?.value = email
-            attributes.append(emailAttribute!)
-
-            // Perform the signup operation
-            userPool.signUp(username, password: password, userAttributes: attributes, validationData: nil).continueWith { task -> Any? in
-                DispatchQueue.main.async {
-                    if let error = task.error {
-                        completion(.failure(error))
-                    } else if let result = task.result {
-                        completion(.success(result))
-                    }
-                }
-                return nil
-            }
+    func signUpUser(email: String, password: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
+        // Ensure that userPool is initialized
+        guard let userPool = userPool else {
+            completion(.failure(NSError(domain: "UserPoolError", code: 0, userInfo: [NSLocalizedDescriptionKey: "User pool is not initialized"])))
+            return
         }
+
+        var attributes = [AWSCognitoIdentityUserAttributeType]()
+
+        // Add email attribute
+        let emailAttribute = AWSCognitoIdentityUserAttributeType()
+        emailAttribute?.name = "email"
+        emailAttribute?.value = email
+        attributes.append(emailAttribute!)
+
+        // Perform the signup operation using email as the username
+        userPool.signUp(email, password: password, userAttributes: attributes, validationData: nil).continueWith { task -> Any? in
+            DispatchQueue.main.async {
+                if let error = task.error {
+                    completion(.failure(error))
+                } else if let result = task.result {
+                    completion(.success(result))
+                }
+            }
+            return nil
+        }
+    }
 }
