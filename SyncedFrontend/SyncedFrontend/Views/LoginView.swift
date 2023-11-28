@@ -40,10 +40,10 @@ struct LoginView: View {
                 VStack(spacing: 30) {
                     Spacer(minLength: geometry.size.height * 0.01)
                                 
-                    LogoView()
+                    Logo()
                         .padding(.bottom, geometry.size.height * 0.05)
                     
-                    InputFields(viewModel: viewModel)
+                    LoginInputFields(viewModel: viewModel)
                     LoginButton(action: viewModel.loginUser)
                     ForgotPasswordAndSignUpLinks()
                     
@@ -62,16 +62,7 @@ struct LoginView: View {
     }
 }
 
-struct LogoView: View {
-    var body: some View {
-        Image("Logo")
-            .resizable()
-            .scaledToFit()
-            .frame(width: 250, height: 150)
-    }
-}
-
-struct InputFields: View {
+struct LoginInputFields: View {
     @ObservedObject var viewModel: LoginViewModel
 
     var body: some View {
