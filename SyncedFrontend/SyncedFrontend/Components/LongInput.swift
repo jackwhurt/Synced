@@ -5,7 +5,7 @@ struct LongInputFieldStyle: TextFieldStyle {
         configuration
             .padding(.vertical, 10)
             .padding(.horizontal)
-            .background(Color("SyncedLightGrey"))
+            .background(Color("SyncedInputGrey"))
             .cornerRadius(10)
     }
 }

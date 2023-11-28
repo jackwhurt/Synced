@@ -5,7 +5,7 @@ struct Logo: View {
         Image("Logo")
             .resizable()
             .scaledToFit()
-            .frame(width: 250, height: 150)
+            .frame(height: 250)
     }
 }
 

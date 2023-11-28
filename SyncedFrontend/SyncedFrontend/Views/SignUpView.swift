@@ -6,10 +6,9 @@ struct SignUpView: View {
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
-                VStack(alignment: .center, spacing: 30) {
+                VStack(spacing: 30) {
                     Logo()
-                        .padding(.bottom, geometry.size.height * 0.03)
-                        .padding(.top, geometry.size.height * 0.1)
+                        .padding(.top, geometry.size.height * 0.05)
                     
                     SignUpInputFields(viewModel: viewModel)
                     SignUpButton(action: viewModel.signUpUser)
@@ -27,10 +26,10 @@ struct SignUpView: View {
                     Alert(title: Text("Sign Up Error"), message: Text(viewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
                 }
             }
+            .background(Color("SyncedBackground"))
         }
     }
 }
-
 
 struct SignUpButton: View {
     var action: () -> Void
@@ -56,7 +55,18 @@ struct SignUpInputFields: View {
         VStack {
             LongInputField(placeholder: "Email", text: $viewModel.email)
             LongSecureInputField(placeholder: "Password", text: $viewModel.password)
+                .onChange(of: viewModel.password) { _ in
+                    viewModel.validatePasswordCriteria()
+                }
             LongSecureInputField(placeholder: "Confirm Password", text: $viewModel.confirmPassword)
+                .onChange(of: viewModel.confirmPassword) { _ in
+                    viewModel.validatePasswordCriteria()
+                }
+            if(viewModel.passwordValidationMessage != "") {
+                Text(viewModel.passwordValidationMessage)
+                    .foregroundColor(.red)
+                    .font(.caption)
+            }
         }
     }
 }

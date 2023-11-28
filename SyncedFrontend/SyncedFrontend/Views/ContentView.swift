@@ -4,18 +4,15 @@ struct ContentView: View {
     @State private var isLoggedIn = false
 
     var body: some View {
-        VStack {
+        ZStack {
+            Color("SyncedBackground")
+                .ignoresSafeArea()
             if isLoggedIn {
-                // Main content
-                Image(systemName: "globe")
-                    .imageScale(.large)
-                    .foregroundStyle(.tint)
-                Text("Hello, world!")
+                CollaborativePlaylistsView()
             } else {
                 LoginView()
             }
         }
-        .padding()
     }
 }
 

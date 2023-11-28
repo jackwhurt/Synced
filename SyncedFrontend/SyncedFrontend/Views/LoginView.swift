@@ -7,10 +7,8 @@ struct LoginView: View {
         NavigationStack {
             GeometryReader { geometry in
                 VStack(spacing: 30) {
-                    Spacer(minLength: geometry.size.height * 0.01)
-                                
                     Logo()
-                        .padding(.bottom, geometry.size.height * 0.05)
+                        .padding(.top, geometry.size.height * 0.08)
                     
                     LoginInputFields(viewModel: viewModel)
                     LoginButton(action: viewModel.loginUser)
@@ -28,6 +26,7 @@ struct LoginView: View {
                     Alert(title: Text("Login Error"), message: Text("Failed to login. Please check your username and password and try again."), dismissButton: .default(Text("OK")))
                 }
             }
+            .background(Color("SyncedBackground"))
         }
     }
 }
