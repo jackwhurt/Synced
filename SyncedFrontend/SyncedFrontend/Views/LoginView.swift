@@ -1,36 +1,5 @@
 import SwiftUI
 
-// ViewModel for the LoginView
-class LoginViewModel: ObservableObject {
-    @Published var username: String = ""
-    @Published var password: String = ""
-    @Published var showingLoginError = false
-    @Published var isAuthenticated = false
-
-    private let authService: AuthenticationService
-
-    init(authService: AuthenticationService = AuthenticationService()) {
-        self.authService = authService
-    }
-
-    func loginUser() {
-        authService.loginUser(username: username, password: password) { [weak self] result in
-            switch result {
-            case .success():
-                print("Login successful")
-                DispatchQueue.main.async {
-                    self?.isAuthenticated = true
-                }
-            case .failure(let error):
-                print("Login error: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    self?.showingLoginError = true
-                }
-            }
-        }
-    }
-}
-
 struct LoginView: View {
     @ObservedObject var viewModel = LoginViewModel()
 
@@ -50,10 +19,11 @@ struct LoginView: View {
                     Spacer(minLength: geometry.size.height * 0.1)
                     
                     if viewModel.isAuthenticated {
-                        NavigationLink("Collaborative Playlists", destination: CollaborativePlaylistsView())
+                        NavigationLink("", destination: CollaborativePlaylistsView())
                     }
                 }
                 .padding()
+                .frame(width: geometry.size.width, height: geometry.size.height)
                 .alert(isPresented: $viewModel.showingLoginError) {
                     Alert(title: Text("Login Error"), message: Text("Failed to login. Please check your username and password and try again."), dismissButton: .default(Text("OK")))
                 }

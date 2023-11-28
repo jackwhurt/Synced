@@ -1,38 +1,37 @@
 import SwiftUI
 
-// ViewModel for the SignUpView
-class SignUpViewModel: ObservableObject {
-    @Published var email: String = ""
-    @Published var username: String = ""
-    @Published var password: String = ""
-    @Published var confirmPassword: String = ""
-}
-
 struct SignUpView: View {
     @ObservedObject var viewModel = SignUpViewModel()
 
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
-                VStack(spacing: 30) {
+                VStack(alignment: .center, spacing: 30) {
                     Spacer(minLength: geometry.size.height * 0.01)
                     
                     Logo()
                         .padding(.bottom, geometry.size.height * 0.05)
                     
                     SignUpInputFields(viewModel: viewModel)
-                    SignUpButton(action: {
-                        // Add sign up action
-                    })
+                    SignUpButton(action: viewModel.signUpUser)
                     AlreadyMemberLink()
                     
                     Spacer(minLength: geometry.size.height * 0.1)
+                    
+                    if viewModel.isSignedUp {
+                        NavigationLink("", destination: CollaborativePlaylistsView())
+                    }
                 }
                 .padding()
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .alert(isPresented: $viewModel.showingSignUpError) {
+                    Alert(title: Text("Sign Up Error"), message: Text(viewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
+                }
             }
         }
     }
 }
+
 
 struct SignUpButton: View {
     var action: () -> Void
@@ -56,10 +55,10 @@ struct SignUpInputFields: View {
 
     var body: some View {
         VStack {
-            LongInputField(placeholder: "Email", text: $viewModel.username)
+            LongInputField(placeholder: "Email", text: $viewModel.email)
             LongInputField(placeholder: "Username", text: $viewModel.username)
             LongSecureInputField(placeholder: "Password", text: $viewModel.password)
-            LongSecureInputField(placeholder: "Confirm Password", text: $viewModel.password)
+            LongSecureInputField(placeholder: "Confirm Password", text: $viewModel.confirmPassword)
         }
     }
 }
