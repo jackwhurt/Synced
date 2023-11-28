@@ -7,10 +7,9 @@ struct SignUpView: View {
         NavigationStack {
             GeometryReader { geometry in
                 VStack(alignment: .center, spacing: 30) {
-                    Spacer(minLength: geometry.size.height * 0.01)
-                    
                     Logo()
-                        .padding(.bottom, geometry.size.height * 0.05)
+                        .padding(.bottom, geometry.size.height * 0.03)
+                        .padding(.top, geometry.size.height * 0.1)
                     
                     SignUpInputFields(viewModel: viewModel)
                     SignUpButton(action: viewModel.signUpUser)

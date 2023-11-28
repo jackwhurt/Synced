@@ -9,7 +9,10 @@ class LoginViewModel: ObservableObject {
 
     private let authService: AuthenticationService
 
-    init(authService: AuthenticationService = AuthenticationService()) {
+    init(authService: AuthenticationService? = AuthenticationService()) {
+        guard let authService = authService else {
+            fatalError("Failed to initialize AuthenticationService")
+        }
         self.authService = authService
     }
 
