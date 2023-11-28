@@ -33,7 +33,6 @@ class LoginViewModel: ObservableObject {
 
 struct LoginView: View {
     @ObservedObject var viewModel = LoginViewModel()
-    @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
         NavigationStack {
@@ -94,15 +93,21 @@ struct LoginButton: View {
 struct ForgotPasswordAndSignUpLinks: View {
     var body: some View {
         HStack {
-            Button("Forgot Password?") {
-                // Handle forgot password action
-            }
-            .foregroundColor(.gray)
+            Spacer()
+            
+            TextLink(
+                title: "Forgot Password?",
+                destination: LoginView() // Placeholder
+            )
 
             Spacer()
-
-            NavigationLink("Sign Up Here", destination: SignUpView())
-                .foregroundColor(Color("SyncedBlue"))
+            
+            TextLink(
+                title: "Sign Up Here",
+                destination: SignUpView()
+            )
+            
+            Spacer()
         }
     }
 }
