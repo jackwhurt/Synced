@@ -36,7 +36,7 @@ struct LoginView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        NavigationStack { // Changed from NavigationView to NavigationStack
+        NavigationStack {
             GeometryReader { geometry in
                 VStack(spacing: 30) {
                     Spacer(minLength: geometry.size.height * 0.01)
@@ -102,7 +102,7 @@ struct ForgotPasswordAndSignUpLinks: View {
             Spacer()
 
             NavigationLink("Sign Up Here", destination: SignUpView())
-                .foregroundColor(Color("Primary"))
+                .foregroundColor(Color("SyncedBlue"))
         }
     }
 }

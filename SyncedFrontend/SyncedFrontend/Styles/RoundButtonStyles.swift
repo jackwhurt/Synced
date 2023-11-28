@@ -25,7 +25,7 @@ struct RoundButton: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(RoundButtonStyle(
-            backgroundColor: Color("Primary"), // Set the background color to "Primary"
+            backgroundColor: Color("SyncedBlue"),
             foregroundColor: Color.white
         ))
     }
