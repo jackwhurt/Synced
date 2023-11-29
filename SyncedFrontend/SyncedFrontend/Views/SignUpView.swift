@@ -55,8 +55,9 @@ struct SignUpInputFields: View {
                 }
             if(viewModel.passwordValidationMessage != "") {
                 Text(viewModel.passwordValidationMessage)
-                    .foregroundColor(.red)
+                    .foregroundColor(Color("SyncedErrorRed"))
                     .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

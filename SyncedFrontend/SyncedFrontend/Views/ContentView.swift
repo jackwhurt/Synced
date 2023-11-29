@@ -10,7 +10,7 @@ struct ContentView: View {
             if isLoggedIn {
                 CollaborativePlaylistsView()
             } else {
-                LoginView()
+                LoginView(isLoggedIn: $isLoggedIn)
             }
         }
     }

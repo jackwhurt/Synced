@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct LoginView: View {
-    @ObservedObject var viewModel = LoginViewModel()
-
+    @ObservedObject var viewModel: LoginViewModel
+    
+    init(isLoggedIn: Binding<Bool>) {
+        _viewModel = ObservedObject(initialValue: LoginViewModel(isLoggedIn: isLoggedIn))
+    }
+    
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
@@ -54,7 +58,7 @@ struct ForgotPasswordAndSignUpLinks: View {
             
             TextLink(
                 title: "Forgot Password?",
-                destination: LoginView() // Placeholder
+                destination: SignUpView() // Placeholder
             )
 
             Spacer()
@@ -72,6 +76,6 @@ struct ForgotPasswordAndSignUpLinks: View {
 // Preview
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
-        LoginView()
+        LoginView(isLoggedIn: .constant(false))
     }
 }

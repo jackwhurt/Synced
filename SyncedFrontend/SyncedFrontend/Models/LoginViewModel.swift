@@ -5,15 +5,16 @@ class LoginViewModel: ObservableObject {
     @Published var username: String = ""
     @Published var password: String = ""
     @Published var showingLoginError = false
-    @Published var isAuthenticated = false
+    @Published var isLoggedIn: Binding<Bool>
 
     private let authService: AuthenticationService
 
-    init(authService: AuthenticationService? = AuthenticationService()) {
+    init(isLoggedIn: Binding<Bool>, authService: AuthenticationService? = AuthenticationService()) {
         guard let authService = authService else {
             fatalError("Failed to initialize AuthenticationService")
         }
         self.authService = authService
+        self.isLoggedIn = isLoggedIn
     }
 
     func loginUser() {
@@ -22,7 +23,7 @@ class LoginViewModel: ObservableObject {
             case .success():
                 print("Login successful")
                 DispatchQueue.main.async {
-                    self?.isAuthenticated = true
+                    self?.isLoggedIn.wrappedValue = true
                 }
             case .failure(let error):
                 print("Login error: \(error.localizedDescription)")
