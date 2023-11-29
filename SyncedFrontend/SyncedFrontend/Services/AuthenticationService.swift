@@ -31,8 +31,15 @@ class AuthenticationService {
             DispatchQueue.main.async {
                 if let error = task.error {
                     completion(.failure(error))
-                } else {
-                    completion(.success(()))
+                } else if let result = task.result {
+                    // Extracting token strings from the session object
+                    if let accessToken = result.accessToken?.tokenString,
+                    let refreshToken = result.refreshToken?.tokenString {
+                        self?.saveTokens(accessToken: accessToken, refreshToken: refreshToken)
+                        completion(.success(()))
+                    } else {
+                        completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve tokens"])))
+                    }
                 }
             }
             return nil
@@ -51,6 +58,14 @@ class AuthenticationService {
                 }
             }
             return nil
+        }
+    }
+    
+    func saveTokens(accessToken: String, refreshToken: String) {
+        if let accessTokenData = accessToken.data(using: .utf8),
+           let refreshTokenData = refreshToken.data(using: .utf8) {
+            let _ = KeychainService.shared.save(key: "accessToken", data: accessTokenData)
+            let _ = KeychainService.shared.save(key: "refreshToken", data: refreshTokenData)
         }
     }
 }

@@ -46,11 +46,11 @@ struct SignUpInputFields: View {
         VStack {
             LongInputField(placeholder: "Email", text: $viewModel.email)
             LongSecureInputField(placeholder: "Password", text: $viewModel.password)
-                .onChange(of: viewModel.password) { _ in
+                .onChange(of: viewModel.password) {
                     viewModel.validatePasswordCriteria()
                 }
             LongSecureInputField(placeholder: "Confirm Password", text: $viewModel.confirmPassword)
-                .onChange(of: viewModel.confirmPassword) { _ in
+                .onChange(of: viewModel.confirmPassword) {
                     viewModel.validatePasswordCriteria()
                 }
             if(viewModel.passwordValidationMessage != "") {
