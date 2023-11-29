@@ -11,7 +11,7 @@ export const createUserHandler = async (event) => {
 	// so we don't check for `event.httpMethod` here.
 	console.info('Received Cognito event:', JSON.stringify(event, null, 2));
 
-	const cognitoUserId = event.request.userAttributes.sub;
+	const cognitoUserId = event.userName;
 	const email = event.request.userAttributes.email;
 	const timestamp = new Date().toISOString();
 
