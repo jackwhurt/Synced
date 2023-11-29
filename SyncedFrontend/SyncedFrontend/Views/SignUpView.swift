@@ -2,17 +2,17 @@ import SwiftUI
 
 struct SignUpView: View {
     @ObservedObject var viewModel = SignUpViewModel()
-
+    @Environment(\.presentationMode) var presentationMode
+    
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
                 VStack(spacing: 30) {
                     Logo()
-                        .padding(.top, geometry.size.height * 0.05)
+                        .padding(.top, geometry.size.height * 0.04)
                     
                     SignUpInputFields(viewModel: viewModel)
                     SignUpButton(action: viewModel.signUpUser)
-                    AlreadyMemberLink()
                     
                     Spacer(minLength: geometry.size.height * 0.1)
                     
@@ -36,15 +36,6 @@ struct SignUpButton: View {
 
     var body: some View {
         RoundButton(title: "Sign Up", action: action)
-    }
-}
-
-struct AlreadyMemberLink: View {
-    var body: some View {
-        TextLink(
-            title: "Already a member? Login",
-            destination: LoginView()
-        )
     }
 }
 

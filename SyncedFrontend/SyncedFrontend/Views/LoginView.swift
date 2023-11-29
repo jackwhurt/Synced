@@ -15,10 +15,6 @@ struct LoginView: View {
                     ForgotPasswordAndSignUpLinks()
                     
                     Spacer(minLength: geometry.size.height * 0.1)
-                    
-                    if viewModel.isAuthenticated {
-                        NavigationLink("", destination: CollaborativePlaylistsView())
-                    }
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
@@ -28,6 +24,7 @@ struct LoginView: View {
             }
             .background(Color("SyncedBackground"))
         }
+        .accentColor(Color("SyncedBlue"))
     }
 }
 
