@@ -6,6 +6,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'stacks/database.yaml'
+  
+  SnsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/sns.yaml'
 
   LambdaStack:
     Type: AWS::CloudFormation::Stack
@@ -14,6 +19,8 @@ Resources:
       Parameters:
         PlaylistsTableName: !GetAtt DatabaseStack.Outputs.PlaylistsTableName
         UsersTableName: !GetAtt DatabaseStack.Outputs.UsersTableName
+        TokensTableName: !GetAtt DatabaseStack.Outputs.TokensTableName
+        LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
 
   CognitoStack:
     Type: AWS::CloudFormation::Stack
@@ -21,6 +28,13 @@ Resources:
       TemplateURL: 'stacks/cognito.yaml'
       Parameters:
         CognitoTriggerFunctionArn: !GetAtt LambdaStack.Outputs.CognitoTriggerFunctionArn
+
+  EventsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/events.yaml'
+      Parameters:
+        UpdateSpotifyDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateSpotifyDevTokenFunctionArn
 
   ApiStack:
     Type: AWS::CloudFormation::Stack
@@ -33,6 +47,8 @@ Resources:
         UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
         DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
+        GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
+        ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

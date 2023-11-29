@@ -1,19 +1,65 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
+import { createPlaylist } from '/opt/nodejs/create-streaming-service-playlist.mjs';
 
-// Create a DocumentClient that represents the query to put an item
-const client = new DynamoDBClient({});
-const ddbDocClient = DynamoDBDocumentClient.from(client);
-
-// Get the DynamoDB table name from environment variables
-const tableName = process.env.PLAYLISTS_TABLE;
-
+const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const playlistsTable = process.env.PLAYLISTS_TABLE;
+const tokensTable = process.env.TOKENS_TABLE;
+const usersTable = process.env.USERS_TABLE;
 const MAX_SONGS = 50;
 const MAX_COLLABORATORS = 10;
 
 export const createCollaborativePlaylistHandler = async (event) => {
     console.info('received:', event);
+    const response = parseAndValidateEvent(event);
+    if (response) return response;
 
+    const { playlist, collaborators, songs } = JSON.parse(event.body);
+    const claims = event.requestContext.authorizer?.claims;
+    const cognitoUserId = claims['sub'];
+    const timestamp = new Date().toISOString();
+    const playlistId = uuidv4();
+
+    collaborators.push(cognitoUserId);
+
+    const transactItems = buildTransactItems(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp);
+
+    try {
+        await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+    } catch (err) {
+        console.error('Error', err);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error creating the collaborative playlist' })
+        };
+    }
+
+    try {
+        await createPlaylist(playlist, cognitoUserId, usersTable, tokensTable);
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({
+                id: playlistId,
+                playlist,
+                collaborators,
+                songs,
+                createdAt: timestamp
+            })
+        };
+    } catch (err) {
+        await rollbackPlaylistData(transactItems);
+        console.error('Error', err);
+
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error creating the collaborative playlist on Streaming Service' })
+        };
+    }
+};
+
+function parseAndValidateEvent(event) {
     if (!event.body) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Missing body' }) };
     }
@@ -22,119 +68,99 @@ export const createCollaborativePlaylistHandler = async (event) => {
     if (!playlist || !playlist.title) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
     }
-
     if (songs && songs.length > MAX_SONGS) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Song limit reached: ' + MAX_SONGS }) };
+        return { statusCode: 400, body: JSON.stringify({ message: `Song limit reached: ${MAX_SONGS}` }) };
     }
-
     if (collaborators && collaborators.length > MAX_COLLABORATORS) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Collaborator limit reached: ' + MAX_COLLABORATORS }) };
+        return { statusCode: 400, body: JSON.stringify({ message: `Collaborator limit reached: ${MAX_COLLABORATORS}` }) };
     }
+}
 
-    const claims = event.requestContext.authorizer?.claims;
-    if (!claims) {
-        return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorised' }) };
-    }
-
-    const cognitoUserId = claims['sub'];
-    const timestamp = new Date().toISOString();
-    const playlistId = uuidv4();
-    const transactItems = [];   
-    const collaboratorCount = collaborators ? collaborators.length + 1 : 1;
-    const songCount = songs ? songs.length : 0;
-
-    transactItems.push({
-        Put: {
-            TableName: tableName,
-            Item: {
-                PK: `cp#${playlistId}`,
-                SK: `metadata`,
-                createdBy: cognitoUserId,
-                ...playlist,
-                collaboratorCount: collaboratorCount,
-                songCount: songCount,
-                createdAt: timestamp,
-                updatedAt: timestamp,
-            }
-        }
-    });
+function buildTransactItems(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp) {
+    let transactItems = [createPlaylistItem(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp)];
 
     if (songs) {
-        songs.forEach((song) => {
-            const songId = uuidv4();
-            transactItems.push({
-                Put: {
-                    TableName: tableName,
-                    Item: {
-                        PK: `cp#${playlistId}`,
-                        SK: `song#${songId}`,
-                        ...song,
-                        createdAt: timestamp,
-                    }
-                }
-            });
-        });
+        transactItems.push(...songs.map(song => createSongItem(playlistId, song, timestamp)));
     }
 
     if (collaborators) {
-        collaborators.forEach((collaboratorId) => {
-            transactItems.push({
-                Put: {
-                    TableName: tableName,
-                    Item: {
-                        PK: `cp#${playlistId}`,
-                        SK: `collaborator#${collaboratorId}`,
-                        GSI1PK: `collaborator#${collaboratorId}`,
-                        addedBy: cognitoUserId,
-                        createdAt: timestamp,
-                    }
-                }
-            });
-        });
+        transactItems.push(...collaborators.map(collaboratorId => createCollaboratorItem(playlistId, cognitoUserId, collaboratorId, timestamp)));
     }
 
-    transactItems.push({
+    return transactItems;
+}
+
+function createPlaylistItem(playlistId, userId, playlist, collaborators, songs, timestamp) {
+    return {
         Put: {
-            TableName: tableName,
+            TableName: playlistsTable,
             Item: {
                 PK: `cp#${playlistId}`,
-                SK: `collaborator#${cognitoUserId}`,
-                GSI1PK: `collaborator#${cognitoUserId}`,
-                addedBy: cognitoUserId,
+                SK: 'metadata',
+                createdBy: userId,
+                ...playlist,
+                collaboratorCount: collaborators ? collaborators.length + 1 : 1,
+                songCount: songs ? songs.length : 0,
                 createdAt: timestamp,
+                updatedAt: timestamp
             }
         }
-    });
+    };
+}
+
+function createSongItem(playlistId, song, timestamp) {
+    const songId = uuidv4();
+    return {
+        Put: {
+            TableName: playlistsTable,
+            Item: {
+                PK: `cp#${playlistId}`,
+                SK: `song#${songId}`,
+                ...song,
+                createdAt: timestamp
+            }
+        }
+    };
+}
+
+function createCollaboratorItem(playlistId, addedById, collaboratorId, timestamp) {
+    return {
+        Put: {
+            TableName: playlistsTable,
+            Item: {
+                PK: `cp#${playlistId}`,
+                SK: `collaborator#${collaboratorId}`,
+                GSI1PK: `collaborator#${collaboratorId}`,
+                addedBy: addedById,
+                createdAt: timestamp
+            }
+        }
+    };
+}
+
+async function rollbackPlaylistData(transactItems) {
+    console.info('Rollback started');
+    // Convert Put operations to Delete operations
+    const deleteOperations = transactItems.map(item => ({
+        Delete: {
+            TableName: item.Put.TableName,
+            Key: {
+                PK: item.Put.Item.PK,
+                SK: item.Put.Item.SK
+            }
+        }
+    }));
+
+    const transactParams = {
+        TransactItems: deleteOperations
+    };
 
     try {
-        await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+        await ddbDocClient.send(new TransactWriteCommand(transactParams));
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                id: playlistId,
-                playlist: playlist,
-                collaborators: collaborators,
-                songs: songs,
-                createdAt: timestamp
-            })
-        };
-    } catch (err) {
-        console.error("Error", err);
-
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating the collaborative playlist' })
-        };
+        console.info('Rollback successful');
+    } catch (error) {
+        console.error('Error during cleanup:', error);
     }
-};
-
-function uuidv4() {
-    var dt = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = (dt + Math.random() * 16) % 16 | 0;
-        dt = Math.floor(dt / 16);
-        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-    return uuid;
 }
+

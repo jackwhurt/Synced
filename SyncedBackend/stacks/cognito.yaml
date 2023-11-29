@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: AWS CloudFormation template to create a Cognito User Pool with an App Client.
+Description: Cognito User Pool Stack for Synced
 Parameters:
   CognitoTriggerFunctionArn:
     Type: String
@@ -25,7 +25,7 @@ Resources:
           Required: true
           Mutable: false
       LambdaConfig:
-        PostConfirmation: !Ref CognitoTriggerFunctionArn
+        PreSignUp: !Ref CognitoTriggerFunctionArn
 
   MyUserPoolClient:
     Type: AWS::Cognito::UserPoolClient

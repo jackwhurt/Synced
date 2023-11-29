@@ -1,13 +1,106 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Stack for Synced Lambda functions
+Description: Lambda Stack for Synced
 Parameters:
   UsersTableName:
     Type: String
   PlaylistsTableName:
     Type: String
+  TokensTableName:
+    Type: String
+  LambdaFailureTopicName:
+    Type: String
 
 Resources:
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ../lambda-layer
+      CompatibleRuntimes:
+        - nodejs18.x
+      Description: "Common Node.js dependencies for Lambda"
+
+  # Authorisation
+  UpdateSpotifyDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-spotify-dev-token.updateSpotifyDevTokenHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the Spotify Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
+            - Effect: "Allow"
+              Action:
+                - "sns:Publish"
+              Resource: !Ref LambdaFailureTopicName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
+
+  GetSpotifyAuthUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-spotify-auth-url.spotifyAuthUrlHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to initiate Spotify authorisation flow
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+  
+  ExchangeSpotifyTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: exchange-spotify-token.spotifyTokenExchangeHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to exchange Spotify tokens
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
+
+  # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -42,7 +135,7 @@ Resources:
       Timeout: 100
       Description: A function to get all the Collaborative Playlists for a given user.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
       Environment:
@@ -56,19 +149,32 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: create-collaborative-playlist.createCollaborativePlaylistHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
       Timeout: 100
       Description: A function to create a Collaborative Playlists.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
 
   UpdateCollaborativePlaylistMetadataFunction:
     Type: AWS::Serverless::Function
@@ -82,7 +188,7 @@ Resources:
       Timeout: 100
       Description: A function to update Collaborative Playlists metadata.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
       Environment:
@@ -90,6 +196,7 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
+  # Collaborative Playlists - Collaborators
   AddCollaboratorsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -102,7 +209,7 @@ Resources:
       Timeout: 100
       Description: A function to add Collaborators to Collaborative Playlists.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
         - DynamoDBCrudPolicy:
@@ -125,7 +232,7 @@ Resources:
       Timeout: 100
       Description: A function to delete from Collaborative Playlists.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
       Environment:
@@ -133,6 +240,7 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
+  # Create User Trigger
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -145,7 +253,7 @@ Resources:
       Timeout: 100
       Description: A function to create new Cognito users to the Users database.
       Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
+        # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTableName
       Environment:
@@ -168,3 +276,9 @@ Outputs:
     Value: !GetAtt DeleteCollaboratorsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
+  UpdateSpotifyDevTokenFunctionArn:
+    Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
+  GetSpotifyAuthUrlFunctionArn:
+    Value: !GetAtt GetSpotifyAuthUrlFunction.Arn
+  ExchangeSpotifyTokenFunctionArn:
+    Value: !GetAtt ExchangeSpotifyTokenFunction.Arn

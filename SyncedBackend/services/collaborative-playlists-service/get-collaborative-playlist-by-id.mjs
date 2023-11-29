@@ -7,82 +7,82 @@ const playlistsTableName = process.env.PLAYLISTS_TABLE;
 const usersTableName = process.env.USERS_TABLE;
 
 export const getCollaborativePlaylistByIdHandler = async (event) => {
-    console.info('received:', event);
+	console.info('received:', event);
 
-    const playlistUuid = event.pathParameters?.id;
-    if (!playlistUuid) {
-        return { statusCode: 400, body: JSON.stringify('No playlist ID provided') };
-    }
-    const playlistId = 'cp#' + playlistUuid;
+	const playlistUuid = event.pathParameters?.id;
+	if (!playlistUuid) {
+		return { statusCode: 400, body: JSON.stringify('No playlist ID provided') };
+	}
+	const playlistId = 'cp#' + playlistUuid;
 
-    try {
-        const playlistItemsData = await queryPlaylistItems(playlistId);
-        const { collaborators, playlistMetadata, songs } = await processPlaylistItems(playlistItemsData.Items);
+	try {
+		const playlistItemsData = await queryPlaylistItems(playlistId);
+		const { collaborators, playlistMetadata, songs } = await processPlaylistItems(playlistItemsData.Items);
 
-        if (!playlistMetadata && collaborators.length === 0 && songs.length === 0) {
-            return { statusCode: 404, body: JSON.stringify('Playlist not found') };
-        }
+		if (!playlistMetadata && collaborators.length === 0 && songs.length === 0) {
+			return { statusCode: 404, body: JSON.stringify('Playlist not found') };
+		}
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ playlistId: playlistId, metadata: playlistMetadata, collaborators: collaborators, songs: songs })
-        };
-    } catch (err) {
-        console.error("Error", err);
+		return {
+			statusCode: 200,
+			body: JSON.stringify({ playlistId: playlistId, metadata: playlistMetadata, collaborators: collaborators, songs: songs })
+		};
+	} catch (err) {
+		console.error('Error', err);
 
-        return { statusCode: 500, body: JSON.stringify('Error retrieving playlist items') };
-    }
+		return { statusCode: 500, body: JSON.stringify('Error retrieving playlist items') };
+	}
 };
 
 async function queryPlaylistItems(playlistId) {
-    const playlistItemsParams = {
-        TableName: playlistsTableName,
-        KeyConditionExpression: 'PK = :pk',
-        ExpressionAttributeValues: { ':pk': playlistId }
-    };
+	const playlistItemsParams = {
+		TableName: playlistsTableName,
+		KeyConditionExpression: 'PK = :pk',
+		ExpressionAttributeValues: { ':pk': playlistId }
+	};
 
-    return ddbDocClient.send(new QueryCommand(playlistItemsParams));
+	return ddbDocClient.send(new QueryCommand(playlistItemsParams));
 }
 
 async function processPlaylistItems(items) {
-    let collaborators = [], playlistMetadata = null, songs = [];
-    const userIds = items
-        .filter(item => item.SK.startsWith('collaborator#'))
-        .map(item => ({ cognito_user_id: item.GSI1PK.split('#')[1] }));
-   
-    collaborators = await fetchUsersData(userIds);
+	let collaborators = [], playlistMetadata = null, songs = [];
+	const userIds = items
+		.filter(item => item.SK.startsWith('collaborator#'))
+		.map(item => ({ cognito_user_id: item.GSI1PK.split('#')[1] }));
 
-    for (const item of items) {
-        if (item.SK === 'metadata') {
-            playlistMetadata = item;
-        } else if (item.SK.startsWith('song#')) {
-            songs.push(item);
-        }
-    }
+	collaborators = await fetchUsersData(userIds);
 
-    return { collaborators, playlistMetadata, songs };
+	for (const item of items) {
+		if (item.SK === 'metadata') {
+			playlistMetadata = item;
+		} else if (item.SK.startsWith('song#')) {
+			songs.push(item);
+		}
+	}
+
+	return { collaborators, playlistMetadata, songs };
 }
 
 async function fetchUsersData(userIds) {
-    if (userIds.length === 0) {
-        return [];
-    }
+	if (userIds.length === 0) {
+		return [];
+	}
 
-    const batchGetParams = {
-        RequestItems: {
-            [usersTableName]: {
-                Keys: userIds
-            }
-        }
-    };
+	const batchGetParams = {
+		RequestItems: {
+			[usersTableName]: {
+				Keys: userIds
+			}
+		}
+	};
 
-    try {
-        const usersData = await ddbDocClient.send(new BatchGetCommand(batchGetParams));
-        
-        return usersData.Responses[usersTableName] || [];
-    } catch (err) {
-        console.error('Error in batch get users:', err);
+	try {
+		const usersData = await ddbDocClient.send(new BatchGetCommand(batchGetParams));
 
-        return [];
-    }
+		return usersData.Responses[usersTableName] || [];
+	} catch (err) {
+		console.error('Error in batch get users:', err);
+
+		return [];
+	}
 }
