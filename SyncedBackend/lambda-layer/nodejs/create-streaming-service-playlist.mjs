@@ -10,6 +10,7 @@ async function createSpotifyPlaylist(playlistDetails, userId, usersTable, tokens
 
     try {
         const spotifyUsers = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
+
         if (spotifyUsers.length === 0) {
             throw new Error('No Spotify user found for the given user ID.');
         }
@@ -35,6 +36,6 @@ async function createSpotifyPlaylist(playlistDetails, userId, usersTable, tokens
 }
 
 export async function createPlaylist(playlistDetails, userId, usersTable, tokensTable) {
-    return await createSpotifyPlaylist(playlistDetails, userId, usersTable, tokensTable);
+    return { spotify: await createSpotifyPlaylist(playlistDetails, userId, usersTable, tokensTable) };
 }
 

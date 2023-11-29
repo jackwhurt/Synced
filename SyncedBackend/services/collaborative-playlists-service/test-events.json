@@ -33,6 +33,16 @@
             "Content-Type": "application/json"
         }
     },
+    "create-cp-with-uris": {
+        "body": "{\"playlist\": {\"title\": \"My Collaborative Playlist\", \"description\": \"A test collaborative playlist\"}, \"collaborators\": [\"user123\", \"user456\"], \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"spotifyUri\": \"spotify:track:123abc\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"spotifyUri\": \"spotify:track:456def\"}]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoUserId123"
+                }
+            }
+        }
+    },
     "get-cp-by-id": {
         "httpMethod": "GET",
         "queryStringParameters": {

@@ -2,6 +2,8 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { createPlaylist } from '/opt/nodejs/create-streaming-service-playlist.mjs';
+import { deletePlaylist } from '/opt/nodejs/delete-streaming-service-playlist.mjs';
+import { addSongs } from '/opt/nodejs/add-streaming-service-songs.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -20,23 +22,16 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const cognitoUserId = claims['sub'];
     const timestamp = new Date().toISOString();
     const playlistId = uuidv4();
+    let streamingPlaylistData;
 
     collaborators.push(cognitoUserId);
 
-    const transactItems = buildTransactItems(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp);
+    const { transactItems, songDetails } = buildTransactItemsAndAddSongId(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
-    } catch (err) {
-        console.error('Error', err);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating the collaborative playlist' })
-        };
-    }
-
-    try {
-        await createPlaylist(playlist, cognitoUserId, usersTable, tokensTable);
+        streamingPlaylistData = await createPlaylist(playlist, cognitoUserId, usersTable, tokensTable);
+        await addSongs(streamingPlaylistData.spotify.playlistId, cognitoUserId, songDetails, usersTable, tokensTable);
 
         return {
             statusCode: 200,
@@ -49,12 +44,12 @@ export const createCollaborativePlaylistHandler = async (event) => {
             })
         };
     } catch (err) {
-        await rollbackPlaylistData(transactItems);
-        console.error('Error', err);
+        console.error('Error:', err);
+        await handleTransactionError(transactItems, streamingPlaylistData, cognitoUserId);
 
         return {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating the collaborative playlist on Streaming Service' })
+            body: JSON.stringify({ message: 'Error creating Collaborative Playlist' })
         };
     }
 };
@@ -76,18 +71,23 @@ function parseAndValidateEvent(event) {
     }
 }
 
-function buildTransactItems(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp) {
+function buildTransactItemsAndAddSongId(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp) {
     let transactItems = [createPlaylistItem(playlistId, cognitoUserId, playlist, collaborators, songs, timestamp)];
+    let songDetails = [];
 
     if (songs) {
-        transactItems.push(...songs.map(song => createSongItem(playlistId, song, timestamp)));
+        songs.forEach(song => {
+            const songId = uuidv4();
+            transactItems.push(createSongItem(playlistId, song, songId, timestamp));
+            songDetails.push({ ...song, songId });
+        });
     }
 
     if (collaborators) {
         transactItems.push(...collaborators.map(collaboratorId => createCollaboratorItem(playlistId, cognitoUserId, collaboratorId, timestamp)));
     }
 
-    return transactItems;
+    return { transactItems, songDetails };
 }
 
 function createPlaylistItem(playlistId, userId, playlist, collaborators, songs, timestamp) {
@@ -164,3 +164,9 @@ async function rollbackPlaylistData(transactItems) {
     }
 }
 
+async function handleTransactionError(transactItems, streamingPlaylistData, userId) {
+    await rollbackPlaylistData(transactItems);
+    if (streamingPlaylistData) {
+        await deletePlaylist(streamingPlaylistData.spotify.playlistId, userId, usersTable, tokensTable);
+    }
+}
