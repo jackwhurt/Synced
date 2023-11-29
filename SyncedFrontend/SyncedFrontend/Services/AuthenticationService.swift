@@ -45,6 +45,25 @@ class AuthenticationService {
             return nil
         }
     }
+    
+    func logoutUser(completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let user = userPool.currentUser() else {
+            completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user found"])))
+            return
+        }
+
+        user.signOut()
+
+        // Clear tokens from Keychain
+        let accessTokenDeleted = KeychainService.shared.delete(key: "accessToken")
+        let refreshTokenDeleted = KeychainService.shared.delete(key: "refreshToken")
+
+        if accessTokenDeleted && refreshTokenDeleted {
+            completion(.success(()))
+        } else {
+            completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to clear tokens"])))
+        }
+    }
 
     func signUpUser(email: String, password: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
         let emailAttribute = AWSCognitoIdentityUserAttributeType(name: "email", value: email)
@@ -66,6 +85,49 @@ class AuthenticationService {
            let refreshTokenData = refreshToken.data(using: .utf8) {
             let _ = KeychainService.shared.save(key: "accessToken", data: accessTokenData)
             let _ = KeychainService.shared.save(key: "refreshToken", data: refreshTokenData)
+        }
+    }
+    
+    func loadRefreshToken() -> String? {
+        if let refreshTokenData = KeychainService.shared.load(key: "refreshToken") {
+            return String(data: refreshTokenData, encoding: .utf8)
+        }
+        return nil
+    }
+    
+    func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let refreshToken = loadRefreshToken(),
+              let user = userPool.currentUser() else {
+            completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user or refresh token found"])))
+            return
+        }
+
+        user.getSession().continueWith { [weak self] (task: AWSTask<AWSCognitoIdentityUserSession>) -> Any? in
+            DispatchQueue.main.async {
+                if let error = task.error {
+                    completion(.failure(error))
+                } else if let result = task.result {
+                    if let newAccessToken = result.accessToken?.tokenString,
+                       let newRefreshToken = result.refreshToken?.tokenString {
+                        self?.saveTokens(accessToken: newAccessToken, refreshToken: newRefreshToken)
+                        completion(.success(()))
+                    } else {
+                        completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve new tokens"])))
+                    }
+                }
+            }
+            return nil
+        }
+    }
+    
+    func checkSession(completion: @escaping (Bool) -> Void) {
+        refreshToken { result in
+            switch result {
+            case .success:
+                completion(true)
+            case .failure:
+                completion(false)
+            }
         }
     }
 }

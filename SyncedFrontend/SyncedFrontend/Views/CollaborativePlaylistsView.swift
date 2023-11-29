@@ -1,18 +1,29 @@
-//
-//  CollaborativePlaylistsView.swift
-//  SyncedFrontend
-//
-//  Created by Jack Hurt on 27/11/2023.
-//
-
 import SwiftUI
 
 struct CollaborativePlaylistsView: View {
+    @StateObject private var viewModel = CollaborativePlaylistsViewModel()
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            if viewModel.isLoggedIn {
+                Text("Logged in. Hello, World!")
+                Button("Logout") {
+                    viewModel.logout()
+                }
+                .foregroundColor(.white)
+                .padding()
+                .background(Color.red)
+                .cornerRadius(10)
+            } else {
+                Text("Not logged in.")
+            }
+        }
     }
 }
 
-#Preview {
-    CollaborativePlaylistsView()
+// For preview
+struct CollaborativePlaylistsView_Previews: PreviewProvider {
+    static var previews: some View {
+        CollaborativePlaylistsView()
+    }
 }
