@@ -13,6 +13,7 @@ export async function addCollaborators(playlistId, collaboratorIds, cognitoUserI
         throw new Error('Collaborator(s) not found');
     }
 
+    // TODO: Check playlist valid
     const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, timestamp);
 
     try {
@@ -53,7 +54,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     SK: `collaborator#${collaboratorId}`,
                     GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
-                    status: 'pending',
+                    joined: false,
                     createdAt: timestamp
                 },
                 ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'

@@ -23,12 +23,7 @@ async function createSpotifyPlaylist(playlistDetails, userId, usersTable, tokens
         };
 
         const response = await axios.post(url, data, { headers });
-        return {
-            userId: spotifyUser.userId,
-            spotifyUserId: spotifyUser.spotifyUserId,
-            playlistId: response.data.id,
-            token: spotifyUser.token
-        };
+        return response.data.id;
     } catch (error) {
         console.error('Error creating Spotify playlist:', error);
         throw error;

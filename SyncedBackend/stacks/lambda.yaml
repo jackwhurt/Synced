@@ -240,6 +240,35 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
+  # Collaborative Playlists - Songs
+  AddSongsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: add-songs.addSongsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to add songs to Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+
   # Create User Trigger
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
@@ -274,6 +303,8 @@ Outputs:
     Value: !GetAtt AddCollaboratorsFunction.Arn
   DeleteCollaboratorsFunctionArn:
     Value: !GetAtt DeleteCollaboratorsFunction.Arn
+  AddSongsFunctionArn:
+    Value: !GetAtt AddSongsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
   UpdateSpotifyDevTokenFunctionArn:
