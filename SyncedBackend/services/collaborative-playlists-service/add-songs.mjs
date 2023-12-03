@@ -30,7 +30,7 @@ export const addSongsHandler = async (event) => {
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
-        const collaborators = await getAcceptedCollaborators(playlistId);
+        const collaborators = await getCollaborators(playlistId);
          // TODO: prepare out of sync / deleted playlist users
         await addSongsToSpotifyPlaylists(songDetails, collaborators, playlistId);
 
@@ -76,16 +76,14 @@ function createSongItem(playlistId, song, songId, timestamp) {
     };
 }
 
-async function getAcceptedCollaborators(playlistId) {
+async function getCollaborators(playlistId) {
     const queryParams = {
         TableName: playlistsTable,
         KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
         ExpressionAttributeValues: {
             ':pk': `cp#${playlistId}`,
-            ':sk': 'collaborator#',
-            ':joined': true
-        },
-        FilterExpression: 'joined = :joined'
+            ':sk': 'collaborator#'
+        }
     };
 
     try {
@@ -118,14 +116,17 @@ async function addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs) {
 
 async function addSongsToSpotifyPlaylists(songs, collaborators) {
     try {
-        const userIds = collaborators
-            .filter(collaborator => collaborator.spotifyUserId)
-            .map(collaborator => ({ PK: collaborator.PK.replace('collaborator#', '') }));
-        const spotifyUsers = await prepareSpotifyAccounts(userIds, usersTable, tokensTable);
+        const collaboratorsData = collaborators
+            .filter(collaborator => collaborator.spotifyPlaylistId)
+            .map(collaborator => ({
+                userId: collaborator.SK.replace('collaborator#', ''),
+                spotifyPlaylistId: collaborator.spotifyPlaylistId
+            }));
+        const spotifyUsers = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
+        const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-        for (const spotifyUser of spotifyUsers) {
-            // TODO: needs collaborator spotify playlist id mapped to spotify User really
-            await addSongsToSpotifyPlaylist(collaborator.spotifyPlaylistId, spotifyUser, songs);
+        for (const collaborator of collaboratorsData) {
+            await addSongsToSpotifyPlaylist(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs);
         }
     } catch (error) {
         console.error('Error adding songs to Spotify playlists:', error);

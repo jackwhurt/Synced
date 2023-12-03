@@ -262,6 +262,11 @@ Resources:
             TableName: !Ref UsersTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
