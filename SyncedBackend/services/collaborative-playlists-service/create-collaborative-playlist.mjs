@@ -3,6 +3,7 @@ import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynam
 import { v4 as uuidv4 } from 'uuid';
 import { createPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
 import { addCollaborators } from '/opt/nodejs/add-collaborators.mjs';
+import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -28,7 +29,7 @@ export const createCollaborativePlaylistHandler = async (event) => {
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
         await addCollaborators(playlistId, collaborators, cognitoUserId, playlistsTable, usersTable);
-        const spotifyUsers = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
+        const spotifyUsers = await prepareSpotifyAccounts([cognitoUserId], usersTable, tokensTable);
         await createPlaylist(playlist, spotifyUsers[0]);
 
         return {

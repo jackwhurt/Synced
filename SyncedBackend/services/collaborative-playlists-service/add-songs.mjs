@@ -2,8 +2,9 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
-import { prepareSpotifyAccounts } from './spotify-utils.mjs';
+import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
 import { addSongs } from '/opt/nodejs/streaming-service/add-songs.mjs';
+import { syncPlaylists } from '/opt/nodejs/streaming-service/sync-collaborative-playlists.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -15,16 +16,18 @@ export const addSongsHandler = async (event) => {
     console.info('Received:', event);
     const { playlistId, songs } = JSON.parse(event.body);
     const validationResponse = validateEvent(playlistId, songs);
-    if(validationResponse) return validationResponse;
+    if(!validationResponse) return validationResponse;
 
     const timestamp = new Date().toISOString();
-    const { transactItems, songDetails } = buildTransactItemsAndAddSongId(playlistId, songs, timestamp);
+    const transactItems = buildTransactItems(playlistId, songs, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
-        const collaborators = await getCollaborators(playlistId);
-         // TODO: prepare out of sync / deleted playlist users
-        await addSongsToSpotifyPlaylists(songDetails, collaborators, playlistId);
+        const collaboratorsData = await getCollaborators(playlistId);
+        const spotifyUsers = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
+        const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
+        await syncPlaylists(playlistId, spotifyUsersMap, playlistsTable)
+        await addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap);
 
         return {
             statusCode: 200,
@@ -41,7 +44,7 @@ export const addSongsHandler = async (event) => {
     }
 };
 
-function validateEvent(playlistId, songs) {
+async function validateEvent(playlistId, songs) {
     if (!playlistId || !songs || songs.length === 0) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
     }
@@ -50,24 +53,22 @@ function validateEvent(playlistId, songs) {
         return { statusCode: 400, body: JSON.stringify({ message: `Song limit reached: ${MAX_SONGS}` }) };
     }
 
-    if (!isPlaylistValid(playlistId, playlistsTable)) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exists' }) };
+    if (!await isPlaylistValid(playlistId, playlistsTable)) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
     }
 
     return null;
 }
 
-function buildTransactItemsAndAddSongId(playlistId, songs, timestamp) {
+function buildTransactItems(playlistId, songs, timestamp) {
     let transactItems = [];
-    let songDetails = [];
 
     songs.forEach(song => {
         const songId = uuidv4();
         transactItems.push(createSongItem(playlistId, song, songId, timestamp));
-        songDetails.push({ ...song, songId });
     });
 
-    return { transactItems, songDetails };
+    return transactItems;
 }
 
 function createSongItem(playlistId, song, songId, timestamp) {
@@ -96,25 +97,30 @@ async function getCollaborators(playlistId) {
 
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
-        return data.Items;
+        // TODO: Filter by apple music id when implemented
+        const collaboratorsData = data.Items
+                                    .filter(collaborator => collaborator.spotifyPlaylistId)
+                                    .map(collaborator => ({
+                                        userId: collaborator.SK.replace('collaborator#', ''),
+                                        spotifyPlaylistId: collaborator.spotifyPlaylistId
+                                    }));
+        return collaboratorsData
     } catch (err) {
         console.error('Error getting collaborators:', err);
         throw err;
     }
 }
 
-async function addSongsToSpotifyPlaylists(songs, collaborators) {
+async function addSongsToSpotifyPlaylists(songs, collaborators, spotifyUsersMap) {
     try {
-        const collaboratorsData = collaborators
+        const collaboratorsSpotifyData = collaborators
             .filter(collaborator => collaborator.spotifyPlaylistId)
             .map(collaborator => ({
                 userId: collaborator.SK.replace('collaborator#', ''),
                 spotifyPlaylistId: collaborator.spotifyPlaylistId
             }));
-        const spotifyUsers = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
-        const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-        for (const collaborator of collaboratorsData) {
+        for (const collaborator of collaboratorsSpotifyData) {
             await addSongs(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs);
         }
     } catch (error) {

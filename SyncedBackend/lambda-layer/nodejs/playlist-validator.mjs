@@ -9,7 +9,7 @@ export async function isPlaylistValid(playlistId, playlistsTable) {
         TableName: playlistsTable,
         Key: {
             PK: `cp#${playlistId}`,
-            SK: `playlist#${playlistId}`
+            SK: 'metadata'
         }
     };
 
