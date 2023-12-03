@@ -1,9 +1,9 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
-import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
+import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
 import { prepareSpotifyAccounts } from './spotify-utils.mjs';
+import { addSongs } from '/opt/nodejs/streaming-service/add-songs.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -14,18 +14,10 @@ const MAX_SONGS = 50;
 export const addSongsHandler = async (event) => {
     console.info('Received:', event);
     const { playlistId, songs } = JSON.parse(event.body);
+    const validationResponse = validateEvent(playlistId, songs);
+    if(validationResponse) return validationResponse;
+
     const timestamp = new Date().toISOString();
-
-    if (!playlistId || !songs || songs.length === 0) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
-    }
-
-    if (songs.length > MAX_SONGS) {
-        return { statusCode: 400, body: JSON.stringify({ message: `Song limit reached: ${MAX_SONGS}` }) };
-    }
-
-    // TODO: Check valid playlist
-
     const { transactItems, songDetails } = buildTransactItemsAndAddSongId(playlistId, songs, timestamp);
 
     try {
@@ -48,6 +40,22 @@ export const addSongsHandler = async (event) => {
         };
     }
 };
+
+function validateEvent(playlistId, songs) {
+    if (!playlistId || !songs || songs.length === 0) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
+    }
+
+    if (songs.length > MAX_SONGS) {
+        return { statusCode: 400, body: JSON.stringify({ message: `Song limit reached: ${MAX_SONGS}` }) };
+    }
+
+    if (!isPlaylistValid(playlistId, playlistsTable)) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exists' }) };
+    }
+
+    return null;
+}
 
 function buildTransactItemsAndAddSongId(playlistId, songs, timestamp) {
     let transactItems = [];
@@ -95,25 +103,6 @@ async function getCollaborators(playlistId) {
     }
 }
 
-async function addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs) {
-    try {
-        const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-        const headers = {
-            'Authorization': `Bearer ${spotifyUser.token}`,
-            'Content-Type': 'application/json'
-        };
-
-        const songUris = songs.map(song => song.spotifyUri);
-        const data = { uris: songUris };
-
-        await axios.post(url, data, { headers });
-        console.info('Songs added to Spotify playlist successfully.');
-    } catch (error) {
-        updateCollaboratorSyncStatus(playlistId, spotifyUser.userId, false, playlistsTable);
-        console.error(`Error adding songs to Spotify playlist for user ${spotifyUser.userId}:`, error);
-    }
-}
-
 async function addSongsToSpotifyPlaylists(songs, collaborators) {
     try {
         const collaboratorsData = collaborators
@@ -126,7 +115,7 @@ async function addSongsToSpotifyPlaylists(songs, collaborators) {
         const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
         for (const collaborator of collaboratorsData) {
-            await addSongsToSpotifyPlaylist(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs);
+            await addSongs(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs);
         }
     } catch (error) {
         console.error('Error adding songs to Spotify playlists:', error);

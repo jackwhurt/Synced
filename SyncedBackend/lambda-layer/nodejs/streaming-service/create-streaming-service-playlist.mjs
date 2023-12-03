@@ -1,7 +1,6 @@
-import { prepareSpotifyAccounts } from './spotify-utils.mjs';
 import axios from 'axios';
 
-async function createSpotifyPlaylist(playlistDetails, userId, usersTable, tokensTable) {
+async function createSpotifyPlaylist(playlistDetails, spotifyUser) {
     const data = {
         name: playlistDetails.title,
         description: playlistDetails.description || '',
@@ -9,13 +8,6 @@ async function createSpotifyPlaylist(playlistDetails, userId, usersTable, tokens
     };
 
     try {
-        const spotifyUsers = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
-
-        if (spotifyUsers.length === 0) {
-            throw new Error('No Spotify user found for the given user ID.');
-        }
-
-        const spotifyUser = spotifyUsers[0];
         const url = `https://api.spotify.com/v1/users/${spotifyUser.spotifyUserId}/playlists`;
         const headers = {
             'Authorization': `Bearer ${spotifyUser.token}`,
@@ -30,7 +22,8 @@ async function createSpotifyPlaylist(playlistDetails, userId, usersTable, tokens
     }
 }
 
-export async function createPlaylist(playlistDetails, userId, usersTable, tokensTable) {
-    return { spotify: await createSpotifyPlaylist(playlistDetails, userId, usersTable, tokensTable) };
+export async function createPlaylist(playlistDetails, spotifyUser) {
+    return { spotify: await createSpotifyPlaylist(playlistDetails, spotifyUser) };
 }
 
+// TODO: Function that updates spotify playlist id in db

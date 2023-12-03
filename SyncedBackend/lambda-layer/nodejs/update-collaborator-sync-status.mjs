@@ -4,24 +4,33 @@ import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
-export async function updateCollaboratorSyncStatus(playlistId, userId, playlistsTable, syncStatus) {
+export async function updateCollaboratorSyncStatus(playlistId, userId, syncStatus, service, playlistsTable) {
+    const validServices = ['spotify', 'appleMusic'];
+    if (!validServices.includes(service)) {
+        throw new Error(`Invalid streaming service: ${service}`); 
+    }
+
+    const syncAttributeName = `${service}InSync`; 
     const params = {
         TableName: playlistsTable,
         Key: {
             PK: `cp#${playlistId}`,
             SK: `collaborator#${userId}`
         },
-        UpdateExpression: 'SET inSync = :inSync',
+        UpdateExpression: `SET #syncAttr = :syncStatus`,
+        ExpressionAttributeNames: {
+            '#syncAttr': syncAttributeName 
+        },
         ExpressionAttributeValues: {
-            ':inSync': syncStatus
+            ':syncStatus': syncStatus 
         }
     };
 
     try {
-        await ddbDocClient.send(new UpdateCommand(params));
-        console.log(`Updated inSync status for collaborator ${userId} in playlist ${playlistId}`);
+        await ddbDocClient.send(new UpdateCommand(params)); 
+        console.log(`Updated ${syncAttributeName} status for collaborator ${userId} in playlist ${playlistId}`);
     } catch (err) {
-        console.error('Error updating inSync status:', err);
-        throw err;
+        console.error(`Error updating ${syncAttributeName} status:`, err);
+        throw err; 
     }
 }
