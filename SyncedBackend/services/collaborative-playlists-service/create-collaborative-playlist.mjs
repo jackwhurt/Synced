@@ -12,6 +12,7 @@ const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 const MAX_COLLABORATORS = 10;
 
+// TODO: Collaborator count and song count incorrect
 export const createCollaborativePlaylistHandler = async (event) => {
     console.info('received:', event);
     const response = parseAndValidateEvent(event);
@@ -22,10 +23,11 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const userId = claims['sub'];
     const timestamp = new Date().toISOString();
     const playlistId = uuidv4();
+    playlist.playlistId = playlistId;
 
     collaborators.push(userId);
 
-    const transactItem = createPlaylistItem(playlistId, userId, playlist, collaborators, timestamp);
+    const transactItem = createPlaylistItem(playlistId, userId, playlist, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
@@ -73,7 +75,7 @@ function parseAndValidateEvent(event) {
 }
 
 // Helper function to create a playlist item for DynamoDB
-function createPlaylistItem(playlistId, userId, playlist, collaborators, timestamp) {
+function createPlaylistItem(playlistId, userId, playlist, timestamp) {
     return {
         Put: {
             TableName: playlistsTable,
@@ -82,7 +84,7 @@ function createPlaylistItem(playlistId, userId, playlist, collaborators, timesta
                 SK: 'metadata',
                 createdBy: userId,
                 ...playlist,
-                collaboratorCount: collaborators.length,
+                collaboratorCount: 0,
                 songCount: 0,
                 createdAt: timestamp,
                 updatedAt: timestamp
@@ -93,6 +95,11 @@ function createPlaylistItem(playlistId, userId, playlist, collaborators, timesta
 
 // Helper function to rollback in case of an error
 async function rollbackPlaylistData(transactItems) {
+    if (transactItems.length === 0) {
+        console.info('No items to rollback.');
+        return;
+    }
+    
     console.info('Rollback started');
     // Convert Put operations to Delete operations
     const deleteOperations = transactItems.map(item => ({

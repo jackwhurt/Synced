@@ -39,7 +39,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
             },
             ExpressionAttributeValues: {
                 ':incr': collaboratorIds.length,
-                ':maxCollaborators': MAX_COLLABORATORS
+                ':maxCollaborators': MAX_COLLABORATORS - collaboratorIds.length
             },
             ReturnValuesOnConditionCheckFailure: 'ALL_OLD'
         }
@@ -54,7 +54,6 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     SK: `collaborator#${collaboratorId}`,
                     GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
-                    joined: false,
                     createdAt: timestamp
                 },
                 ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'

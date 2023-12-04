@@ -38,7 +38,7 @@ async function updateSpotifyPlaylistId(playlistDetails, spotifyPlaylistId, userI
     const params = {
         TableName: playlistsTable,
         Key: {
-            PK: playlistDetails.PK,
+            PK: `cp#${playlistDetails.playlistId}`,
             SK: `collaborator#${userId}`
         },
         UpdateExpression: 'SET spotifyPlaylistId = :spotifyPlaylistId',
@@ -50,7 +50,7 @@ async function updateSpotifyPlaylistId(playlistDetails, spotifyPlaylistId, userI
 
     try {
         const result = await ddbDocClient.send(new UpdateCommand(params));
-        console.log('Spotify Playlist ID updated successfully for user:', userId);
+        console.info('Spotify Playlist ID updated successfully for user:', userId);
         return result;
     } catch (error) {
         console.error('Error updating Spotify Playlist ID:', error);

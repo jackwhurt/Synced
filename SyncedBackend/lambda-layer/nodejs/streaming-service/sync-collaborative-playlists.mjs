@@ -12,6 +12,7 @@ export async function syncPlaylists(playlistId, spotifyUsers, playlistsTable) {
     await syncSpotifyPlaylists(playlistId, spotifyUsers, playlistsTable);
 }
 
+// TODO: Endpoint specifically for resyncing
 async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable) {
     const spotifyCollaborators = await getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable);
 
@@ -69,10 +70,6 @@ async function getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable) {
 
         return data.Items.map(item => ({
             userId: item.SK.split('#')[1],
-            playlistDetails: {
-                title: item.title,
-                description: item.description || ''
-            },
             spotifyPlaylistId: item.spotifyPlaylistId,
             playlistId: item.PK.split('#')[1]
         }));
@@ -113,7 +110,11 @@ async function getPlaylistMetadata(playlistId, playlistsTable) {
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
         if (data.Items.length > 0) {
-            return data.Items[0];
+            return data.Items.map(item => ({
+                playlistId: item.PK.split('#')[1],
+                description: item.description,
+                title: item.title,
+            }));
         } else {
             throw new Error('Playlist metadata not found');
         }
