@@ -31,8 +31,9 @@ export const createCollaborativePlaylistHandler = async (event) => {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
         await addCollaborators(playlistId, collaborators, userId, playlistsTable, usersTable);
         if (spotifyPlaylist) {
-            const spotifyUsers = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
-            await createPlaylist(playlist, spotifyUsers[0]);
+            const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
+            if (!failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ', userId)
+            await createPlaylist(playlist, spotifyUsers[0], playlistsTable);
             await updateCollaboratorSyncStatus(playlistId, userId, true, 'spotify', playlistsTable);
         }
 

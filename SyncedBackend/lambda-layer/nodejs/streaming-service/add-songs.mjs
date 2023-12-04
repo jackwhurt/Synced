@@ -5,6 +5,7 @@ export async function addSongs(playlistId, spotifyUser, songs, playlistsTable) {
     await addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs, playlistsTable);
 }
 
+// TODO: Pagination to handle 100 limit on queries
 async function addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs, playlistsTable, maxRetries = 3) {
     const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
     const headers = {

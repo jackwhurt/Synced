@@ -28,7 +28,7 @@ export async function updateCollaboratorSyncStatus(playlistId, userId, syncStatu
 
     try {
         await ddbDocClient.send(new UpdateCommand(params)); 
-        console.log(`Updated ${syncAttributeName} status for collaborator ${userId} in playlist ${playlistId}`);
+        console.info(`Updated ${syncAttributeName} status for collaborator ${userId} in playlist ${playlistId}`);
     } catch (err) {
         console.error(`Error updating ${syncAttributeName} status:`, err);
         throw err; 

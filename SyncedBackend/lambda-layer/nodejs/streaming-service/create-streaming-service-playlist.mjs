@@ -21,7 +21,7 @@ async function createSpotifyPlaylist(playlistDetails, spotifyUser, maxRetries = 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
             const response = await axios.post(url, data, { headers });
-            console.info('Spotify playlist created successfully.');
+            console.info('Spotify playlist created successfully for: ', spotifyUser.userId);
             return response.data.id;
         } catch (error) {
             console.error(`Attempt ${attempt} failed to create Spotify playlist:`, error);
@@ -50,7 +50,7 @@ async function updateSpotifyPlaylistId(playlistDetails, spotifyPlaylistId, userI
 
     try {
         const result = await ddbDocClient.send(new UpdateCommand(params));
-        console.log('Spotify Playlist ID updated successfully:', result);
+        console.log('Spotify Playlist ID updated successfully for user:', userId);
         return result;
     } catch (error) {
         console.error('Error updating Spotify Playlist ID:', error);

@@ -15,17 +15,20 @@ export async function syncPlaylists(playlistId, spotifyUsers, playlistsTable) {
 async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable) {
     const spotifyCollaborators = await getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable);
 
+    if (!spotifyCollaborators) return false;
+
     for (const collaborator of spotifyCollaborators) {
         const userId = collaborator.userId;
         const oldSpotifyPlaylistId = collaborator.spotifyPlaylistId;
+        const spotifyUser = spotifyUsersMap.get(userId);
+        // If user hasn't been prepared for spotify, continue since they won't have a corresponding spotify playlist
+        if (!spotifyUser) continue;
 
         try {
             // Create new Spotify playlist and add songs
-            const spotifyUser = spotifyUsersMap.get(userId);
-            // If user hasn't been prepared for spotify, continue since they won't have a corresponding spotify playlist
-            if (!spotifyUser) continue;
             const playlistDetails = await getPlaylistMetadata(playlistId, playlistsTable)
-            const newSpotifyPlaylistId = await createPlaylist(playlistDetails, spotifyUser).spotify;
+            const newPlaylistIds = await createPlaylist(playlistDetails, spotifyUser, playlistsTable);
+            const newSpotifyPlaylistId = newPlaylistIds.spotify;
             const songs = await getSongData(playlistId, playlistsTable)
             await addSongs(newSpotifyPlaylistId, spotifyUser, songs, playlistsTable);
 
@@ -45,6 +48,8 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable)
             console.error(`Error deleting Spotify playlist for collaborator ${userId}:`, error);
         }
     }
+
+    return true;
 }
 
 async function getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable) {

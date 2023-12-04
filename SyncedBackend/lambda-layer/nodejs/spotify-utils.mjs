@@ -6,7 +6,6 @@ import axios from 'axios';
 const ssmClient = new SSMClient({});
 const dynamoDBClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
-// TODO: catch errors throughout file
 // Function to check if the token is still valid or about to expire
 function isTokenValid(expiresAt) {
     const now = new Date();
@@ -139,21 +138,24 @@ async function handleTokenRefresh(userId, tokensTable) {
 }
 
 export async function prepareSpotifyAccounts(userIds, usersTable, tokensTable) {
-    try {
-        const preparedAccounts = await Promise.all(userIds.map(async userId => {
+    const spotifyUsers = [];
+    const failedSpotifyUsers = [];
+
+    for (const userId of userIds) {
+        try {
             const spotifyUserId = await getSpotifyUserId(userId, usersTable);
             const token = await handleTokenRefresh(userId, tokensTable);
 
-            return {
+            spotifyUsers.push({
                 userId,
                 spotifyUserId,
                 token
-            };
-        }));
-
-        return preparedAccounts;
-    } catch (error) {
-        console.error('Error preparing Spotify accounts:', error);
-        throw error;
+            });
+        } catch (error) {
+            console.error(`Error preparing Spotify account for user ID ${userId}:`, error);
+            failedSpotifyUsers.push({ userId, error: error.message });
+        }
     }
+
+    return { spotifyUsers, failedSpotifyUsers };
 }
