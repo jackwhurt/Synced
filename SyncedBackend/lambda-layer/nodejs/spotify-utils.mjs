@@ -6,6 +6,7 @@ import axios from 'axios';
 const ssmClient = new SSMClient({});
 const dynamoDBClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
+// TODO: catch errors throughout file
 // Function to check if the token is still valid or about to expire
 function isTokenValid(expiresAt) {
     const now = new Date();

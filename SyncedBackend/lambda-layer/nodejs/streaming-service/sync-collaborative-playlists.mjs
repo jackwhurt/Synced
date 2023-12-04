@@ -1,5 +1,5 @@
-import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { deletePlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { createPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
 import { addSongs } from '/opt/nodejs/streaming-service/add-songs.mjs';
@@ -13,7 +13,7 @@ export async function syncPlaylists(playlistId, spotifyUsers, playlistsTable) {
 }
 
 async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable) {
-    const spotifyCollaborators = await getSpotifyCollaboratorsNotInSync(playlistId);
+    const spotifyCollaborators = await getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable);
 
     for (const collaborator of spotifyCollaborators) {
         const userId = collaborator.userId;
@@ -22,13 +22,16 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable)
         try {
             // Create new Spotify playlist and add songs
             const spotifyUser = spotifyUsersMap.get(userId);
+            // If user hasn't been prepared for spotify, continue since they won't have a corresponding spotify playlist
+            if (!spotifyUser) continue;
             const playlistDetails = await getPlaylistMetadata(playlistId, playlistsTable)
-            const newSpotifyPlaylistId = await createPlaylist(playlistDetails, spotifyUser);
+            const newSpotifyPlaylistId = await createPlaylist(playlistDetails, spotifyUser).spotify;
             const songs = await getSongData(playlistId, playlistsTable)
-            await addSongs(newSpotifyPlaylistId, spotifyUser, songs);
+            await addSongs(newSpotifyPlaylistId, spotifyUser, songs, playlistsTable);
 
             // Update the spotifyInSync status to true
             await updateCollaboratorSyncStatus(playlistId, userId, true, 'spotify', playlistsTable);
+            console.info(`Successful resync for collaborator ${userId}`);
         } catch (error) {
             console.error(`Error resyncing collaborator ${userId}:`, error);
             // Continue attempting to delete the rest of the playlists
@@ -44,7 +47,6 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable)
     }
 }
 
-// TODO: Some error here
 async function getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable) {
     const queryParams = {
         TableName: playlistsTable,
@@ -59,12 +61,13 @@ async function getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable) {
 
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
+
         return data.Items.map(item => ({
             userId: item.SK.split('#')[1],
-            playlistDetails: { 
+            playlistDetails: {
                 title: item.title,
                 description: item.description || ''
-             },
+            },
             spotifyPlaylistId: item.spotifyPlaylistId,
             playlistId: item.PK.split('#')[1]
         }));

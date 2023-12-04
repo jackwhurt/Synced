@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { createPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
 import { addCollaborators } from '/opt/nodejs/add-collaborators.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
+import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -16,21 +17,24 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const response = parseAndValidateEvent(event);
     if (response) return response;
 
-    const { playlist, collaborators } = JSON.parse(event.body);
+    const { playlist, collaborators, spotifyPlaylist } = JSON.parse(event.body);
     const claims = event.requestContext.authorizer?.claims;
-    const cognitoUserId = claims['sub'];
+    const userId = claims['sub'];
     const timestamp = new Date().toISOString();
     const playlistId = uuidv4();
 
-    collaborators.push(cognitoUserId);
+    collaborators.push(userId);
 
-    const transactItem = createPlaylistItem(playlistId, cognitoUserId, playlist, collaborators, timestamp);
+    const transactItem = createPlaylistItem(playlistId, userId, playlist, collaborators, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
-        await addCollaborators(playlistId, collaborators, cognitoUserId, playlistsTable, usersTable);
-        const spotifyUsers = await prepareSpotifyAccounts([cognitoUserId], usersTable, tokensTable);
-        await createPlaylist(playlist, spotifyUsers[0]);
+        await addCollaborators(playlistId, collaborators, userId, playlistsTable, usersTable);
+        if (spotifyPlaylist) {
+            const spotifyUsers = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
+            await createPlaylist(playlist, spotifyUsers[0]);
+            await updateCollaboratorSyncStatus(playlistId, userId, true, 'spotify', playlistsTable);
+        }
 
         return {
             statusCode: 200,

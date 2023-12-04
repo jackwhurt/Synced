@@ -27,12 +27,9 @@ export const addSongsHandler = async (event) => {
         const spotifyUsers = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
         const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
         await syncPlaylists(playlistId, spotifyUsersMap, playlistsTable)
-        await addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap);
+        const unsuccessfulUpdateUserIds = await addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap);
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ message: 'Songs added successfully' })
-        };
+        return buildSuccessResponse(unsuccessfulUpdateUserIds);
     } catch (err) {
         console.error('Error in addSongsHandler:', err);
         await rollbackPlaylistData(transactItems);
@@ -97,7 +94,7 @@ async function getCollaborators(playlistId) {
 
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
-        // TODO: Filter by apple music id when implemented
+        // TODO: Filter by apple music id when implemented (return two objects)
         const collaboratorsData = data.Items
                                     .filter(collaborator => collaborator.spotifyPlaylistId)
                                     .map(collaborator => ({
@@ -111,22 +108,21 @@ async function getCollaborators(playlistId) {
     }
 }
 
-async function addSongsToSpotifyPlaylists(songs, collaborators, spotifyUsersMap) {
-    try {
-        const collaboratorsSpotifyData = collaborators
-            .filter(collaborator => collaborator.spotifyPlaylistId)
-            .map(collaborator => ({
-                userId: collaborator.SK.replace('collaborator#', ''),
-                spotifyPlaylistId: collaborator.spotifyPlaylistId
-            }));
+async function addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap) {
+    if(!collaboratorsData) return;
+    let unsuccessfulUpdateUserIds = [];
+    const collaboratorsSpotifyData = collaboratorsData.filter(collaborator => collaborator.spotifyPlaylistId);
 
-        for (const collaborator of collaboratorsSpotifyData) {
-            await addSongs(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs);
+    for (const collaborator of collaboratorsSpotifyData) {
+        try{
+            await addSongs(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs, playlistsTable);
+        } catch (error) {
+            console.info('Unsuccessful Spotify Playlist for user: ', collaborator.userId);
+            unsuccessfulUpdateUserIds.push(collaborator.userId);
         }
-    } catch (error) {
-        console.error('Error adding songs to Spotify playlists:', error);
-        throw error;
     }
+
+    return unsuccessfulUpdateUserIds;
 }
 
 async function rollbackPlaylistData(transactItems) {
@@ -147,4 +143,18 @@ async function rollbackPlaylistData(transactItems) {
     } catch (error) {
         console.error('Error during cleanup:', error);
     }
+}
+
+function buildSuccessResponse(unsuccessfulUpdateUserIds) {
+    let message = 'Songs added successfully';
+    if (unsuccessfulUpdateUserIds.length > 0) {
+        // Join user IDs with a comma and space for readability
+        const failedUserIds = unsuccessfulUpdateUserIds.join(', ');
+        message = `Songs added successfully except for the following user(s): ${failedUserIds}`;
+    }
+
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ message })
+    };
 }
