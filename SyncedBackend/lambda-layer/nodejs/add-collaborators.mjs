@@ -19,7 +19,7 @@ export async function addCollaborators(playlistId, collaboratorIds, cognitoUserI
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
     } catch (err) {
         console.error('Error in transaction:', err);
-        throw new Error('Collaborator(s) not found');
+        throw new err;
     }
 }
 

@@ -10,13 +10,8 @@ export const addCollaboratorsHandler = async (event) => {
 
     const { playlistId, collaboratorIds } = JSON.parse(event.body);
     const claims = event.requestContext.authorizer?.claims;
-    const validationError = validateEvent(playlistId, collaboratorIds, claims['sub']);
-    if (validationError) {
-		return {
-            statusCode: 400,
-            body: JSON.stringify({ message: validationError })
-        };
-    }
+    const validationResponse = await validateEvent(playlistId, collaboratorIds, claims['sub']);
+    if (validationResponse) return validationResponse;
 
     try {
         await addCollaborators(playlistId, collaboratorIds, claims['sub'], playlistsTable, usersTable);
@@ -40,18 +35,14 @@ export const addCollaboratorsHandler = async (event) => {
 
 async function validateEvent(playlistId, collaboratorIds, userId) {
     if (!playlistId || !collaboratorIds || collaboratorIds.length === 0) {
-        return 'Missing required fields';
+        return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
     }
 
-    if (!userId) return 'Unauthorised';
-
-    if (!await isPlaylistValid(playlistId, playlistsTable, ddbDocClient)) {
-        return 'Playlist doesn\'t exist: ' + playlistId;
+    if (!await isPlaylistValid(playlistId, playlistsTable)) {
+        return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
     }
 
-    if (!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable, ddbDocClient)) {
-        return 'Not authorised to edit this playlist';
+    if(!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
+        return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
     }
-
-    return null;
 }

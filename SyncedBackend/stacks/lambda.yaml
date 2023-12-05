@@ -203,6 +203,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: add-collaborators.addCollaboratorsHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128

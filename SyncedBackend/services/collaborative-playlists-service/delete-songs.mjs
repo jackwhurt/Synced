@@ -17,8 +17,8 @@ export const deleteSongsHandler = async (event) => {
     const { playlistId, songs } = JSON.parse(event.body);
     const claims = event.requestContext.authorizer?.claims;
     const userId = claims['sub'];
-    const validationResponse = validateEvent(playlistId, userId, songs);
-    if (!validationResponse) return validationResponse;
+    const validationResponse = await validateEvent(playlistId, userId, songs);
+    if (validationResponse) return validationResponse;
 
     let collaboratorsData, failedSpotifyUsers, spotifyUsersMap, transactItems;
 
@@ -44,7 +44,7 @@ export const deleteSongsHandler = async (event) => {
     }
 };
 
-async function validateEvent(playlistId, songs) {
+async function validateEvent(playlistId, userId, songs) {
     if (!playlistId || !songs || songs.length === 0) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
     }
@@ -53,7 +53,7 @@ async function validateEvent(playlistId, songs) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
     }
 
-    if(!await isCollaboratorInPlaylist(playlistId, userId)) {
+    if(!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
         return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
     }
 
@@ -61,7 +61,7 @@ async function validateEvent(playlistId, songs) {
 }
 
 async function prepareCollaborators(playlistId) {
-    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId);
+    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId, playlistsTable);
     const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
@@ -70,7 +70,7 @@ async function prepareCollaborators(playlistId) {
     // Update collaborator data (streaming service playlist id) if users have been resynced
     if (!usersUpdated) {
         return {
-            collaboratorsData: await getCollaboratorsByPlaylistId(playlistId),
+            collaboratorsData: await getCollaboratorsByPlaylistId(playlistId, playlistsTable),
             failedSpotifyUsers,
             spotifyUsersMap
         };
