@@ -14,7 +14,6 @@ const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 const MAX_SONGS = 50;
 
-// TODO: Check added songs arent duplicates
 export const addSongsHandler = async (event) => {
     console.info('Received:', event);
     const { playlistId, songs } = JSON.parse(event.body);
@@ -61,14 +60,23 @@ async function validateEvent(playlistId, userId, songs) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
     }
 
-    if(!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
+    if (!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
         return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
     }
 
-    // Check for duplicate songs
+    // Combined check for duplicate URIs within the submission and against the playlist
     const existingUris = await getExistingUrisForPlaylist(playlistId);
-    const existingUrisSet = new Set(existingUris);
-    const duplicateUris = songs.filter(song => existingUrisSet.has(song.spotifyUri));
+    const uriSet = new Set(existingUris);
+    const duplicateUris = [];
+
+    for (const song of songs) {
+        if (uriSet.has(song.spotifyUri)) {
+            duplicateUris.push(song.spotifyUri);
+        } else {
+            uriSet.add(song.spotifyUri);
+        }
+    }
+
     if (duplicateUris.length > 0) {
         return {
             statusCode: 400,
@@ -104,7 +112,7 @@ async function prepareCollaboratorData(playlistId) {
     const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, playlistsTable);
+    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
     if (!usersUpdated) {
         return {
             collaboratorsData: await getCollaboratorsByPlaylistId(playlistId, playlistsTable),
@@ -166,7 +174,7 @@ async function addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsers
         try {
             await addSongsToSpotifyPlaylist(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs, playlistsTable);
         } catch (error) {
-            console.info('Unsuccessful Spotify Playlist for user: ', collaborator.userId);
+            console.info('Unsuccessful Spotify Playlist update for user: ', collaborator.userId);
             unsuccessfulUpdateUserIds.push(collaborator.userId);
         }
     }

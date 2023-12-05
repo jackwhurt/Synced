@@ -65,7 +65,7 @@ async function prepareCollaborators(playlistId) {
     const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, playlistsTable);
+    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
     
     // Update collaborator data (streaming service playlist id) if users have been resynced
     if (!usersUpdated) {

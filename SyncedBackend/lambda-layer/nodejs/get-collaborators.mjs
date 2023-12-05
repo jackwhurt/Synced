@@ -19,7 +19,8 @@ export async function getCollaboratorsByPlaylistId(playlistId, playlistsTable) {
             .filter(collaborator => collaborator.spotifyPlaylistId)
             .map(collaborator => ({
                 userId: collaborator.SK.replace('collaborator#', ''),
-                spotifyPlaylistId: collaborator.spotifyPlaylistId
+                spotifyPlaylistId: collaborator.spotifyPlaylistId,
+                spotifyInSync: collaborator.spotifyInSync
             }));
         return collaboratorsData;
     } catch (err) {

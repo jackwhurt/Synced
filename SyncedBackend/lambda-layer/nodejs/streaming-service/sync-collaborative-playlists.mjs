@@ -8,17 +8,15 @@ import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sy
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
-export async function syncPlaylists(playlistId, spotifyUsers, playlistsTable) {
-    await syncSpotifyPlaylists(playlistId, spotifyUsers, playlistsTable);
+export async function syncPlaylists(playlistId, spotifyUsers, collaboratorsData, playlistsTable) {
+    await syncSpotifyPlaylists(playlistId, spotifyUsers, collaboratorsData, playlistsTable);
 }
 
 // TODO: Endpoint specifically for resyncing
-async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable) {
-    const spotifyCollaborators = await getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable);
+async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, spotifyCollaborators, playlistsTable) {
+    const outOfSyncCollaborators = spotifyCollaborators.filter(collaborator => !collaborator.spotifyInSync);
 
-    if (!spotifyCollaborators) return false;
-
-    for (const collaborator of spotifyCollaborators) {
+    for (const collaborator of outOfSyncCollaborators) {
         const userId = collaborator.userId;
         const oldSpotifyPlaylistId = collaborator.spotifyPlaylistId;
         const spotifyUser = spotifyUsersMap.get(userId);
@@ -27,7 +25,7 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable)
 
         try {
             // Create new Spotify playlist and add songs
-            const playlistDetails = await getPlaylistMetadata(playlistId, playlistsTable)
+            const playlistDetails = await getPlaylistMetadata(playlistId, playlistsTable);
             const newPlaylistIds = await createPlaylist(playlistDetails, spotifyUser, playlistsTable);
             const newSpotifyPlaylistId = newPlaylistIds.spotify;
             const songs = await getSongData(playlistId, playlistsTable)
@@ -51,31 +49,6 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable)
     }
 
     return true;
-}
-
-async function getSpotifyCollaboratorsNotInSync(playlistId, playlistsTable) {
-    const queryParams = {
-        TableName: playlistsTable,
-        KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
-        FilterExpression: 'spotifyInSync = :syncStatus',
-        ExpressionAttributeValues: {
-            ':pk': `cp#${playlistId}`,
-            ':sk': 'collaborator#',
-            ':syncStatus': false
-        }
-    };
-
-    try {
-        const data = await ddbDocClient.send(new QueryCommand(queryParams));
-
-        return data.Items.map(item => ({
-            userId: item.SK.split('#')[1],
-            spotifyPlaylistId: item.spotifyPlaylistId,
-            playlistId: item.PK.split('#')[1]
-        }));
-    } catch (error) {
-        console.error('Error fetching collaborators with false spotifyInSync:', error);
-    }
 }
 
 async function getSongData(playlistId, playlistsTable) {
@@ -110,11 +83,11 @@ async function getPlaylistMetadata(playlistId, playlistsTable) {
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
         if (data.Items.length > 0) {
-            return data.Items.map(item => ({
-                playlistId: item.PK.split('#')[1],
-                description: item.description,
-                title: item.title,
-            }));
+            return {
+                playlistId: data.Items[0].PK.split('#')[1],
+                description: data.Items[0].description,
+                title: data.Items[0].title,
+            };
         } else {
             throw new Error('Playlist metadata not found');
         }
