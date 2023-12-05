@@ -15,6 +15,8 @@ Parameters:
     Type: String
   AddSongsFunctionArn:
     Type: String
+  DeleteSongsFunctionArn:
+    Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
@@ -217,6 +219,14 @@ Resources:
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteCollaboratorsFunctionArn}/invocations"
 
+  DeleteCollaboratorsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteCollaboratorsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/collaborators"
+
   # Collaborative Playlists / Songs
   SongsResource:
     Type: AWS::ApiGateway::Resource
@@ -238,14 +248,20 @@ Resources:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddSongsFunctionArn}/invocations"
-
-  DeleteCollaboratorsLambdaInvokePermission:
-    Type: AWS::Lambda::Permission
+    
+  # Delete Songs
+  DeleteSongsMethod:
+    Type: AWS::ApiGateway::Method
     Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref DeleteCollaboratorsFunctionArn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/collaborators"
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref SongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteSongsFunctionArn}/invocations"
 
   # Collaborative Playlists / {id}
   PlaylistIdResource:

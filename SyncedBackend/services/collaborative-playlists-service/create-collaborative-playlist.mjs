@@ -12,7 +12,6 @@ const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 const MAX_COLLABORATORS = 10;
 
-// TODO: Collaborator count and song count incorrect
 export const createCollaborativePlaylistHandler = async (event) => {
     console.info('received:', event);
     const response = parseAndValidateEvent(event);
