@@ -2,7 +2,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { deletePlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { createPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
-import { addSongs } from '/opt/nodejs/streaming-service/add-songs.mjs';
+import { addSongsToSpotifyPlaylist } from '/opt/nodejs/streaming-service/add-songs.mjs';
 import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
 const client = new DynamoDBClient({});
@@ -31,7 +31,7 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, playlistsTable)
             const newPlaylistIds = await createPlaylist(playlistDetails, spotifyUser, playlistsTable);
             const newSpotifyPlaylistId = newPlaylistIds.spotify;
             const songs = await getSongData(playlistId, playlistsTable)
-            await addSongs(newSpotifyPlaylistId, spotifyUser, songs, playlistsTable);
+            await addSongsToSpotifyPlaylist(newSpotifyPlaylistId, spotifyUser, songs, playlistsTable);
 
             // Update the spotifyInSync status to true
             await updateCollaboratorSyncStatus(playlistId, userId, true, 'spotify', playlistsTable);

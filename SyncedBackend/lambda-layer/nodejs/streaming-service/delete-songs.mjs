@@ -1,11 +1,7 @@
 import axios from 'axios';
 import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
-export async function deleteSongs(playlistId, spotifyUser, songUris, playlistsTable) {
-    await deleteSongsFromSpotifyPlaylist(playlistId, spotifyUser, songUris, playlistsTable);
-}
-
-async function deleteSongsFromSpotifyPlaylist(playlistId, spotifyUser, songs, playlistsTable, maxRetries = 3) {
+export async function deleteSongsFromSpotifyPlaylist(playlistId, spotifyUser, songs, playlistsTable, maxRetries = 3) {
     const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
     const headers = {
         'Authorization': `Bearer ${spotifyUser.token}`,

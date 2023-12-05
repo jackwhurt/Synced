@@ -13,7 +13,6 @@ export async function addCollaborators(playlistId, collaboratorIds, cognitoUserI
         throw new Error('Collaborator(s) not found');
     }
 
-    // TODO: Check playlist valid
     const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, timestamp);
 
     try {

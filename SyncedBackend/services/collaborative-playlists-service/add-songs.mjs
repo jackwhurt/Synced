@@ -1,9 +1,11 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, TransactWriteCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
 import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
+import { isCollaboratorInPlaylist } from '/opt/nodejs/playlist-validator.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
-import { addSongs } from '/opt/nodejs/streaming-service/add-songs.mjs';
+import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
+import { addSongsToSpotifyPlaylist } from '/opt/nodejs/streaming-service/add-songs.mjs';
 import { syncPlaylists } from '/opt/nodejs/streaming-service/sync-collaborative-playlists.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -12,31 +14,24 @@ const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 const MAX_SONGS = 50;
 
-//TODO: authorised to modifify this playlist?
-//TODO: dont allow duplicates
 export const addSongsHandler = async (event) => {
     console.info('Received:', event);
     const { playlistId, songs } = JSON.parse(event.body);
-    const validationResponse = validateEvent(playlistId, songs);
+    const claims = event.requestContext.authorizer?.claims;
+    const userId = claims['sub'];
+    const validationResponse = validateEvent(playlistId, userId, songs);
     if (!validationResponse) return validationResponse;
 
     const timestamp = new Date().toISOString();
-    let collaboratorsData, spotifyUsers, failedSpotifyUsers, spotifyUsersMap, transactItems, usersUpdated;
+    let collaboratorsData, failedSpotifyUsers, spotifyUsersMap, transactItems;
 
     try {
-        collaboratorsData = await getCollaborators(playlistId);
-        ({ spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable));
-        spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
-        
-        // Update collaborator data if users needed to be resynced
-        usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, playlistsTable);
-        if (!usersUpdated) collaboratorsData = await getCollaborators(playlistId);
+        ({ collaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaboratorData(playlistId));
 
         transactItems = buildTransactItems(playlistId, songs, timestamp);
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
     } catch (err) {
         console.error('Error in collaborator preparation:', err);
-
         return buildErrorResponse(err);
     }
 
@@ -48,13 +43,11 @@ export const addSongsHandler = async (event) => {
     } catch (err) {
         console.error('Error in adding songs to streaming service playlists:', err);
         await rollbackPlaylistData(transactItems);
-
         return buildErrorResponse(err);
     }
 };
 
-
-async function validateEvent(playlistId, songs) {
+async function validateEvent(playlistId, userId, songs) {
     if (!playlistId || !songs || songs.length === 0) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
     }
@@ -67,7 +60,59 @@ async function validateEvent(playlistId, songs) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
     }
 
+    if(!await isCollaboratorInPlaylist(playlistId, userId)) {
+        return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
+    }
+
+    // Check for duplicate songs
+    const existingUris = await getExistingUrisForPlaylist(playlistId, ddbDocClient);
+    const existingUrisSet = new Set(existingUris);
+    const duplicateUris = songs.filter(song => existingUrisSet.has(song.spotifyUri));
+    if (duplicateUris.length > 0) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ message: 'Duplicate songs cannot be added', duplicateSpotifyUris: duplicateUris })
+        };
+    }
+
     return null;
+}
+
+async function getExistingUrisForPlaylist(playlistId) {
+    const queryParams = {
+        TableName: playlistsTable,
+        KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
+        ExpressionAttributeValues: {
+            ':pk': `cp#${playlistId}`,
+            ':sk': 'song#'
+        }
+    };
+
+    try {
+        const data = await ddbDocClient.query(queryParams).promise();
+        return data.Items.map(item => item.spotifyUri);
+    } catch (err) {
+        console.error('Error querying existing URIs:', err);
+        throw new Error('Error querying existing URIs');
+    }
+}
+
+
+async function prepareCollaboratorData(playlistId) {
+    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId);
+    const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
+    const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
+
+    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, playlistsTable);
+    if (!usersUpdated) {
+        return {
+            collaboratorsData: await getCollaboratorsByPlaylistId(playlistId),
+            failedSpotifyUsers,
+            spotifyUsersMap
+        };
+    }
+
+    return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
 function buildTransactItems(playlistId, songs, timestamp) {
@@ -111,32 +156,6 @@ function buildTransactItems(playlistId, songs, timestamp) {
     return transactItems;
 }
 
-async function getCollaborators(playlistId) {
-    const queryParams = {
-        TableName: playlistsTable,
-        KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
-        ExpressionAttributeValues: {
-            ':pk': `cp#${playlistId}`,
-            ':sk': 'collaborator#'
-        }
-    };
-
-    try {
-        const data = await ddbDocClient.send(new QueryCommand(queryParams));
-        // TODO: Filter by apple music id when implemented (return two objects)
-        const collaboratorsData = data.Items
-            .filter(collaborator => collaborator.spotifyPlaylistId)
-            .map(collaborator => ({
-                userId: collaborator.SK.replace('collaborator#', ''),
-                spotifyPlaylistId: collaborator.spotifyPlaylistId
-            }));
-        return collaboratorsData;
-    } catch (err) {
-        console.error('Error getting collaborators:', err);
-        throw err;
-    }
-}
-
 async function addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap) {
     if (!collaboratorsData) return;
     let unsuccessfulUpdateUserIds = [];
@@ -144,7 +163,7 @@ async function addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsers
 
     for (const collaborator of collaboratorsSpotifyData) {
         try {
-            await addSongs(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs, playlistsTable);
+            await addSongsToSpotifyPlaylist(collaborator.spotifyPlaylistId, spotifyUsersMap.get(collaborator.userId), songs, playlistsTable);
         } catch (error) {
             console.info('Unsuccessful Spotify Playlist for user: ', collaborator.userId);
             unsuccessfulUpdateUserIds.push(collaborator.userId);

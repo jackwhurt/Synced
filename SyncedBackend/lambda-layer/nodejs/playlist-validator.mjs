@@ -21,3 +21,21 @@ export async function isPlaylistValid(playlistId, playlistsTable) {
         return false;
     }
 }
+
+export async function isCollaboratorInPlaylist(playlistId, userId, playlistsTable) {
+    const params = {
+        TableName: playlistsTable,
+        Key: {
+            PK: `cp#${playlistId}`,
+            SK: `collaborator#${userId}`
+        }
+    };
+
+    try {
+        const { Item } = await ddbDocClient.send(new GetCommand(params));
+        return Item ? true : false;
+    } catch (err) {
+        console.error('Error checking collaborator in playlist:', err);
+        return false;
+    }
+}
