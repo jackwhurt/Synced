@@ -13,6 +13,12 @@ Parameters:
     Type: String
   DeleteCollaboratorsFunctionArn:
     Type: String
+  SyncCollaboratorsFunctionArn:
+    Type: String
+  AddSongsFunctionArn:
+    Type: String
+  DeleteSongsFunctionArn:
+    Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
@@ -222,6 +228,72 @@ Resources:
       FunctionName: !Ref DeleteCollaboratorsFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/collaborators"
+
+  # Collaborative Playlists / Collaborators / Sync
+  SyncResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref CollaboratorsResource 
+      PathPart: 'sync'
+      RestApiId: !Ref MyApi
+
+  # Sync Collaborators
+  SyncCollaboratorsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref SyncResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SyncCollaboratorsFunctionArn}/invocations"
+
+  SyncCollaboratorsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SyncCollaboratorsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists/collaborators/sync"
+
+  # Collaborative Playlists / Songs
+  SongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref PlaylistsResource 
+      PathPart: 'songs'
+      RestApiId: !Ref MyApi
+
+  # Add Songs
+  AddSongsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref SongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddSongsFunctionArn}/invocations"
+    
+  # Delete Songs
+  DeleteSongsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref SongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteSongsFunctionArn}/invocations"
 
   # Collaborative Playlists / {id}
   PlaylistIdResource:

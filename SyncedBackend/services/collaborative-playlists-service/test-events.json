@@ -18,7 +18,8 @@
                     "title": "Song 2",
                     "artist": "Artist 2"
                 }
-            ]
+            ],
+            "spotifyPlaylist": true
         },
         "requestContext": {
             "authorizer": {
@@ -31,6 +32,16 @@
         "path": "/create-playlist",
         "headers": {
             "Content-Type": "application/json"
+        }
+    },
+    "create-cp-with-uris": {
+        "body": "{\"playlist\": {\"title\": \"My Collaborative Playlist\", \"description\": \"A test collaborative playlist\"}, \"collaborators\": [\"user123\", \"user456\"], \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"spotifyUri\": \"spotify:track:123abc\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"spotifyUri\": \"spotify:track:456def\"}]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoUserId123"
+                }
+            }
         }
     },
     "get-cp-by-id": {
@@ -92,5 +103,21 @@
             }
         },
         "httpMethod": "PUT"
+    },
+    "delete-songs": {
+        "body": "{\"playlistId\": \"1ebac833-eaa2-40b7-91ca-fdb7d851f9f4\", \"songs\": [{\"title\": \"Song 1\", \"songId\": \"64fefb9b-db14-4f59-ac3a-5329a89b1916\", \"artist\": \"Artist 1\", \"album\": \"Album 1\", \"duration\": 210, \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}, {\"title\": \"Song 2\", \"songId\": \"9f48f681-343f-49de-b36b-efc34e5f33a4\", \"artist\": \"Artist 2\", \"album\": \"Album 2\", \"duration\": 180, \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}]}"
+    },
+    "add-songs": {
+        "body": "{\"playlistId\": \"a6ac3e05-2579-4603-a31a-110fea2b8d76\", \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"album\": \"Album 1\", \"duration\": 210, \"spotifyUri\": \"spotify:track:468DttYUU2bVUs49GOhMFB\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"album\": \"Album 2\", \"duration\": 180, \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "user1"
+                }
+            }
+        }
+    },
+    "sync-collaborators": {
+        "body": "{\"playlistId\": \"1234567890abcdef\", \"collaboratorIds\": [\"collab1\", \"collab2\", \"collab3\"]}"
     }
 }
