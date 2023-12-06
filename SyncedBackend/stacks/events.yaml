@@ -4,6 +4,8 @@ Description: CloudWatch Events Stack for Synced
 Parameters:
   UpdateSpotifyDevTokenFunctionArn:
     Type: String
+  UpdateAppleMusicDevTokenFunctionArn:
+    Type: String
 
 Resources:
   SpotifyTokenRefreshRule:
@@ -14,10 +16,26 @@ Resources:
         - Arn: !Ref UpdateSpotifyDevTokenFunctionArn
           Id: "UpdateSpotifyDevTokenTarget"
 
-  LambdaInvokePermission:
+  SpotifyTokenRefreshInvokePermission:
     Type: "AWS::Lambda::Permission"
     Properties:
       FunctionName: !Ref UpdateSpotifyDevTokenFunctionArn
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt SpotifyTokenRefreshRule.Arn
+
+  AppleMusicTokenRefreshRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "rate(1 month)"
+      Targets:
+        - Arn: !Ref UpdateAppleMusicDevTokenFunctionArn
+          Id: "UpdateAppleMusicDevTokenTarget"
+
+  AppleMusicTokenRefreshInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref UpdateAppleMusicDevTokenFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt AppleMusicTokenRefreshRule.Arn

@@ -39,7 +39,7 @@ export const createCollaborativePlaylistHandler = async (event) => {
         }
 
         return {
-            statusCode: 200,
+            statusCode: 201,
             body: JSON.stringify({
                 id: playlistId,
                 playlist,

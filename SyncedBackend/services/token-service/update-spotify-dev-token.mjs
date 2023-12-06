@@ -88,7 +88,7 @@ async function getParameter(name) {
 }
 
 async function updateAccessToken(tableName, primaryKeyValue, accessToken, expiresIn, newRefreshToken = null) {
-    const updateExpression = 'set access_token = :a, expires_at = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
+    const updateExpression = 'set accessToken = :a, expiresAt = :e' + (newRefreshToken ? ', refreshToken = :r' : '');
 
     const expressionAttributeValues = {
         ':a': accessToken,

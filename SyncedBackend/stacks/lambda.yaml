@@ -20,7 +20,7 @@ Resources:
         - nodejs18.x
       Description: "Common Node.js dependencies for Lambda"
 
-  # Authorisation
+  # Authorisation - Spotify
   UpdateSpotifyDevTokenFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -99,6 +99,37 @@ Resources:
         Variables:
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
+
+  # Authorisation - Apple Music
+  UpdateAppleMusicDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-apple-music-dev-token.updateAppleMusicDevTokenHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the Apple Music Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
+            - Effect: "Allow"
+              Action:
+                - "sns:Publish"
+              Resource: !Ref LambdaFailureTopicName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
 
   # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
@@ -364,6 +395,14 @@ Resources:
           USERS_TABLE: !Ref UsersTableName
 
 Outputs:
+  UpdateSpotifyDevTokenFunctionArn:
+    Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
+  GetSpotifyAuthUrlFunctionArn:
+    Value: !GetAtt GetSpotifyAuthUrlFunction.Arn
+  ExchangeSpotifyTokenFunctionArn:
+    Value: !GetAtt ExchangeSpotifyTokenFunction.Arn
+  UpdateAppleMusicDevTokenFunctionArn:
+    Value: !GetAtt UpdateAppleMusicDevTokenFunction.Arn
   GetCollaborativePlaylistByIdFunctionArn:
     Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
   GetAllCollaborativePlaylistsFunctionArn:
@@ -384,9 +423,3 @@ Outputs:
     Value: !GetAtt DeleteSongsFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
-  UpdateSpotifyDevTokenFunctionArn:
-    Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
-  GetSpotifyAuthUrlFunctionArn:
-    Value: !GetAtt GetSpotifyAuthUrlFunction.Arn
-  ExchangeSpotifyTokenFunctionArn:
-    Value: !GetAtt ExchangeSpotifyTokenFunction.Arn

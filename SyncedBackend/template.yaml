@@ -35,6 +35,7 @@ Resources:
       TemplateURL: 'stacks/events.yaml'
       Parameters:
         UpdateSpotifyDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateSpotifyDevTokenFunctionArn
+        UpdateAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicDevTokenFunctionArn
 
   ApiStack:
     Type: AWS::CloudFormation::Stack
