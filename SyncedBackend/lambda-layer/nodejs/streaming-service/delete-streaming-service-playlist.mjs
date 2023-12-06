@@ -23,6 +23,6 @@ async function deleteSpotifyPlaylist(playlistId, spotifyUser, maxRetries = 3) {
     }
 }
 
-export async function deletePlaylist(spotifyPlaylistId, spotifyUser, usersTable, tokensTable) {
-    await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUser); // Removed extra parameters
+export async function deletePlaylist(spotifyPlaylistId, spotifyUser) {
+    await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUser); 
 }

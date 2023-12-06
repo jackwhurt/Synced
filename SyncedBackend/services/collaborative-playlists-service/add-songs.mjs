@@ -14,6 +14,7 @@ const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 const MAX_SONGS = 50;
 
+// TODO: Add rest of songs just not duplicate ones
 export const addSongsHandler = async (event) => {
     console.info('Received:', event);
     const { playlistId, songs } = JSON.parse(event.body);
@@ -112,8 +113,9 @@ async function prepareCollaboratorData(playlistId) {
     const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
-    if (!usersUpdated) {
+    const { updatedUsers, failedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
+    // Update collaborator data (streaming service playlist id) if users have been resynced
+    if (updatedUsers) {
         return {
             collaboratorsData: await getCollaboratorsByPlaylistId(playlistId, playlistsTable),
             failedSpotifyUsers,

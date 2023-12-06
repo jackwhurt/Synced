@@ -47,6 +47,7 @@ Resources:
         UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
         DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
+        SyncCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.SyncCollaboratorsFunctionArn
         AddSongsFunctionArn: !GetAtt LambdaStack.Outputs.AddSongsFunctionArn
         DeleteSongsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteSongsFunctionArn
         GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn

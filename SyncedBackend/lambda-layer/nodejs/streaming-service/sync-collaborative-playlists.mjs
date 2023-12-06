@@ -9,12 +9,13 @@ const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 export async function syncPlaylists(playlistId, spotifyUsers, collaboratorsData, playlistsTable) {
-    await syncSpotifyPlaylists(playlistId, spotifyUsers, collaboratorsData, playlistsTable);
+    return await syncSpotifyPlaylists(playlistId, spotifyUsers, collaboratorsData, playlistsTable);
 }
 
-// TODO: Endpoint specifically for resyncing
-async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, spotifyCollaborators, playlistsTable) {
-    const outOfSyncCollaborators = spotifyCollaborators.filter(collaborator => !collaborator.spotifyInSync);
+async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable) {
+    const outOfSyncCollaborators = collaboratorsData.filter(collaborator => !collaborator.spotifyInSync);
+    const updatedUsers = [];
+    const failedUsers = [];
 
     for (const collaborator of outOfSyncCollaborators) {
         const userId = collaborator.userId;
@@ -33,22 +34,16 @@ async function syncSpotifyPlaylists(playlistId, spotifyUsersMap, spotifyCollabor
 
             // Update the spotifyInSync status to true
             await updateCollaboratorSyncStatus(playlistId, userId, true, 'spotify', playlistsTable);
+            await deletePlaylist(oldSpotifyPlaylistId, spotifyUser);
+            updatedUsers.push(userId);
             console.info(`Successful resync for collaborator ${userId}`);
         } catch (error) {
+            failedUsers.push(userId);
             console.error(`Error resyncing collaborator ${userId}:`, error);
-            // Continue attempting to delete the rest of the playlists
-            continue;
-        }
-
-        // Attempt to delete old Spotify playlist
-        try {
-            await deletePlaylist(oldSpotifyPlaylistId, spotifyUser);
-        } catch (error) {
-            console.error(`Error deleting Spotify playlist for collaborator ${userId}:`, error);
         }
     }
 
-    return true;
+    return { updatedUsers, failedUsers };
 }
 
 async function getSongData(playlistId, playlistsTable) {

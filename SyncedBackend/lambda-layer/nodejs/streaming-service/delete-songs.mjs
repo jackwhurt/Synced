@@ -23,7 +23,7 @@ export async function deleteSongsFromSpotifyPlaylist(playlistId, spotifyUser, so
             } catch (error) {
                 console.error(`Attempt ${attempt} failed: Error deleting songs from Spotify playlist for user ${spotifyUser.userId}:`, error);
                 if (attempt === maxRetries) {
-                    updateCollaboratorSyncStatus(playlistId, spotifyUser.userId, false, 'spotify', playlistsTable);
+                    await updateCollaboratorSyncStatus(playlistId, spotifyUser.userId, false, 'spotify', playlistsTable);
                     throw error; // All attempts failed, throw the error
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential back-off

@@ -23,7 +23,7 @@ export async function addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs, 
             } catch (error) {
                 console.error(`Attempt ${attempt} failed: Error adding songs to Spotify playlist for user ${spotifyUser.userId}:`, error);
                 if (attempt === maxRetries) {
-                    updateCollaboratorSyncStatus(playlistId, spotifyUser.userId, false, 'spotify', playlistsTable);
+                    await updateCollaboratorSyncStatus(playlistId, spotifyUser.userId, false, 'spotify', playlistsTable);
                     throw error; // All attempts failed, throw the error
                 }
                 await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential back-off

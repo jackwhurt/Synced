@@ -232,7 +232,7 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A function to delete from Collaborative Playlists.
+      Description: A function to delete Collaborators from Collaborative Playlists.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
@@ -241,6 +241,39 @@ Resources:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  SyncCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: sync-collaborators.syncCollaboratorsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to sync Collaborators in a Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName 
 
   # Collaborative Playlists - Songs
   AddSongsFunction:
@@ -343,6 +376,8 @@ Outputs:
     Value: !GetAtt AddCollaboratorsFunction.Arn
   DeleteCollaboratorsFunctionArn:
     Value: !GetAtt DeleteCollaboratorsFunction.Arn
+  SyncCollaboratorsFunctionArn:
+    Value: !GetAtt SyncCollaboratorsFunction.Arn
   AddSongsFunctionArn:
     Value: !GetAtt AddSongsFunction.Arn
   DeleteSongsFunctionArn:

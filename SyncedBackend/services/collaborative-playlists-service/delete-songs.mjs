@@ -24,7 +24,7 @@ export const deleteSongsHandler = async (event) => {
 
     try {
         ({ collaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaborators(playlistId));
-        
+
         transactItems = buildTransactItems(playlistId, songs);
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
     } catch (err) {
@@ -53,7 +53,7 @@ async function validateEvent(playlistId, userId, songs) {
         return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
     }
 
-    if(!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
+    if (!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
         return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
     }
 
@@ -65,10 +65,9 @@ async function prepareCollaborators(playlistId) {
     const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-    const usersUpdated = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
-    
+    const { updatedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
     // Update collaborator data (streaming service playlist id) if users have been resynced
-    if (!usersUpdated) {
+    if (updatedUsers) {
         return {
             collaboratorsData: await getCollaboratorsByPlaylistId(playlistId, playlistsTable),
             failedSpotifyUsers,

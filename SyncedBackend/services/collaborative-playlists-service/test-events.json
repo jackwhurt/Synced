@@ -116,5 +116,8 @@
                 }
             }
         }
+    },
+    "sync-collaborators": {
+        "body": "{\"playlistId\": \"1234567890abcdef\", \"collaboratorIds\": [\"collab1\", \"collab2\", \"collab3\"]}"
     }
 }
