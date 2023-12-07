@@ -131,6 +131,24 @@ Resources:
           TOKENS_TABLE: !Ref TokensTableName  
           LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
 
+  GetAppleMusicDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-apple-music-dev-token.getAppleMusicDevTokenHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get the Apple Music Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+
   # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
     Type: AWS::Serverless::Function
@@ -403,6 +421,8 @@ Outputs:
     Value: !GetAtt ExchangeSpotifyTokenFunction.Arn
   UpdateAppleMusicDevTokenFunctionArn:
     Value: !GetAtt UpdateAppleMusicDevTokenFunction.Arn
+  GetAppleMusicDevTokenFunctionArn:
+    Value: !GetAtt GetAppleMusicDevTokenFunction.Arn
   GetCollaborativePlaylistByIdFunctionArn:
     Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
   GetAllCollaborativePlaylistsFunctionArn:

@@ -1,4 +1,4 @@
-import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
+import { SSMClient, PutParameterCommand, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
@@ -20,7 +20,7 @@ export const updateAppleMusicDevTokenHandler = async () => {
             const appleMusicToken = await generateAppleMusicToken();
 
             // Update the Apple Music token in DynamoDB
-            await updateAppleMusicToken(tokensTable, 'AppleMusicDev', appleMusicToken);
+            await updateAppleMusicToken(tokensTable, 'appleMusicDev', appleMusicToken);
 
             return { statusCode: 200, body: JSON.stringify({ message: 'Apple Music token refreshed successfully' }) };
         } catch (apiError) {
@@ -61,7 +61,6 @@ async function generateAppleMusicToken() {
 
     return token;
 }
-
 
 async function updateAppleMusicToken(tableName, primaryKeyValue, appleMusicToken) {
     const updateParams = {

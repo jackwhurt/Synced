@@ -8,4 +8,5 @@ target 'SyncedFrontend' do
   # Pods for SyncedFrontend
   pod 'AWSCognito'
   pod 'AWSCognitoIdentityProvider'
+  pod 'AWSSSM'
 end

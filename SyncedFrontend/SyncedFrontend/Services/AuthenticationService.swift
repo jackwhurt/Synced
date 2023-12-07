@@ -1,10 +1,13 @@
 import AWSCognitoIdentityProvider
 
+// TODO: Refactor, and create an app wide error handler
 class AuthenticationService {
     private let userPool: AWSCognitoIdentityUserPool
+    private let keychainService: KeychainService
 
-    init?() {
-        // Configuration setup
+    init?(keychainService: KeychainService) {
+        self.keychainService = keychainService
+
         guard let clientId = ProcessInfo.processInfo.environment["COGNITO_CLIENT_ID"],
               let poolId = ProcessInfo.processInfo.environment["COGNITO_POOL_ID"] else {
             print("Environment variables for Cognito not set")
@@ -34,8 +37,9 @@ class AuthenticationService {
                 } else if let result = task.result {
                     // Extracting token strings from the session object
                     if let accessToken = result.accessToken?.tokenString,
-                    let refreshToken = result.refreshToken?.tokenString {
-                        self?.saveTokens(accessToken: accessToken, refreshToken: refreshToken)
+                       let idToken = result.idToken?.tokenString,
+                       let refreshToken = result.refreshToken?.tokenString {
+                        self?.saveTokens(accessToken: accessToken, idToken: idToken, refreshToken: refreshToken)
                         completion(.success(()))
                     } else {
                         completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve tokens"])))
@@ -54,11 +58,11 @@ class AuthenticationService {
 
         user.signOut()
 
-        // Clear tokens from Keychain
-        let accessTokenDeleted = KeychainService.shared.delete(key: "accessToken")
-        let refreshTokenDeleted = KeychainService.shared.delete(key: "refreshToken")
+        let accessTokenDeleted = keychainService.delete(key: "accessToken")
+        let idTokenDeleted = keychainService.delete(key: "idToken")
+        let refreshTokenDeleted = keychainService.delete(key: "refreshToken")
 
-        if accessTokenDeleted && refreshTokenDeleted {
+        if accessTokenDeleted && idTokenDeleted && refreshTokenDeleted {
             completion(.success(()))
         } else {
             completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to clear tokens"])))
@@ -80,19 +84,21 @@ class AuthenticationService {
         }
     }
     
-    func saveTokens(accessToken: String, refreshToken: String) {
+    private func saveTokens(accessToken: String, idToken: String, refreshToken: String) {
         if let accessTokenData = accessToken.data(using: .utf8),
+           let idTokenData = idToken.data(using: .utf8),
            let refreshTokenData = refreshToken.data(using: .utf8) {
-            let _ = KeychainService.shared.save(key: "accessToken", data: accessTokenData)
-            let _ = KeychainService.shared.save(key: "refreshToken", data: refreshTokenData)
+            keychainService.save(key: "accessToken", data: accessTokenData)
+            keychainService.save(key: "idToken", data: idTokenData)
+            keychainService.save(key: "refreshToken", data: refreshTokenData)
+        } else {
+            print("Error: Unable to convert token strings to Data")
         }
     }
     
-    func loadRefreshToken() -> String? {
-        if let refreshTokenData = KeychainService.shared.load(key: "refreshToken") {
-            return String(data: refreshTokenData, encoding: .utf8)
-        }
-        return nil
+    private func loadRefreshToken() -> String? {
+        guard let refreshTokenData = keychainService.load(key: "refreshToken") else { return nil }
+        return String(data: refreshTokenData, encoding: .utf8)
     }
     
     func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
@@ -108,8 +114,9 @@ class AuthenticationService {
                     completion(.failure(error))
                 } else if let result = task.result {
                     if let newAccessToken = result.accessToken?.tokenString,
+                       let newIdToken = result.idToken?.tokenString,  // Get the new ID Token
                        let newRefreshToken = result.refreshToken?.tokenString {
-                        self?.saveTokens(accessToken: newAccessToken, refreshToken: newRefreshToken)
+                        self?.saveTokens(accessToken: newAccessToken, idToken: newIdToken, refreshToken: newRefreshToken)  // Save the new tokens
                         completion(.success(()))
                     } else {
                         completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve new tokens"])))

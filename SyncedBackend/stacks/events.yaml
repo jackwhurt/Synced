@@ -27,7 +27,7 @@ Resources:
   AppleMusicTokenRefreshRule:
     Type: "AWS::Events::Rule"
     Properties:
-      ScheduleExpression: "rate(1 month)"
+      ScheduleExpression: "cron(0 0 1 * ? *)"
       Targets:
         - Arn: !Ref UpdateAppleMusicDevTokenFunctionArn
           Id: "UpdateAppleMusicDevTokenTarget"

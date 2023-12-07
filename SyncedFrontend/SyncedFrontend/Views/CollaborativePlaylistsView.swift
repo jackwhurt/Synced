@@ -14,6 +14,13 @@ struct CollaborativePlaylistsView: View {
                 .padding()
                 .background(Color.red)
                 .cornerRadius(10)
+                Button("Connect Apple Music") {
+                    viewModel.connectAppleMusic()
+                }
+                .foregroundColor(.white)
+                .padding()
+                .background(Color.red)
+                .cornerRadius(10)
             } else {
                 Text("Not logged in.")
             }

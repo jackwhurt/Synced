@@ -23,6 +23,8 @@ Parameters:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
     Type: String
+  GetAppleMusicDevTokenFunctionArn:
+    Type: String
   UserPoolId: 
     Type: String
 
@@ -102,6 +104,36 @@ Resources:
       FunctionName: !Ref ExchangeSpotifyTokenFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/auth/spotify" 
+
+  # Authorisation / Apple Music
+  AppleMusicResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref AuthResource 
+      PathPart: 'apple-music'
+      RestApiId: !Ref MyApi
+
+  # Get Apple Music Dev Token
+  GetAppleMusicDevTokenFunction:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref AppleMusicResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAppleMusicDevTokenFunctionArn}/invocations"
+
+  GetAppleMusicDevTokenLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetAppleMusicDevTokenFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/apple-music" 
 
   # Collaborative Playlists
   PlaylistsResource:
