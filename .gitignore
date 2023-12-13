@@ -30,7 +30,6 @@ xcuserdata/
 *.swp
 *.textmate-project
 *.opendirectory
-*.xcworkspace
 !default.xcworkspace
 
 # Profile
