@@ -17,7 +17,6 @@ class CollaborativePlaylistsViewModel: ObservableObject {
                 switch result {
                 case .success:
                     self?.isLoggedIn = false
-                    // Additional logic after successful logout
                 case .failure(let error):
                     print("Logout error: \(error.localizedDescription)")
                     // Handle error scenario

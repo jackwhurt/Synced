@@ -10,3 +10,10 @@ enum AuthenticationServiceError: Error {
     case failedToSaveTokens
 }
 
+enum FallbackAuthenticationError: Error {
+    case loginNotAvailable
+    case logoutNotAvailable
+    case signupNotAvailable
+    case tokenRefreshNotAvailable
+}
+

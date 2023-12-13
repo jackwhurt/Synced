@@ -12,7 +12,7 @@ struct ContentView: View {
             Color("SyncedBackground")
                 .ignoresSafeArea()
             if contentViewModel.isLoggedIn {
-                CollaborativePlaylistsView()
+                CollaborativePlaylistsView(isLoggedIn: $contentViewModel.isLoggedIn)
             } else {
                 LoginView(isLoggedIn: $contentViewModel.isLoggedIn)
             }

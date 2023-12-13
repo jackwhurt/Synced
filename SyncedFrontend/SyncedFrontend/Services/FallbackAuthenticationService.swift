@@ -2,22 +2,22 @@ import AWSCognitoIdentityProvider
 
 class FallbackAuthenticationService: AuthenticationServiceProtocol {
     func loginUser(username: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        <#code#>
+        completion(.failure(FallbackAuthenticationError.loginNotAvailable))
     }
     
     func logoutUser(completion: @escaping (Result<Void, Error>) -> Void) {
-        <#code#>
+        completion(.failure(FallbackAuthenticationError.logoutNotAvailable))
     }
     
     func signUpUser(email: String, password: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
-        <#code#>
+        completion(.failure(FallbackAuthenticationError.signupNotAvailable))
     }
     
     func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
-        <#code#>
+        completion(.failure(FallbackAuthenticationError.tokenRefreshNotAvailable))
     }
     
     func checkSession(completion: @escaping (Bool) -> Void) {
-        <#code#>
+        completion(false)
     }
 }
