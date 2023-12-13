@@ -1,17 +1,16 @@
 import AWSCognitoIdentityProvider
 
 // TODO: Refactor, and create an app wide error handler
-class AuthenticationService {
+class AuthenticationService: AuthenticationServiceProtocol {
     private let userPool: AWSCognitoIdentityUserPool
     private let keychainService: KeychainService
 
-    init?(keychainService: KeychainService) {
+    init(keychainService: KeychainService) throws {
         self.keychainService = keychainService
 
         guard let clientId = ProcessInfo.processInfo.environment["COGNITO_CLIENT_ID"],
               let poolId = ProcessInfo.processInfo.environment["COGNITO_POOL_ID"] else {
-            print("Environment variables for Cognito not set")
-            return nil
+            throw AuthenticationServiceError.cognitoIdsNotSet
         }
 
         let serviceConfiguration = AWSServiceConfiguration(region: .EUWest2, credentialsProvider: nil)
@@ -20,8 +19,7 @@ class AuthenticationService {
         AWSCognitoIdentityUserPool.register(with: serviceConfiguration, userPoolConfiguration: userPoolConfiguration, forKey: "UserPool")
 
         guard let userPool = AWSCognitoIdentityUserPool(forKey: "UserPool") else {
-            print("Failed to initialize user pool")
-            return nil
+            throw AuthenticationServiceError.cognitoUserPoolFailedToInitialise
         }
 
         self.userPool = userPool
@@ -30,29 +28,34 @@ class AuthenticationService {
     func loginUser(username: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let user = userPool.getUser(username)
         user.getSession(username, password: password, validationData: nil).continueWith { [weak self] task -> Any? in
-            guard self != nil else { return nil }
+            guard let self = self else { return nil }
             DispatchQueue.main.async {
                 if let error = task.error {
                     completion(.failure(error))
                 } else if let result = task.result {
-                    // Extracting token strings from the session object
-                    if let accessToken = result.accessToken?.tokenString,
-                       let idToken = result.idToken?.tokenString,
-                       let refreshToken = result.refreshToken?.tokenString {
-                        self?.saveTokens(accessToken: accessToken, idToken: idToken, refreshToken: refreshToken)
-                        completion(.success(()))
-                    } else {
-                        completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve tokens"])))
+                    do {
+                        // Extracting token strings from the session object
+                        if let accessToken = result.accessToken?.tokenString,
+                           let idToken = result.idToken?.tokenString,
+                           let refreshToken = result.refreshToken?.tokenString {
+                            try self.saveTokens(accessToken: accessToken, idToken: idToken, refreshToken: refreshToken)
+                            completion(.success(()))
+                        } else {
+                            completion(.failure(AuthenticationServiceError.failedToLogin))
+                        }
+                    } catch {
+                        completion(.failure(error))
                     }
                 }
             }
             return nil
         }
     }
+
     
     func logoutUser(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = userPool.currentUser() else {
-            completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user found"])))
+            completion(.failure(AuthenticationServiceError.noCurrentUserFound))
             return
         }
 
@@ -65,7 +68,7 @@ class AuthenticationService {
         if accessTokenDeleted && idTokenDeleted && refreshTokenDeleted {
             completion(.success(()))
         } else {
-            completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to clear tokens"])))
+            completion(.failure(AuthenticationServiceError.failedToClearTokens))
         }
     }
 
@@ -84,7 +87,7 @@ class AuthenticationService {
         }
     }
     
-    private func saveTokens(accessToken: String, idToken: String, refreshToken: String) {
+    private func saveTokens(accessToken: String, idToken: String, refreshToken: String) throws {
         if let accessTokenData = accessToken.data(using: .utf8),
            let idTokenData = idToken.data(using: .utf8),
            let refreshTokenData = refreshToken.data(using: .utf8) {
@@ -92,7 +95,7 @@ class AuthenticationService {
             keychainService.save(key: "idToken", data: idTokenData)
             keychainService.save(key: "refreshToken", data: refreshTokenData)
         } else {
-            print("Error: Unable to convert token strings to Data")
+            throw AuthenticationServiceError.failedToSaveTokens
         }
     }
     
@@ -102,9 +105,13 @@ class AuthenticationService {
     }
     
     func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let refreshToken = loadRefreshToken(),
-              let user = userPool.currentUser() else {
-            completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No current user or refresh token found"])))
+        guard let refreshToken = loadRefreshToken() else {
+            completion(.failure(AuthenticationServiceError.noRefreshTokenFound))
+            return
+        }
+        
+        guard let user = userPool.currentUser() else {
+            completion(.failure(AuthenticationServiceError.noCurrentUserFound))
             return
         }
 
@@ -113,13 +120,17 @@ class AuthenticationService {
                 if let error = task.error {
                     completion(.failure(error))
                 } else if let result = task.result {
-                    if let newAccessToken = result.accessToken?.tokenString,
-                       let newIdToken = result.idToken?.tokenString,  // Get the new ID Token
-                       let newRefreshToken = result.refreshToken?.tokenString {
-                        self?.saveTokens(accessToken: newAccessToken, idToken: newIdToken, refreshToken: newRefreshToken)  // Save the new tokens
-                        completion(.success(()))
-                    } else {
-                        completion(.failure(NSError(domain: "AuthenticationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve new tokens"])))
+                    do {
+                        if let newAccessToken = result.accessToken?.tokenString,
+                           let newIdToken = result.idToken?.tokenString,
+                           let newRefreshToken = result.refreshToken?.tokenString {
+                            try self?.saveTokens(accessToken: newAccessToken, idToken: newIdToken, refreshToken: newRefreshToken)
+                            completion(.success(()))
+                        } else {
+                            completion(.failure(AuthenticationServiceError.failedToRefreshTokens))
+                        }
+                    } catch {
+                        completion(.failure(error))
                     }
                 }
             }

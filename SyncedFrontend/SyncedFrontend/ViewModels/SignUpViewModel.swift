@@ -8,14 +8,13 @@ class SignUpViewModel: ObservableObject {
     @Published var signUpErrorMessage: String = ""
     @Published var isSignedUp = false
     @Published var passwordValidationMessage: String = ""
+    @Published var isLoggedIn: Binding<Bool>
     
-    private let authService: AuthenticationService
+    private let authenticationService: AuthenticationServiceProtocol
 
-    init(authService: AuthenticationService? = AuthenticationService()) {
-        guard let authService = authService else {
-            fatalError("Failed to initialize AuthenticationService")
-        }
-        self.authService = authService
+    init(isLoggedIn: Binding<Bool>, authenticationService: AuthenticationServiceProtocol) {
+        self.authenticationService = authenticationService
+        self.isLoggedIn = isLoggedIn
     }
 
     func signUpUser() {
@@ -23,7 +22,7 @@ class SignUpViewModel: ObservableObject {
             return
         }
             
-        authService.signUpUser(email: email, password: password) { [weak self] result in
+        authenticationService.signUpUser(email: email, password: password) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:

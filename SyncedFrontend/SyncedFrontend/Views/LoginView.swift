@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct LoginView: View {
-    @ObservedObject var viewModel: LoginViewModel
+    @ObservedObject private var loginViewModel: LoginViewModel
     
     init(isLoggedIn: Binding<Bool>) {
-        _viewModel = ObservedObject(initialValue: LoginViewModel(isLoggedIn: isLoggedIn))
+        _loginViewModel = ObservedObject(initialValue: LoginViewModel(isLoggedIn: isLoggedIn, authenticationService: DIContainer.shared.provideAuthenticationService()))
     }
     
     var body: some View {
@@ -14,15 +14,15 @@ struct LoginView: View {
                     Logo()
                         .padding(.top, geometry.size.height * 0.08)
                     
-                    LoginInputFields(viewModel: viewModel)
-                    LoginButton(action: viewModel.loginUser)
-                    ForgotPasswordAndSignUpLinks()
+                    LoginInputFields(loginViewModel: loginViewModel)
+                    LoginButton(action: loginViewModel.loginUser)
+                    ForgotPasswordAndSignUpLinks(loginViewModel: loginViewModel)
                     
                     Spacer(minLength: geometry.size.height * 0.1)
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
-                .alert(isPresented: $viewModel.showingLoginError) {
+                .alert(isPresented: $loginViewModel.showingLoginError) {
                     Alert(title: Text("Login Error"), message: Text("Failed to login. Please check your username and password and try again."), dismissButton: .default(Text("OK")))
                 }
             }
@@ -33,12 +33,12 @@ struct LoginView: View {
 }
 
 struct LoginInputFields: View {
-    @ObservedObject var viewModel: LoginViewModel
+    @ObservedObject var loginViewModel: LoginViewModel
 
     var body: some View {
         VStack {
-            LongInputField(placeholder: "Username", text: $viewModel.username)
-            LongSecureInputField(placeholder: "Password", text: $viewModel.password)
+            LongInputField(placeholder: "Username", text: $loginViewModel.username)
+            LongSecureInputField(placeholder: "Password", text: $loginViewModel.password)
         }
     }
 }
@@ -52,20 +52,23 @@ struct LoginButton: View {
 }
 
 struct ForgotPasswordAndSignUpLinks: View {
+    @ObservedObject var loginViewModel: LoginViewModel
+    
     var body: some View {
         HStack {
             Spacer()
             
             TextLink(
                 title: "Forgot Password?",
-                destination: SignUpView() // Placeholder
+                // Placeholder
+                destination: LoginView(isLoggedIn: .constant(false))
             )
 
             Spacer()
             
             TextLink(
                 title: "Sign Up Here",
-                destination: SignUpView()
+                destination: SignUpView(isLoggedIn: loginViewModel.isLoggedIn)
             )
             
             Spacer()

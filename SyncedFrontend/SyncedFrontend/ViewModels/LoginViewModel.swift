@@ -1,24 +1,20 @@
 import SwiftUI
 
-// ViewModel for the LoginView
 class LoginViewModel: ObservableObject {
     @Published var username: String = ""
     @Published var password: String = ""
     @Published var showingLoginError = false
     @Published var isLoggedIn: Binding<Bool>
 
-    private let authService: AuthenticationService
+    private let authenticationService: AuthenticationServiceProtocol
 
-    init(isLoggedIn: Binding<Bool>, authService: AuthenticationService? = AuthenticationService()) {
-        guard let authService = authService else {
-            fatalError("Failed to initialize AuthenticationService")
-        }
-        self.authService = authService
+    init(isLoggedIn: Binding<Bool>, authenticationService: AuthenticationServiceProtocol) {
+        self.authenticationService = authenticationService
         self.isLoggedIn = isLoggedIn
     }
 
     func loginUser() {
-        authService.loginUser(username: username, password: password) { [weak self] result in
+        authenticationService.loginUser(username: username, password: password) { [weak self] result in
             switch result {
             case .success():
                 print("Login successful")

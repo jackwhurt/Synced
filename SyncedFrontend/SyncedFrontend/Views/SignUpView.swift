@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @ObservedObject var viewModel = SignUpViewModel()
+    @ObservedObject private var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var presentationMode
+    
+    init(isLoggedIn: Binding<Bool>) {
+        _signUpViewModel = ObservedObject(initialValue: SignUpViewModel(isLoggedIn: isLoggedIn, authenticationService: DIContainer.shared.provideAuthenticationService()))
+    }
     
     var body: some View {
         NavigationStack {
@@ -11,19 +15,20 @@ struct SignUpView: View {
                     Logo()
                         .padding(.top, geometry.size.height * 0.04)
                     
-                    SignUpInputFields(viewModel: viewModel)
-                    SignUpButton(action: viewModel.signUpUser)
+                    SignUpInputFields(signUpViewModel: signUpViewModel)
+                    SignUpButton(action: signUpViewModel.signUpUser)
                     
                     Spacer(minLength: geometry.size.height * 0.1)
                     
-                    if viewModel.isSignedUp {
-                        NavigationLink("", destination: CollaborativePlaylistsView())
+                    if signUpViewModel.isSignedUp {
+                        // Placeholder, will be get info screen
+                        NavigationLink("", destination: CollaborativePlaylistsView(isLoggedIn: signUpViewModel.isLoggedIn))
                     }
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
-                .alert(isPresented: $viewModel.showingSignUpError) {
-                    Alert(title: Text("Sign Up Error"), message: Text(viewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
+                .alert(isPresented: $signUpViewModel.showingSignUpError) {
+                    Alert(title: Text("Sign Up Error"), message: Text(signUpViewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
                 }
             }
             .background(Color("SyncedBackground"))
@@ -40,21 +45,21 @@ struct SignUpButton: View {
 }
 
 struct SignUpInputFields: View {
-    @ObservedObject var viewModel: SignUpViewModel
+    @ObservedObject var signUpViewModel: SignUpViewModel
 
     var body: some View {
         VStack {
-            LongInputField(placeholder: "Email", text: $viewModel.email)
-            LongSecureInputField(placeholder: "Password", text: $viewModel.password)
-                .onChange(of: viewModel.password) {
-                    viewModel.validatePasswordCriteria()
+            LongInputField(placeholder: "Email", text: $signUpViewModel.email)
+            LongSecureInputField(placeholder: "Password", text: $signUpViewModel.password)
+                .onChange(of: signUpViewModel.password) {
+                    signUpViewModel.validatePasswordCriteria()
                 }
-            LongSecureInputField(placeholder: "Confirm Password", text: $viewModel.confirmPassword)
-                .onChange(of: viewModel.confirmPassword) {
-                    viewModel.validatePasswordCriteria()
+            LongSecureInputField(placeholder: "Confirm Password", text: $signUpViewModel.confirmPassword)
+                .onChange(of: signUpViewModel.confirmPassword) {
+                    signUpViewModel.validatePasswordCriteria()
                 }
-            if(viewModel.passwordValidationMessage != "") {
-                Text(viewModel.passwordValidationMessage)
+            if(signUpViewModel.passwordValidationMessage != "") {
+                Text(signUpViewModel.passwordValidationMessage)
                     .foregroundColor(Color("SyncedErrorRed"))
                     .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
@@ -66,6 +71,6 @@ struct SignUpInputFields: View {
 // Preview
 struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
-        SignUpView()
+        SignUpView(isLoggedIn: .constant(false))
     }
 }

@@ -1,21 +1,24 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = ContentViewModel()
-    @StateObject private var cpViewModel = CollaborativePlaylistsViewModel()
+    @StateObject private var contentViewModel: ContentViewModel
+        
+    init() {
+        _contentViewModel = StateObject(wrappedValue: ContentViewModel(authenticationService: DIContainer.shared.provideAuthenticationService()))
+    }
     
     var body: some View {
         ZStack {
             Color("SyncedBackground")
                 .ignoresSafeArea()
-            if viewModel.isLoggedIn {
+            if contentViewModel.isLoggedIn {
                 CollaborativePlaylistsView()
             } else {
-                LoginView(isLoggedIn: $viewModel.isLoggedIn)
+                LoginView(isLoggedIn: $contentViewModel.isLoggedIn)
             }
         }
         .onAppear {
-            viewModel.recheckSession()
+            contentViewModel.recheckSession()
         }
     }
 }

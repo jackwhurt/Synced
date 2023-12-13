@@ -3,16 +3,16 @@ import StoreKit
 
 class CollaborativePlaylistsViewModel: ObservableObject {
     @Published var isLoggedIn = true
-    private var authService: AuthenticationService?
-    private let appleMusicService: AppleMusicService // Corrected line
+    private let authenticationService: AuthenticationServiceProtocol?
+    private let appleMusicService: AppleMusicService
 
-    init() {
-        authService = AuthenticationService()
-        appleMusicService = AppleMusicService(apiService: APIService(keychainService: KeychainService()))
+    init(authenticationService: AuthenticationServiceProtocol, appleMusicService: AppleMusicService) {
+        self.authenticationService = authenticationService
+        self.appleMusicService = appleMusicService
     }
 
     func logout() {
-        authService?.logoutUser { [weak self] result in
+        authenticationService?.logoutUser { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
@@ -49,7 +49,7 @@ class CollaborativePlaylistsViewModel: ObservableObject {
             switch result {
             case .success(let token):
                 print("User Token: \(token)")
-                // Use the token for your API requests
+                // Use the token for API requests
             case .failure(let error):
                 print("Error: \(error.localizedDescription)")
                 // Handle error
