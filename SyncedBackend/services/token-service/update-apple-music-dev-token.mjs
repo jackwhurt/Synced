@@ -48,15 +48,13 @@ async function generateAppleMusicToken() {
     // Calculate the expiration time (5 months from now)
     const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30 * 5;
 
-    // Generate the JWT token with a 3-month expiration
-    const token = jwt.sign({}, privateKey, {
+    const token = jwt.sign({
+        iss: teamId,
+        exp: expirationTime,
+        iat: Math.floor(Date.now() / 1000)
+    }, privateKey, {
         algorithm: 'ES256',
-        expiresIn: expirationTime,
-        issuer: teamId,
-        header: {
-            alg: 'ES256',
-            kid: keyId
-        }
+        keyid: keyId
     });
 
     return token;

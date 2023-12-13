@@ -1,9 +1,11 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
 import { v4 as uuidv4 } from 'uuid';
-import { createPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
+import { createSpotifyPlaylist, createAppleMusicPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
+import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { addCollaborators } from '/opt/nodejs/add-collaborators.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
+import { prepareAppleMusicAccounts } from '/opt/nodejs/apple-music-utils.mjs';
 import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -13,65 +15,61 @@ const usersTable = process.env.USERS_TABLE;
 const MAX_COLLABORATORS = 10;
 
 export const createCollaborativePlaylistHandler = async (event) => {
-    console.info('received:', event);
-    const response = parseAndValidateEvent(event);
-    if (response) return response;
+    console.info('Received:', event);
+    
+    const validationResult = parseAndValidateEvent(event);
+    if (validationResult.error) return createErrorResponse(validationResult.error);
 
-    const { playlist, collaborators, spotifyPlaylist } = JSON.parse(event.body);
-    const claims = event.requestContext.authorizer?.claims;
-    const userId = claims['sub'];
+    const { playlist, collaborators, spotifyPlaylist, appleMusicPlaylist } = validationResult.data;
+    const userId = getUserIdFromEvent(event);
     const timestamp = new Date().toISOString();
-    const playlistId = uuidv4();
-    playlist.playlistId = playlistId;
-
+    playlist.playlistId = uuidv4();
     collaborators.push(userId);
 
-    const transactItem = createPlaylistItem(playlistId, userId, playlist, timestamp);
+    const transactItem = createPlaylistItem(playlist.playlistId, userId, playlist, timestamp);
 
     try {
-        await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
-        await addCollaborators(playlistId, collaborators, userId, playlistsTable, usersTable);
-        if (spotifyPlaylist) {
-            const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
-            if (!failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ', userId)
-            await createPlaylist(playlist, spotifyUsers[0], playlistsTable);
-            await updateCollaboratorSyncStatus(playlistId, userId, true, 'spotify', playlistsTable);
-        }
-
-        return {
-            statusCode: 201,
-            body: JSON.stringify({
-                id: playlistId,
-                playlist,
-                collaborators,
-                createdAt: timestamp
-            })
-        };
+        await handlePlaylistCreation(transactItem, playlist, collaborators, userId, spotifyPlaylist, appleMusicPlaylist);
+        return createSuccessResponse(playlist, playlist.playlistId, collaborators, timestamp);
     } catch (err) {
         console.error('Error:', err);
         await rollbackPlaylistData([transactItem]);
-
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Error creating Collaborative Playlist' })
-        };
+        return createErrorResponse(err);
     }
 };
 
-// Helper function to parse and validate the event
+// Parse and validate the event
 function parseAndValidateEvent(event) {
-    if (!event.body) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Missing body' }) };
-    }
+    try {
+        if (!event.body) {
+            throw new Error('Missing request body');
+        }
 
-    const { playlist, collaborators } = JSON.parse(event.body);
-    if (!playlist || !playlist.title) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
-    }
-    if (collaborators && collaborators.length > MAX_COLLABORATORS) {
-        return { statusCode: 400, body: JSON.stringify({ message: `Collaborator limit reached: ${MAX_COLLABORATORS}` }) };
+        const body = JSON.parse(event.body);
+        validateBody(body);
+        return { data: body };
+    } catch (error) {
+        return { error: { statusCode: 400, message: error.message } };
     }
 }
+
+// Validate the body of the event
+function validateBody(body) {
+    if (!body.playlist || !body.playlist.title) {
+        throw new Error('Missing required playlist fields');
+    }
+    if (body.collaborators && body.collaborators.length > MAX_COLLABORATORS) {
+        throw new Error(`Collaborator limit reached: ${MAX_COLLABORATORS}`);
+    }
+}
+
+
+// Get user ID from event
+function getUserIdFromEvent(event) {
+    const claims = event.requestContext.authorizer?.claims;
+    return claims['sub'];
+}
+
 
 // Helper function to create a playlist item for DynamoDB
 function createPlaylistItem(playlistId, userId, playlist, timestamp) {
@@ -92,14 +90,55 @@ function createPlaylistItem(playlistId, userId, playlist, timestamp) {
     };
 }
 
+const handlePlaylistCreation = async (transactItem, playlist, collaborators, userId, spotifyPlaylist, appleMusicPlaylist) => {
+    await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
+    await addCollaborators(playlist.playlistId, collaborators, userId, playlistsTable, usersTable);
+
+    let spotifyPlaylistId;
+    if (spotifyPlaylist) {
+        spotifyPlaylistId = await handleSpotifyPlaylist(playlist, userId);
+    }
+
+    try {
+        if (appleMusicPlaylist) {
+            await handleAppleMusicPlaylist(playlist, userId);
+        }
+    } catch (err) {
+        console.error('Error creating Apple Music playlist');
+        if (spotifyPlaylistId) {
+            await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUsers[0]);
+        }
+        throw err;
+    }
+};
+
+// Handle Spotify Playlist Creation
+async function handleSpotifyPlaylist(playlist, userId) {
+    const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([userId], usersTable, tokensTable);
+    if (!failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ' + userId);
+
+    const spotifyPlaylistId = await createSpotifyPlaylist(playlist, spotifyUsers[0], playlistsTable);
+    await updateCollaboratorSyncStatus(playlist.playlistId, userId, true, 'spotify', playlistsTable);
+    return spotifyPlaylistId; // Indicate that Spotify playlist was successfully created
+}
+
+// Handle Apple Music Playlist Creation
+async function handleAppleMusicPlaylist(playlist, userId) {
+    const { appleMusicUsers, failedAppleMusicUsers } = await prepareAppleMusicAccounts([userId], tokensTable);
+    if (!failedAppleMusicUsers) throw new Error('Apple Music account could not be prepared for user: ' + userId);
+
+    await createAppleMusicPlaylist(playlist, appleMusicUsers[0], playlistsTable);
+    await updateCollaboratorSyncStatus(playlist.playlistId, userId, true, 'appleMusic', playlistsTable);
+}
+
 // Helper function to rollback in case of an error
 async function rollbackPlaylistData(transactItems) {
     if (transactItems.length === 0) {
         console.info('No items to rollback.');
         return;
     }
-    
-    console.info('Rollback started');
+
+    console.info('Rollback database transaction started');
     // Convert Put operations to Delete operations
     const deleteOperations = transactItems.map(item => ({
         Delete: {
@@ -117,4 +156,25 @@ async function rollbackPlaylistData(transactItems) {
     } catch (error) {
         console.error('Error during cleanup:', error);
     }
+}
+
+// Create a success response
+function createSuccessResponse(playlist, playlistId, collaborators, timestamp) {
+    return {
+        statusCode: 201,
+        body: JSON.stringify({
+            id: playlistId,
+            playlist,
+            collaborators,
+            createdAt: timestamp
+        })
+    };
+}
+
+// Create an error response
+function createErrorResponse(error) {
+    return {
+        statusCode: 500,
+        body: JSON.stringify({ message: `Error creating Collaborative Playlist: ${error.message}` })
+    };
 }
