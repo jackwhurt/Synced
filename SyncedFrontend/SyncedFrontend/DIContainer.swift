@@ -21,4 +21,8 @@ class DIContainer {
     func provideAppleMusicService() -> AppleMusicService {
         return AppleMusicService(apiService: provideAPIService())
     }
+    
+    func provideMusicKitService() -> MusicKitService {
+        return MusicKitService()
+    }
 }

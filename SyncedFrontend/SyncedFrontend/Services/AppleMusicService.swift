@@ -32,9 +32,10 @@ class AppleMusicService {
     // TODO: First check keychain and expiry timestamp
     // Function to retrieve Apple Music Developer Token from the API
     private func getDeveloperToken(completion: @escaping (Result<String, Error>) -> Void) {
-        apiService.makeGetRequest(endpoint: "/auth/apple-music", model: DeveloperTokenResponse.self) { result in
+        apiService.makeGetRequest(endpoint: "/auth/apple-music/dev", model: DeveloperTokenResponse.self) { result in
             switch result {
             case .failure(let error):
+                print("Failed to retrieve Apple Music dev token")
                 completion(.failure(error))
             case .success(let tokenResponse):
                 completion(.success(tokenResponse.appleMusicToken))

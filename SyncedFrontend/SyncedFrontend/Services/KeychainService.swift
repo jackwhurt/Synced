@@ -27,6 +27,7 @@ class KeychainService {
         if status == noErr, let data = dataTypeRef as? Data {
             return data
         }
+        print("No data found for key: ", key)
         return nil
     }
 

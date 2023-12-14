@@ -126,6 +126,7 @@ async function prepareCollaboratorData(playlistId) {
     return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
+// TODO: Add updatedAt
 function buildTransactItems(playlistId, songs, timestamp) {
     let transactItems = [];
 

@@ -27,6 +27,7 @@
 		8061CE0A2B29EC4400B0FFD6 /* DIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE092B29EC4400B0FFD6 /* DIContainer.swift */; };
 		8061CE0C2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */; };
 		8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */; };
+		8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */; };
 		80AD235C2B154B94003A8E20 /* CollaborativePlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */; };
 		80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
 		80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
@@ -60,6 +61,7 @@
 		8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackAuthenticationService.swift; sourceTree = "<group>"; };
 		8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationServiceProtocol.swift; sourceTree = "<group>"; };
 		8061CE102B2A618300B0FFD6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
 		80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistsView.swift; sourceTree = "<group>"; };
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
@@ -163,6 +165,7 @@
 				80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */,
 				80E2EB332B22775F00E99BF9 /* ApiService.swift */,
 				8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */,
+				8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -329,6 +332,7 @@
 				80550D392B17CB1A00678B11 /* KeychainService.swift in Sources */,
 				801CC9522B167183006FB76D /* Logo.swift in Sources */,
 				805D49432B0FDE100081B076 /* SyncedFrontendApp.swift in Sources */,
+				8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */,
 				8061CE0A2B29EC4400B0FFD6 /* DIContainer.swift in Sources */,
 				80550D3B2B17D18500678B11 /* ContentViewModel.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,
@@ -468,6 +472,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SyncedFrontend/Preview Content\"";
@@ -476,7 +481,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SyncedFrontend/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Synced;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Our app needs access to your Apple Music account to enable the syncing of playlists between Apple Music and Spotify. This allows you to seamlessly create and manage collaborative playlists across both platforms, ensuring your music experience is unified and enjoyable. We respect your privacy and will only access your playlists for synchronization purposes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -491,6 +496,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Jack.SyncedFrontend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -503,6 +509,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SyncedFrontend/Preview Content\"";
@@ -511,7 +518,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SyncedFrontend/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Synced;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Our app needs access to your Apple Music account to enable the syncing of playlists between Apple Music and Spotify. This allows you to seamlessly create and manage collaborative playlists across both platforms, ensuring your music experience is unified and enjoyable. We respect your privacy and will only access your playlists for synchronization purposes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -526,6 +533,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = Jack.SyncedFrontend;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

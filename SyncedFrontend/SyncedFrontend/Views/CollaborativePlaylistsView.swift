@@ -6,7 +6,8 @@ struct CollaborativePlaylistsView: View {
     init(isLoggedIn: Binding<Bool>) {
         _cpViewModel = StateObject(wrappedValue: CollaborativePlaylistsViewModel(
             authenticationService: DIContainer.shared.provideAuthenticationService(),
-            appleMusicService: DIContainer.shared.provideAppleMusicService()
+            appleMusicService: DIContainer.shared.provideAppleMusicService(),
+            musicKitService: DIContainer.shared.provideMusicKitService()
             )
         )
     }
@@ -24,6 +25,16 @@ struct CollaborativePlaylistsView: View {
                 .cornerRadius(10)
                 Button("Connect Apple Music") {
                     cpViewModel.connectAppleMusic()
+                }
+                .foregroundColor(.white)
+                .padding()
+                .background(Color.red)
+                .cornerRadius(10)
+                
+                Button("Create Playlist") {
+                    Task {
+                        await cpViewModel.createPlaylist()
+                    }
                 }
                 .foregroundColor(.white)
                 .padding()
