@@ -25,6 +25,8 @@ Parameters:
     Type: String
   GetAppleMusicDevTokenFunctionArn:
     Type: String
+  UpdateAppleMusicUserTokenFunctionArn:
+    Type: String
   UserPoolId: 
     Type: String
 
@@ -112,6 +114,14 @@ Resources:
       ParentId: !Ref AuthResource 
       PathPart: 'apple-music'
       RestApiId: !Ref MyApi
+  
+  # Authorisation / Apple Music / Dev
+  AppleMusicDevResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref AppleMusicResource 
+      PathPart: 'dev'
+      RestApiId: !Ref MyApi
 
   # Get Apple Music Dev Token
   GetAppleMusicDevTokenFunction:
@@ -120,7 +130,7 @@ Resources:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref CognitoAuthoriser
       HttpMethod: GET
-      ResourceId: !Ref AppleMusicResource
+      ResourceId: !Ref AppleMusicDevResource
       RestApiId: !Ref MyApi
       Integration:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
@@ -133,7 +143,37 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GetAppleMusicDevTokenFunctionArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/apple-music" 
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/apple-music/dev" 
+
+  # Authorisation / Apple Music / User
+  AppleMusicUserResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref AppleMusicResource 
+      PathPart: 'user'
+      RestApiId: !Ref MyApi
+
+  # Update Apple Music User Token
+  UpdateAppleMusicUserTokenFunction:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref AppleMusicUserResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateAppleMusicUserTokenFunctionArn}/invocations"
+
+  UpdateAppleMusicUserTokenLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UpdateAppleMusicUserTokenFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/auth/apple-music/user" 
 
   # Collaborative Playlists
   PlaylistsResource:

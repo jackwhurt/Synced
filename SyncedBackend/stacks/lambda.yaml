@@ -101,6 +101,42 @@ Resources:
           USERS_TABLE: !Ref UsersTableName
 
   # Authorisation - Apple Music
+  GetAppleMusicDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-apple-music-dev-token.getAppleMusicDevTokenHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get the Apple Music Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+
+  UpdateAppleMusicUserTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-apple-music-user-token.updateAppleMusicUserTokenHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update an Apple Music User token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+
   UpdateAppleMusicDevTokenFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -129,25 +165,7 @@ Resources:
       Environment:
         Variables:
           TOKENS_TABLE: !Ref TokensTableName  
-          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
-
-  GetAppleMusicDevTokenFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ../services/token-service/
-      Handler: get-apple-music-dev-token.getAppleMusicDevTokenHandler
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description: A function to get the Apple Music Developer token in the Tokens database.
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref TokensTableName
-      Environment:
-        Variables:
-          TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName 
 
   # Collaborative Playlists
   GetCollaborativePlaylistByIdFunction:
@@ -423,6 +441,8 @@ Outputs:
     Value: !GetAtt UpdateAppleMusicDevTokenFunction.Arn
   GetAppleMusicDevTokenFunctionArn:
     Value: !GetAtt GetAppleMusicDevTokenFunction.Arn
+  UpdateAppleMusicUserTokenFunctionArn:
+    Value: !GetAtt UpdateAppleMusicUserTokenFunction.Arn
   GetCollaborativePlaylistByIdFunctionArn:
     Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
   GetAllCollaborativePlaylistsFunctionArn:

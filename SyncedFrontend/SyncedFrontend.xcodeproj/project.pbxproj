@@ -59,6 +59,7 @@
 		8061CE092B29EC4400B0FFD6 /* DIContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DIContainer.swift; sourceTree = "<group>"; };
 		8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FallbackAuthenticationService.swift; sourceTree = "<group>"; };
 		8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationServiceProtocol.swift; sourceTree = "<group>"; };
+		8061CE102B2A618300B0FFD6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistsView.swift; sourceTree = "<group>"; };
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
@@ -109,6 +110,7 @@
 		805D49412B0FDE100081B076 /* SyncedFrontend */ = {
 			isa = PBXGroup;
 			children = (
+				8061CE102B2A618300B0FFD6 /* Info.plist */,
 				8061CE0D2B29EEB700B0FFD6 /* Protocols */,
 				80E2EB302B22747400E99BF9 /* Models */,
 				801CC9562B16730D006FB76D /* ViewModels */,
@@ -473,6 +475,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SyncedFrontend/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Synced;
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Our app needs access to your Apple Music account to enable the syncing of playlists between Apple Music and Spotify. This allows you to seamlessly create and manage collaborative playlists across both platforms, ensuring your music experience is unified and enjoyable. We respect your privacy and will only access your playlists for synchronization purposes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -506,6 +510,8 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SyncedFrontend/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Synced;
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSAppleMusicUsageDescription = "Our app needs access to your Apple Music account to enable the syncing of playlists between Apple Music and Spotify. This allows you to seamlessly create and manage collaborative playlists across both platforms, ensuring your music experience is unified and enjoyable. We respect your privacy and will only access your playlists for synchronization purposes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

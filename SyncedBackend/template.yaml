@@ -54,6 +54,7 @@ Resources:
         GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
         ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
         GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn
+        UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

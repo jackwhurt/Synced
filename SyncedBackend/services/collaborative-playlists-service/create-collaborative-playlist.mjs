@@ -63,13 +63,11 @@ function validateBody(body) {
     }
 }
 
-
 // Get user ID from event
 function getUserIdFromEvent(event) {
     const claims = event.requestContext.authorizer?.claims;
     return claims['sub'];
 }
-
 
 // Helper function to create a playlist item for DynamoDB
 function createPlaylistItem(playlistId, userId, playlist, timestamp) {

@@ -1,4 +1,4 @@
-import { SSMClient, PutParameterCommand, GetParameterCommand } from '@aws-sdk/client-ssm';
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
