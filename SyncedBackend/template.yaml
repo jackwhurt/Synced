@@ -51,6 +51,7 @@ Resources:
         SyncCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.SyncCollaboratorsFunctionArn
         AddSongsFunctionArn: !GetAtt LambdaStack.Outputs.AddSongsFunctionArn
         DeleteSongsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteSongsFunctionArn
+        GetSongsForAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.GetSongsForAppleMusicFunctionArn
         GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
         ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
         GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn

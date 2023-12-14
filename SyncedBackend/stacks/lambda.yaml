@@ -409,6 +409,27 @@ Resources:
           USERS_TABLE: !Ref UsersTableName
           TOKENS_TABLE: !Ref TokensTableName  
 
+  # Collaborative Playlists - Songs - Apple Music
+  GetSongsForAppleMusicFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: get-songs-for-apple-music.getSongsForAppleMusicHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get all Apple Music songs to update for a given user.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName 
+
   # Create User Trigger
   CognitoTriggerFunction:
     Type: AWS::Serverless::Function
@@ -461,5 +482,7 @@ Outputs:
     Value: !GetAtt AddSongsFunction.Arn
   DeleteSongsFunctionArn:
     Value: !GetAtt DeleteSongsFunction.Arn
+  GetSongsForAppleMusicFunctionArn:
+    Value: !GetAtt GetSongsForAppleMusicFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

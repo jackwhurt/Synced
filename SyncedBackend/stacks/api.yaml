@@ -19,6 +19,8 @@ Parameters:
     Type: String
   DeleteSongsFunctionArn:
     Type: String
+  GetSongsForAppleMusicFunctionArn:
+    Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
@@ -353,6 +355,14 @@ Resources:
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AddSongsFunctionArn}/invocations"
     
+  AddSongsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AddSongsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists/songs"
+
   # Delete Songs
   DeleteSongsMethod:
     Type: AWS::ApiGateway::Method
@@ -366,6 +376,44 @@ Resources:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteSongsFunctionArn}/invocations"
+
+  DeleteSongsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteSongsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/songs"
+
+  # Collaborative Playlists / Songs / Apple Music
+  AppleMusicSongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref SongsResource 
+      PathPart: 'apple-music'
+      RestApiId: !Ref MyApi
+
+  # Add Songs
+  GetSongsForAppleMusicMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref AppleMusicSongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSongsForAppleMusicFunctionArn}/invocations"
+
+  GetSongsForAppleMusicLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetSongsForAppleMusicFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/songs/apple-music"
 
   # Collaborative Playlists / {id}
   PlaylistIdResource:
