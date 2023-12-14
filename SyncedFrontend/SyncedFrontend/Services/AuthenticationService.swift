@@ -1,6 +1,5 @@
 import AWSCognitoIdentityProvider
 
-// TODO: Refactor, and create an app wide error handler
 class AuthenticationService: AuthenticationServiceProtocol {
     private let userPool: AWSCognitoIdentityUserPool
     private let keychainService: KeychainService
@@ -8,8 +7,12 @@ class AuthenticationService: AuthenticationServiceProtocol {
     init(keychainService: KeychainService) throws {
         self.keychainService = keychainService
 
-        guard let clientId = ProcessInfo.processInfo.environment["COGNITO_CLIENT_ID"],
-              let poolId = ProcessInfo.processInfo.environment["COGNITO_POOL_ID"] else {
+        guard let config = NSDictionary(contentsOfFile: Bundle.main.path(forResource: "Config", ofType: "plist") ?? "") else {
+            throw AuthenticationServiceError.cognitoIdsNotSet
+        }
+
+        guard let clientId = config["COGNITO_CLIENT_ID"] as? String,
+              let poolId = config["COGNITO_POOL_ID"] as? String else {
             throw AuthenticationServiceError.cognitoIdsNotSet
         }
 

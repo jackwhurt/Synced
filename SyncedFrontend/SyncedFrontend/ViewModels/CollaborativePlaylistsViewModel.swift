@@ -40,7 +40,7 @@ class CollaborativePlaylistsViewModel: ObservableObject {
             let decoder = JSONDecoder()
             
             let song = try decoder.decode(Song.self, from: jsonData)
-            try await musicKitService.addSongToPlaylist(song: song, to: id)
+//            try await musicKitService.addSongToPlaylist(song: song, to: id)
             try await musicKitService.editPlaylist(songs: [], to: id)
         } catch {
             print("Failed: ", error)

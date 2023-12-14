@@ -1,6 +1,7 @@
 import Foundation
 
 class APIService {
+    // TODO: Change to async
     private let keychainService: KeychainService
 
     init(keychainService: KeychainService) {
@@ -10,8 +11,12 @@ class APIService {
     func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, completion: @escaping (Result<T, Error>) -> Void) {
         makeRequest(endpoint: endpoint, httpMethod: "GET", model: model, completion: completion)
     }
+    
+    func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, body: Data, completion: @escaping (Result<T, Error>) -> Void) {
+        makeRequest(endpoint: endpoint, httpMethod: "GET", model: model, body: body, completion: completion)
+    }
 
-    func makePostRequest<T: Decodable>(endpoint: String, model: T.Type, body: Data?, completion: @escaping (Result<T, Error>) -> Void) {
+    func makePostRequest<T: Decodable>(endpoint: String, model: T.Type, body: Data, completion: @escaping (Result<T, Error>) -> Void) {
         makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: body, completion: completion)
     }
 

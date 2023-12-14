@@ -1,6 +1,7 @@
 import Foundation
 import MusicKit
 
+// TODO: Error handling
 class MusicKitService {
     func createPlaylist(withTitle title: String, description: String, authorDisplayName: String?) async throws -> Playlist {
         do {

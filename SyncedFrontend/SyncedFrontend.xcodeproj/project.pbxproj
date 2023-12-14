@@ -28,6 +28,8 @@
 		8061CE0C2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */; };
 		8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */; };
 		8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */; };
+		8061CE142B2B9EE000B0FFD6 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8061CE132B2B9EE000B0FFD6 /* Config.plist */; };
+		8061CE162B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */; };
 		80AD235C2B154B94003A8E20 /* CollaborativePlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */; };
 		80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
 		80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
@@ -62,6 +64,8 @@
 		8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationServiceProtocol.swift; sourceTree = "<group>"; };
 		8061CE102B2A618300B0FFD6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
+		8061CE132B2B9EE000B0FFD6 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
+		8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistService.swift; sourceTree = "<group>"; };
 		80AD235B2B154B94003A8E20 /* CollaborativePlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistsView.swift; sourceTree = "<group>"; };
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
@@ -112,6 +116,7 @@
 		805D49412B0FDE100081B076 /* SyncedFrontend */ = {
 			isa = PBXGroup;
 			children = (
+				8061CE132B2B9EE000B0FFD6 /* Config.plist */,
 				8061CE102B2A618300B0FFD6 /* Info.plist */,
 				8061CE0D2B29EEB700B0FFD6 /* Protocols */,
 				80E2EB302B22747400E99BF9 /* Models */,
@@ -166,6 +171,7 @@
 				80E2EB332B22775F00E99BF9 /* ApiService.swift */,
 				8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */,
 				8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */,
+				8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -265,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				805D494A2B0FDE120081B076 /* Preview Assets.xcassets in Resources */,
+				8061CE142B2B9EE000B0FFD6 /* Config.plist in Resources */,
 				805D49472B0FDE120081B076 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -321,6 +328,7 @@
 				805D49542B0FDF370081B076 /* SignUpView.swift in Sources */,
 				805D49522B0FDEA60081B076 /* LoginView.swift in Sources */,
 				8061CE0C2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift in Sources */,
+				8061CE162B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift in Sources */,
 				801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */,
 				805D495C2B0FF8350081B076 /* LongInput.swift in Sources */,
 				805D49452B0FDE100081B076 /* ContentView.swift in Sources */,
