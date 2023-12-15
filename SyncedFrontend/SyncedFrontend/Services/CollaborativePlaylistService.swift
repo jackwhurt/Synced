@@ -1,4 +1,5 @@
 import Foundation
+import MusicKit
 
 class CollaborativePlaylistService {
     private let apiService: APIService
@@ -23,18 +24,37 @@ class CollaborativePlaylistService {
         var allUpdatesSuccessful = true
         for update in updates {
             do {
-                // TODO: Change updatesongsresponse to have db playlist id and implement logic so can update the apple music playlist id if needs to be recreated
-                let playlist = try await musicKitService.getPlaylist(id: update.playlistId)
+                let playlist = try await getPlaylistOrReplace(appleMusicPlaylistId: update.appleMusicPlaylistId, playlistId: update.playlistId)
                 try await self.musicKitService.editPlaylist(songs: update.songs, to: playlist)
             } catch {
-                print("Failed to update playlist \(update.playlistId): \(error)")
+                print("Failed to update playlist \(update.appleMusicPlaylistId): \(error)")
                 allUpdatesSuccessful = false
-                throw CollaborativePlaylistServiceError.playlistUpdateFailed(update.playlistId, error)
+                throw CollaborativePlaylistServiceError.playlistUpdateFailed(update.appleMusicPlaylistId, error)
             }
         }
         
         if allUpdatesSuccessful {
             updateLastUpdatedTimestamp()
+        }
+    }
+    
+    func createPlaylist(title: String, description: String) async throws -> Playlist {
+        let playlist = try await musicKitService.createPlaylist(withTitle: title, description: description)
+        
+        return playlist
+    }
+    
+    private func getPlaylistOrReplace(appleMusicPlaylistId: String, playlistId: String) async throws -> Playlist {
+        do {
+            let playlist = try await musicKitService.getPlaylist(id: appleMusicPlaylistId)
+            return playlist
+        } catch {
+//            TODO: Implement updating the playlist id on the backend
+//            let playlistMetadata = apiService.makeGetRequest(endpoint: "/collaborative-playlists/\(playlistId)", model: [CollaborativePlaylistMetadataResponse].self)
+//            let playlist = musicKitService.createPlaylist(title: playlistMetadata.title, description: playlistMetadata.description);
+//            await updatePlaylistId(appleMusicPlaylistId: playlist.id, playlistId: playlistId)
+
+            throw error
         }
     }
     

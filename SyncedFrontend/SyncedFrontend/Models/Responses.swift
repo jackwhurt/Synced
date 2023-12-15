@@ -6,6 +6,7 @@ struct DeveloperTokenResponse: Codable {
 
 struct UpdateSongsResponse: Codable {
     let playlistId: String
+    let appleMusicPlaylistId: String
     let songs: [Song]
 }
 

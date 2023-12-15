@@ -74,7 +74,8 @@ async function getSongsForPlaylists(playlists) {
             }, []);
 
             results.push({
-                playlistId: playlist.appleMusicId,
+                playlistId: playlist.PK.replace('cp#', ''),
+                appleMusicPlaylistId: playlist.appleMusicId,
                 songs: formattedSongs
             });
         } catch (err) {
