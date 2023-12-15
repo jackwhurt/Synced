@@ -2,9 +2,9 @@ import Foundation
 import MusicKit
 
 class MusicKitService {
-    func createPlaylist(withTitle title: String, description: String, authorDisplayName: String?) async throws -> Playlist {
+    func createPlaylist(withTitle title: String, description: String) async throws -> Playlist {
         do {
-            let newPlaylist = try await MusicLibrary.shared.createPlaylist(name: title, description: description, authorDisplayName: authorDisplayName)
+            let newPlaylist = try await MusicLibrary.shared.createPlaylist(name: title, description: description, authorDisplayName: "Synced")
             return newPlaylist
         } catch {
             print("Error creating playlist \(title): \(error)")
@@ -24,7 +24,7 @@ class MusicKitService {
     func getPlaylist(id: String) async throws -> Playlist {
         var response: MusicLibraryResponse<Playlist>
         var request = MusicLibraryRequest<Playlist>()
-        request.filter(matching: \.id, equalTo: MusicItemID("id"))
+        request.filter(matching: \.id, equalTo: MusicItemID(id))
         
         do {
             response = try await request.response()

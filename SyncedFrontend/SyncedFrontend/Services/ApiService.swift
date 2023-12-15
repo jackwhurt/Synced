@@ -35,8 +35,19 @@ class APIService {
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }
 
+        print("Requesting: \(request)")
+        
         let (data, _) = try await URLSession.shared.data(for: request)
-        let decodedData = try JSONDecoder().decode(T.self, from: data)
+        
+        var decodedData: T
+        do {
+            decodedData = try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print("Failed to decode data")
+            throw APIServiceError.failedToDecodeResponse
+        }
+        
+        print("Received: \(decodedData)")
         return decodedData
     }
 

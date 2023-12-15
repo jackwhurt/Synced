@@ -13,8 +13,9 @@ export const getSongsForAppleMusicHandler = async (event) => {
 
     try {
         const userPlaylists = await getUserPlaylists(userId);
-        const filteredPlaylists = await filterPlaylists(userPlaylists, timestamp);
+        const filteredPlaylists = filterPlaylists(userPlaylists, timestamp);
         const songsInPlaylists = await getSongsForPlaylists(filteredPlaylists);
+        const filteredSongs = filterSongs(songsInPlaylists);
 
         return {
             statusCode: 200,
@@ -59,10 +60,22 @@ async function getSongsForPlaylists(playlists) {
             };
 
             const queryResult = await ddbDocClient.send(new QueryCommand(queryParams));
+            const formattedSongs = queryResult.Items.reduce((acc, song) => {
+                if (song.appleMusicId) {
+                    acc.push({
+                        id: song.appleMusicId,
+                        type: "songs",
+                        attributes: {
+                            url: song.appleMusicUrl
+                        }
+                    });
+                }
+                return acc;
+            }, []);
+
             results.push({
-                playlist: playlist.appleMusicId,
-                name: playlist.appleMusicPlaylistName,
-                songs: queryResult.Items
+                playlistId: playlist.appleMusicId,
+                songs: formattedSongs
             });
         } catch (err) {
             console.error(`Error querying songs for playlist ${playlist.PK}:`, err);
@@ -70,6 +83,10 @@ async function getSongsForPlaylists(playlists) {
     }
 
     return results;
+};
+
+function filterSongs(songs, timestamp) {
+    return songs.filter(songs => songs.updatedAt > timestamp && playlist.appleMusicId);
 };
 
 // Helper functions for creating error and success responses

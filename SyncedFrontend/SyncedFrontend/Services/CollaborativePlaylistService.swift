@@ -23,11 +23,13 @@ class CollaborativePlaylistService {
         var allUpdatesSuccessful = true
         for update in updates {
             do {
-                try await self.musicKitService.editPlaylist(songs: update.songs, to: update.playlist)
+                // TODO: Change updatesongsresponse to have db playlist id and implement logic so can update the apple music playlist id if needs to be recreated
+                let playlist = try await musicKitService.getPlaylist(id: update.playlistId)
+                try await self.musicKitService.editPlaylist(songs: update.songs, to: playlist)
             } catch {
-                print("Failed to update playlist: \(update.playlist.id.rawValue)")
+                print("Failed to update playlist \(update.playlistId): \(error)")
                 allUpdatesSuccessful = false
-                throw CollaborativePlaylistServiceError.playlistUpdateFailed(update.playlist.id.rawValue, error)
+                throw CollaborativePlaylistServiceError.playlistUpdateFailed(update.playlistId, error)
             }
         }
         
@@ -35,17 +37,6 @@ class CollaborativePlaylistService {
             updateLastUpdatedTimestamp()
         }
     }
-    
-//    private func decodeSongs {
-        //            let mySong = "{\"id\":\"1482041830\",\"type\":\"songs\",\"attributes\":{\"url\":\"https://music.apple.com/us/album/cloud-9/1482041821?i=1482041830\"}}"
-        //            guard let jsonData = mySong.data(using: .utf8) else {
-        //                print("Error: Cannot create Data from jsonString")
-        //                return
-        //            }
-        //            let decoder = JSONDecoder()
-        //            let song = try decoder.decode(Song.self, from: jsonData)
-//                      return song
-//    }
     
     private func getSongUpdates(parameters: [String: String]) async throws -> [UpdateSongsResponse] {
         return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self, parameters: parameters)

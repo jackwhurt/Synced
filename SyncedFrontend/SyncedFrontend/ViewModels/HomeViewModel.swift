@@ -22,16 +22,14 @@ class HomeViewModel: ObservableObject {
                     self?.isLoggedIn = false
                 case .failure(let error):
                     print("Logout error: \(error.localizedDescription)")
-                    // Handle error scenario
                 }
             }
         }
     }
     
-    // TODO: Get playlistId programmatically
     func createPlaylist() async {
         do {
-            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123", authorDisplayName: "bruh author")
+            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123")
             print("Id: ", id)
         } catch {
             print("Failed: ", error)
@@ -49,13 +47,11 @@ class HomeViewModel: ObservableObject {
         case .authorized:
             await requestUserToken()
         case .denied, .notDetermined, .restricted:
-            // Handle different cases as needed
             print("Authorization status: \(status)")
         @unknown default:
             print("Unexpected authorization status")
         }
     }
-
 
     private func requestUserToken() async {
         do {

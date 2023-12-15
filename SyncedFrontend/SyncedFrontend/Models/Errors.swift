@@ -27,7 +27,7 @@ enum MusicKitError: Error {
 enum APIServiceError: Error {
     case tokenRetrievalFailed
     case invalidURL
-    case noData
+    case failedToDecodeResponse
 }
 
 enum AppleMusicServiceError: Error {
