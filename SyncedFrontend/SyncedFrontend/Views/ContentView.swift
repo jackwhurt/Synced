@@ -15,7 +15,7 @@ struct ContentView: View {
             Color("SyncedBackground")
                 .ignoresSafeArea()
             if (contentViewModel.isLoading) {
-//                TODO: LoadingView()
+                LoadingView()
             } else if contentViewModel.isLoggedIn {
                 HomeView(isLoggedIn: $contentViewModel.isLoggedIn)
             } else {

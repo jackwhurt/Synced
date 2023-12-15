@@ -2,7 +2,7 @@ import SwiftUI
 
 class ContentViewModel: ObservableObject {
     @Published var isLoggedIn = false
-    @Published var isLoading = false
+    @Published var isLoading = true
     private let authenticationService: AuthenticationServiceProtocol
     private let collaborativePlaylistService: CollaborativePlaylistService
     
@@ -10,14 +10,22 @@ class ContentViewModel: ObservableObject {
         self.authenticationService = authenticationService
         self.collaborativePlaylistService = collaborativePlaylistService
     }
-
+    
     func onOpen() async {
-        isLoading = true
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
         
         checkUserSession()
-        await collaborativePlaylistService.updatePlaylists()
+        do {
+            try await collaborativePlaylistService.updatePlaylists()
+        } catch{
+            print("Update playlists failed")
+        }
         
-        isLoading = false
+        DispatchQueue.main.async {
+            self.isLoading = false
+        }
     }
     
     private func checkUserSession() {

@@ -31,6 +31,7 @@
 		8061CE142B2B9EE000B0FFD6 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8061CE132B2B9EE000B0FFD6 /* Config.plist */; };
 		8061CE162B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */; };
 		80AD235C2B154B94003A8E20 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD235B2B154B94003A8E20 /* HomeView.swift */; };
+		80CE06AC2B2CB23A00D926E2 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80CE06AB2B2CB23A00D926E2 /* LoadingView.swift */; };
 		80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
 		80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
 		80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB332B22775F00E99BF9 /* ApiService.swift */; };
@@ -67,6 +68,7 @@
 		8061CE132B2B9EE000B0FFD6 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
 		8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistService.swift; sourceTree = "<group>"; };
 		80AD235B2B154B94003A8E20 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		80CE06AB2B2CB23A00D926E2 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
 		80E2EB332B22775F00E99BF9 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				805D49512B0FDEA60081B076 /* LoginView.swift */,
 				805D49532B0FDF370081B076 /* SignUpView.swift */,
 				80AD235B2B154B94003A8E20 /* HomeView.swift */,
+				80CE06AB2B2CB23A00D926E2 /* LoadingView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -343,6 +346,7 @@
 				8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */,
 				8061CE0A2B29EC4400B0FFD6 /* DIContainer.swift in Sources */,
 				80550D3B2B17D18500678B11 /* ContentViewModel.swift in Sources */,
+				80CE06AC2B2CB23A00D926E2 /* LoadingView.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,
 				801CC95A2B16736B006FB76D /* SignUpViewModel.swift in Sources */,
 				80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */,

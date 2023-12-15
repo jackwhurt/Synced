@@ -1,59 +1,52 @@
 import Foundation
 
 class APIService {
-    // TODO: Change to async
     private let keychainService: KeychainService
 
     init(keychainService: KeychainService) {
         self.keychainService = keychainService
     }
-    
-    func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, completion: @escaping (Result<T, Error>) -> Void) {
-        makeRequest(endpoint: endpoint, httpMethod: "GET", model: model, completion: completion)
-    }
-    
-    func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, body: Data, completion: @escaping (Result<T, Error>) -> Void) {
-        makeRequest(endpoint: endpoint, httpMethod: "GET", model: model, body: body, completion: completion)
+
+    func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
+        let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
+        return try await makeRequest(endpoint: urlWithParameters, httpMethod: "GET", model: model)
     }
 
-    func makePostRequest<T: Decodable>(endpoint: String, model: T.Type, body: Data, completion: @escaping (Result<T, Error>) -> Void) {
-        makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: body, completion: completion)
+    func makePostRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B) async throws -> T {
+        let bodyData = try JSONEncoder().encode(body)
+        return try await makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: bodyData)
     }
 
-    private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil, completion: @escaping (Result<T, Error>) -> Void) {
+    private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil) async throws -> T {
         guard let idToken = getIdToken() else {
-            completion(.failure(NSError(domain: "APIService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve ID Token"])))
-            return
+            throw APIServiceError.tokenRetrievalFailed
         }
 
         guard let url = getAPIURL(for: endpoint) else {
-            completion(.failure(NSError(domain: "APIService", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
-            return
+            throw APIServiceError.invalidURL
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
         request.addValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
-        if let body = body {
+        
+        if let body = body, httpMethod == "POST" {
             request.httpBody = body
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }
 
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            guard let data = data else {
-                completion(.failure(NSError(domain: "APIService", code: 2, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
-                return
-            }
-            do {
-                let decodedData = try JSONDecoder().decode(T.self, from: data)
-                completion(.success(decodedData))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let decodedData = try JSONDecoder().decode(T.self, from: data)
+        return decodedData
+    }
+
+    private func appendQueryParameters(to endpoint: String, parameters: [String: String]?) -> String {
+        guard let parameters = parameters, var urlComponents = URLComponents(string: endpoint) else {
+            return endpoint
+        }
+        
+        urlComponents.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+        return urlComponents.url?.absoluteString ?? endpoint
     }
 
     private func getIdToken() -> String? {

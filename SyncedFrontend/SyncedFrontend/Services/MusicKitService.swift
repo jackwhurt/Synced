@@ -24,7 +24,7 @@ class MusicKitService {
     func getPlaylist(id: String) async throws -> Playlist {
         var response: MusicLibraryResponse<Playlist>
         var request = MusicLibraryRequest<Playlist>()
-        request.filter(matching: \.id, equalTo: "p.E4gkIV3KQqg")
+        request.filter(matching: \.id, equalTo: MusicItemID("id"))
         
         do {
             response = try await request.response()

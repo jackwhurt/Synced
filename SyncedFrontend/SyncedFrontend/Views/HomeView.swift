@@ -24,7 +24,9 @@ struct HomeView: View {
                 .background(Color.red)
                 .cornerRadius(10)
                 Button("Connect Apple Music") {
-                    cpViewModel.connectAppleMusic()
+                    Task {
+                        await cpViewModel.connectAppleMusic()
+                    }
                 }
                 .foregroundColor(.white)
                 .padding()

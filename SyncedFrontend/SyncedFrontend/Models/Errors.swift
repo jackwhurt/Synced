@@ -23,3 +23,22 @@ enum MusicKitError: Error {
     case failedToRetrievePlaylist
     case playlistNotInLibrary
 }
+
+enum APIServiceError: Error {
+    case tokenRetrievalFailed
+    case invalidURL
+    case noData
+}
+
+enum AppleMusicServiceError: Error {
+    case developerTokenRetrievalFailed
+    case userTokenRequestFailed(Error?)
+    case authorizationRequestFailed
+}
+
+enum CollaborativePlaylistServiceError: Error {
+    case songUpdatesRetrievalFailed(Error)
+    case playlistUpdateFailed(String, Error)
+    case failedToFormatTimestamp
+}
+

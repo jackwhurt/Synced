@@ -3,55 +3,49 @@ import StoreKit
 
 class AppleMusicService {
     private let apiService: APIService
-
+    
     init(apiService: APIService) {
         self.apiService = apiService
     }
     
-    // Public function to handle user token request
-    func fetchUserToken(completion: @escaping (Result<String, Error>) -> Void) {
-        getDeveloperToken { [weak self] result in
-            switch result {
-            case .failure(let error):
-                completion(.failure(error))
-            case .success(let developerToken):
-                self?.requestUserToken(developerToken: developerToken, completion: completion)
+    func fetchUserToken() async throws -> String {
+        do {
+            let developerToken = try await getDeveloperToken()
+            return try await requestUserToken(developerToken: developerToken)
+        } catch {
+            print("Failed to fetch user token: \(error)")
+            throw AppleMusicServiceError.developerTokenRetrievalFailed
+        }
+    }
+    
+    func requestAuthorization() async -> SKCloudServiceAuthorizationStatus {
+        await withCheckedContinuation { continuation in
+            SKCloudServiceController.requestAuthorization { status in
+                continuation.resume(returning: status)
             }
         }
     }
-
-    // Request authorization to access Apple Music
-    func requestAuthorization(completion: @escaping (SKCloudServiceAuthorizationStatus) -> Void) {
-        SKCloudServiceController.requestAuthorization { status in
-            DispatchQueue.main.async {
-                completion(status)
-            }
+    
+    private func getDeveloperToken() async throws -> String {
+        do {
+            let tokenResponse: DeveloperTokenResponse = try await apiService.makeGetRequest(endpoint: "/auth/apple-music/dev", model: DeveloperTokenResponse.self)
+            return tokenResponse.appleMusicToken
+        } catch {
+            print("Failed to get developer token: \(error)")
+            throw AppleMusicServiceError.developerTokenRetrievalFailed
         }
     }
-
-    // TODO: First check keychain and expiry timestamp
-    // Function to retrieve Apple Music Developer Token from the API
-    private func getDeveloperToken(completion: @escaping (Result<String, Error>) -> Void) {
-        apiService.makeGetRequest(endpoint: "/auth/apple-music/dev", model: DeveloperTokenResponse.self) { result in
-            switch result {
-            case .failure(let error):
-                print("Failed to retrieve Apple Music dev token")
-                completion(.failure(error))
-            case .success(let tokenResponse):
-                completion(.success(tokenResponse.appleMusicToken))
-            }
-        }
-    }
-
-    // Function to request a user token for Apple Music using the developer token
-    private func requestUserToken(developerToken: String, completion: @escaping (Result<String, Error>) -> Void) {
+    
+    private func requestUserToken(developerToken: String) async throws -> String {
         let controller = SKCloudServiceController()
-        controller.requestUserToken(forDeveloperToken: developerToken) { userToken, error in
-            DispatchQueue.main.async {
-                if let userToken = userToken {
-                    completion(.success(userToken))
-                } else {
-                    completion(.failure(error ?? NSError(domain: "AppleMusicService", code: 2, userInfo: [NSLocalizedDescriptionKey: "Unknown error occurred"])))
+        return try await withCheckedThrowingContinuation { continuation in
+            controller.requestUserToken(forDeveloperToken: developerToken) { userToken, error in
+                DispatchQueue.main.async {
+                    if let userToken = userToken {
+                        continuation.resume(returning: userToken)
+                    } else {
+                        continuation.resume(throwing: AppleMusicServiceError.userTokenRequestFailed(error))
+                    }
                 }
             }
         }

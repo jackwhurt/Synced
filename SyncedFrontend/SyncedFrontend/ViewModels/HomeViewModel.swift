@@ -31,68 +31,38 @@ class HomeViewModel: ObservableObject {
     // TODO: Get playlistId programmatically
     func createPlaylist() async {
         do {
-//            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123", authorDisplayName: "bruh author")
-//            print("Id: ", id)
-//            let mySong = "{\"id\":\"1482041830\",\"type\":\"songs\",\"attributes\":{\"url\":\"https://music.apple.com/us/album/cloud-9/1482041821?i=1482041830\"}}"
-//            guard let jsonData = mySong.data(using: .utf8) else {
-//                print("Error: Cannot create Data from jsonString")
-//                return
-//            }
-//            let myPlaylist = "{\"id\":\"pl.u-5gglhDljJBz\",\"type\":\"Playlist\",\"name\":\"titlebruh\",\"curatorName\":\"bruhauthor\", \"attributes\":{\"url\":\"https://music.apple.com/us/album/cloud-9/1482041821?i=1482041830\"}}"
-//            guard let jsonDataPlaylist = myPlaylist.data(using: .utf8) else {
-//                print("Error: Cannot create Data from jsonString")
-//                return
-//            }
-            
-            var request = MusicLibraryRequest<Playlist>()
-
-            request.filter(matching: \.id, equalTo: "p.E4gkIV3KQqg")
-             let response = try await request.response()
-
-            
-//            print("Id: ", id)
-            print("Playlist response: ", response)
-
-//            let decoder = JSONDecoder()
-            
-//            let song = try decoder.decode(Song.self, from: jsonData)
-//            let playlist = try decoder.decode(Playlist.self, from: jsonDataPlaylist)
-//            print("Old playlist: ", playlist)
-//            try await musicKitService.addSongToPlaylist(song: song, to: id)
-//            try await musicKitService.editPlaylist(songs: [song], to: playlistResponse.items[0])
+            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123", authorDisplayName: "bruh author")
+            print("Id: ", id)
         } catch {
             print("Failed: ", error)
         }
     }
     
-    func connectAppleMusic() {
-        authenticateAndRequestToken()
+    func connectAppleMusic() async {
+        await authenticateAndRequestToken()
     }
 
-    private func authenticateAndRequestToken() {
-        appleMusicService.requestAuthorization { [weak self] status in
-            switch status {
-            case .authorized:
-                self?.requestUserToken()
-            case .denied, .notDetermined, .restricted:
-                // Handle different cases as needed
-                print("Authorization status: \(status)")
-            @unknown default:
-                print("Unexpected authorization status")
-            }
+    private func authenticateAndRequestToken() async {
+        let status = await appleMusicService.requestAuthorization()
+
+        switch status {
+        case .authorized:
+            await requestUserToken()
+        case .denied, .notDetermined, .restricted:
+            // Handle different cases as needed
+            print("Authorization status: \(status)")
+        @unknown default:
+            print("Unexpected authorization status")
         }
     }
 
-    private func requestUserToken() {
-        appleMusicService.fetchUserToken { result in
-            switch result {
-            case .success(let token):
-                print("User Token: \(token)")
-                // Use the token for API requests
-            case .failure(let error):
-                print("Error: \(error.localizedDescription)")
-                // Handle error
-            }
+
+    private func requestUserToken() async {
+        do {
+            let token = try await appleMusicService.fetchUserToken()
+            print("User Token: \(token)")
+        } catch {
+            print("Error: \(error.localizedDescription)")
         }
     }
 }
