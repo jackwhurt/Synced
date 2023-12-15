@@ -17,3 +17,9 @@ enum FallbackAuthenticationError: Error {
     case tokenRefreshNotAvailable
 }
 
+enum MusicKitError: Error {
+    case failedToCreatePlaylist
+    case failedToEditPlaylist
+    case failedToRetrievePlaylist
+    case playlistNotInLibrary
+}

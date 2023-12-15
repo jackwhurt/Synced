@@ -2,7 +2,7 @@ import SwiftUI
 import StoreKit
 import MusicKit
 
-class CollaborativePlaylistsViewModel: ObservableObject {
+class HomeViewModel: ObservableObject {
     @Published var isLoggedIn = true
     private let authenticationService: AuthenticationServiceProtocol?
     private let appleMusicService: AppleMusicService
@@ -28,20 +28,38 @@ class CollaborativePlaylistsViewModel: ObservableObject {
         }
     }
     
+    // TODO: Get playlistId programmatically
     func createPlaylist() async {
         do {
-            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123", authorDisplayName: "bruh author")
-            let mySong = "{\"id\":\"1482041830\",\"type\":\"songs\",\"attributes\":{\"url\":\"https://music.apple.com/us/album/cloud-9/1482041821?i=1482041830\"}}"
-            guard let jsonData = mySong.data(using: .utf8) else {
-                print("Error: Cannot create Data from jsonString")
-                return
-            }
-            print("Id: ", id)
-            let decoder = JSONDecoder()
+//            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123", authorDisplayName: "bruh author")
+//            print("Id: ", id)
+//            let mySong = "{\"id\":\"1482041830\",\"type\":\"songs\",\"attributes\":{\"url\":\"https://music.apple.com/us/album/cloud-9/1482041821?i=1482041830\"}}"
+//            guard let jsonData = mySong.data(using: .utf8) else {
+//                print("Error: Cannot create Data from jsonString")
+//                return
+//            }
+//            let myPlaylist = "{\"id\":\"pl.u-5gglhDljJBz\",\"type\":\"Playlist\",\"name\":\"titlebruh\",\"curatorName\":\"bruhauthor\", \"attributes\":{\"url\":\"https://music.apple.com/us/album/cloud-9/1482041821?i=1482041830\"}}"
+//            guard let jsonDataPlaylist = myPlaylist.data(using: .utf8) else {
+//                print("Error: Cannot create Data from jsonString")
+//                return
+//            }
             
-            let song = try decoder.decode(Song.self, from: jsonData)
+            var request = MusicLibraryRequest<Playlist>()
+
+            request.filter(matching: \.id, equalTo: "p.E4gkIV3KQqg")
+             let response = try await request.response()
+
+            
+//            print("Id: ", id)
+            print("Playlist response: ", response)
+
+//            let decoder = JSONDecoder()
+            
+//            let song = try decoder.decode(Song.self, from: jsonData)
+//            let playlist = try decoder.decode(Playlist.self, from: jsonDataPlaylist)
+//            print("Old playlist: ", playlist)
 //            try await musicKitService.addSongToPlaylist(song: song, to: id)
-            try await musicKitService.editPlaylist(songs: [], to: id)
+//            try await musicKitService.editPlaylist(songs: [song], to: playlistResponse.items[0])
         } catch {
             print("Failed: ", error)
         }

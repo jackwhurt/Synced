@@ -1,13 +1,8 @@
 class DIContainer {
     static let shared = DIContainer()
-
-    func provideAuthenticationService() -> AuthenticationServiceProtocol {
-        do {
-            return try AuthenticationService(keychainService: provideKeychainService())
-        } catch {
-            print("Error: \(error)")
-            return FallbackAuthenticationService()
-        }
+    
+    func provideMusicKitService() -> MusicKitService {
+        return MusicKitService()
     }
     
     func provideKeychainService() -> KeychainService {
@@ -22,7 +17,16 @@ class DIContainer {
         return AppleMusicService(apiService: provideAPIService())
     }
     
-    func provideMusicKitService() -> MusicKitService {
-        return MusicKitService()
+    func provideCollaborativePlaylistService() -> CollaborativePlaylistService {
+        return CollaborativePlaylistService(apiService: provideAPIService(), musicKitService: provideMusicKitService())
+    }
+    
+    func provideAuthenticationService() -> AuthenticationServiceProtocol {
+        do {
+            return try AuthenticationService(keychainService: provideKeychainService())
+        } catch {
+            print("Error: \(error)")
+            return FallbackAuthenticationService()
+        }
     }
 }

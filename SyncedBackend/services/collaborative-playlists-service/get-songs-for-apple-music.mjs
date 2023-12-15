@@ -37,7 +37,7 @@ const getUserPlaylists = async (userId) => {
 };
 
 const filterPlaylists = async (playlists, timestamp) => {
-    return playlists.filter(playlist => playlist.updatedAt > timestamp);
+    return playlists.filter(playlist => playlist.updatedAt > timestamp && playlist.appleMusicId);
 };
 
 const getSongsForPlaylists = async (playlists) => {
@@ -49,14 +49,15 @@ const getSongsForPlaylists = async (playlists) => {
                 TableName: playlistsTable,
                 KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
                 ExpressionAttributeValues: {
-                    ':pk': playlist.PK, // Assuming PK contains the playlist ID
+                    ':pk': playlist.PK,
                     ':sk': 'song#'
                 }
             };
 
             const queryResult = await ddbDocClient.send(new QueryCommand(queryParams));
             results.push({
-                playlistId: playlist.PK,
+                playlist: playlist.appleMusicId,
+                name: playlist.appleMusicPlaylistName,
                 songs: queryResult.Items
             });
         } catch (err) {

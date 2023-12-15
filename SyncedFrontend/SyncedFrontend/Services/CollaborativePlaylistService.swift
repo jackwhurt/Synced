@@ -22,16 +22,25 @@ class CollaborativePlaylistService {
                 }
             }
             
+            var allUpdatesSuccessful = true
+            
             for update in updates {
-                await self.musicKitService.editPlaylist(songs: update.songs, to: update.playlist)
+                do {
+                    try await self.musicKitService.editPlaylist(songs: update.songs, to: update.playlist)
+                } catch {
+                    print("Failed to update playlist: \(update.playlist.id)")
+                    allUpdatesSuccessful = false
+                }
             }
-
-            updateLastUpdatedTimeStamp()
+            
+            if allUpdatesSuccessful {
+                updateLastUpdatedTimeStamp()
+            }
         } catch {
             print("Error updating playlists: \(error)")
         }
     }
-
+    
     private func getSongUpdates(lastUpdatedTimeStamp: Date?, completion: @escaping (Result<[UpdateSongsResponse], Error>) -> Void) {
         apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self) { result in
             switch result {

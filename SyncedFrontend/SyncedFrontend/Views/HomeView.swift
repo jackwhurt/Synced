@@ -1,10 +1,10 @@
 import SwiftUI
 
-struct CollaborativePlaylistsView: View {
-    @StateObject private var cpViewModel: CollaborativePlaylistsViewModel
+struct HomeView: View {
+    @StateObject private var cpViewModel: HomeViewModel
     
     init(isLoggedIn: Binding<Bool>) {
-        _cpViewModel = StateObject(wrappedValue: CollaborativePlaylistsViewModel(
+        _cpViewModel = StateObject(wrappedValue: HomeViewModel(
             authenticationService: DIContainer.shared.provideAuthenticationService(),
             appleMusicService: DIContainer.shared.provideAppleMusicService(),
             musicKitService: DIContainer.shared.provideMusicKitService()
@@ -50,6 +50,6 @@ struct CollaborativePlaylistsView: View {
 // For preview
 struct CollaborativePlaylistsView_Previews: PreviewProvider {
     static var previews: some View {
-        CollaborativePlaylistsView(isLoggedIn: .constant(false))
+        HomeView(isLoggedIn: .constant(false))
     }
 }
