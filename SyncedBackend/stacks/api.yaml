@@ -393,7 +393,7 @@ Resources:
       PathPart: 'apple-music'
       RestApiId: !Ref MyApi
 
-  # Add Songs
+  # Get Songs for Apple Music
   GetSongsForAppleMusicMethod:
     Type: AWS::ApiGateway::Method
     Properties:

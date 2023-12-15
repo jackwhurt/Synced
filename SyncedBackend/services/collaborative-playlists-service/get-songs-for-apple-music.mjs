@@ -7,7 +7,7 @@ const playlistsTable = process.env.PLAYLISTS_TABLE;
 export const getSongsForAppleMusicHandler = async (event) => {
     console.info('Received:', event);
 
-    const timestamp = event.timestamp || '1970-01-01T00:00:00Z';
+    const timestamp = event.queryStringParameters?.timestamp || '1970-01-01T00:00:00Z';
     const claims = event.requestContext.authorizer?.claims;
     const userId = claims['sub'];
 
@@ -15,14 +15,18 @@ export const getSongsForAppleMusicHandler = async (event) => {
         const userPlaylists = await getUserPlaylists(userId);
         const filteredPlaylists = await filterPlaylists(userPlaylists, timestamp);
         const songsInPlaylists = await getSongsForPlaylists(filteredPlaylists);
-        return songsInPlaylists;
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify(songsInPlaylists)
+        };
     } catch (err) {
         console.error('Error:', err);
         return createErrorResponse(err.message);
     }
 };
 
-const getUserPlaylists = async (userId) => {
+async function getUserPlaylists(userId) {
     const queryParams = {
         TableName: playlistsTable,
         IndexName: 'CollaboratorIndex',
@@ -36,11 +40,11 @@ const getUserPlaylists = async (userId) => {
     return queryResult.Items;
 };
 
-const filterPlaylists = async (playlists, timestamp) => {
+function filterPlaylists(playlists, timestamp) {
     return playlists.filter(playlist => playlist.updatedAt > timestamp && playlist.appleMusicId);
 };
 
-const getSongsForPlaylists = async (playlists) => {
+async function getSongsForPlaylists(playlists) {
     const results = [];
 
     for (const playlist of playlists) {
@@ -67,7 +71,6 @@ const getSongsForPlaylists = async (playlists) => {
 
     return results;
 };
-
 
 // Helper functions for creating error and success responses
 function createErrorResponse(message) {
