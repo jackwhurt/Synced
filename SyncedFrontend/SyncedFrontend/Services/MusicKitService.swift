@@ -2,7 +2,7 @@ import Foundation
 import MusicKit
 
 class MusicKitService {
-    func createPlaylist(withTitle title: String, description: String) async throws -> Playlist {
+    func createPlaylist(title: String, description: String) async throws -> Playlist {
         do {
             let newPlaylist = try await MusicLibrary.shared.createPlaylist(name: title, description: description, authorDisplayName: "Synced")
             return newPlaylist

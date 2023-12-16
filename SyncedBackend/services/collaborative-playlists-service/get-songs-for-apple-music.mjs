@@ -14,12 +14,11 @@ export const getSongsForAppleMusicHandler = async (event) => {
     try {
         const userPlaylists = await getUserPlaylists(userId);
         const filteredPlaylists = filterPlaylists(userPlaylists, timestamp);
-        const songsInPlaylists = await getSongsForPlaylists(filteredPlaylists);
-        const filteredSongs = filterSongs(songsInPlaylists);
+        const playlistsWithSongs = await getSongsForPlaylists(filteredPlaylists);
 
         return {
             statusCode: 200,
-            body: JSON.stringify(songsInPlaylists)
+            body: JSON.stringify(playlistsWithSongs)
         };
     } catch (err) {
         console.error('Error:', err);
@@ -64,7 +63,7 @@ async function getSongsForPlaylists(playlists) {
                 if (song.appleMusicId) {
                     acc.push({
                         id: song.appleMusicId,
-                        type: "songs",
+                        type: 'songs',
                         attributes: {
                             url: song.appleMusicUrl
                         }
@@ -84,10 +83,6 @@ async function getSongsForPlaylists(playlists) {
     }
 
     return results;
-};
-
-function filterSongs(songs, timestamp) {
-    return songs.filter(songs => songs.updatedAt > timestamp && playlist.appleMusicId);
 };
 
 // Helper functions for creating error and success responses

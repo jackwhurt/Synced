@@ -38,8 +38,9 @@ class CollaborativePlaylistService {
         }
     }
     
-    func createPlaylist(title: String, description: String) async throws -> Playlist {
-        let playlist = try await musicKitService.createPlaylist(withTitle: title, description: description)
+    func createPlaylist(title: String, description: String, playlistId: String) async throws -> Playlist {
+        let playlist = try await musicKitService.createPlaylist(title: title, description: description)
+//        await updatePlaylistId(appleMusicPlaylistId: playlist.id, playlistId: playlistId)
         
         return playlist
     }
@@ -50,16 +51,17 @@ class CollaborativePlaylistService {
             return playlist
         } catch {
 //            TODO: Implement updating the playlist id on the backend
-//            let playlistMetadata = apiService.makeGetRequest(endpoint: "/collaborative-playlists/\(playlistId)", model: [CollaborativePlaylistMetadataResponse].self)
-//            let playlist = musicKitService.createPlaylist(title: playlistMetadata.title, description: playlistMetadata.description);
-//            await updatePlaylistId(appleMusicPlaylistId: playlist.id, playlistId: playlistId)
+            let playlist = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/metadata/\(playlistId)", model: CollaborativePlaylistMetadataResponse.self)
+            let newPlaylist = try await createPlaylist(title: playlist.metadata.title, description: playlist.metadata.description ?? "", playlistId: playlistId);
 
             throw error
         }
     }
     
     private func getSongUpdates(parameters: [String: String]) async throws -> [UpdateSongsResponse] {
-        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self, parameters: parameters)
+        // TODO: REVERT
+//        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self, parameters: parameters)
+        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self)
     }
     
     private func getLastUpdatedTimestamp() -> String {

@@ -29,7 +29,7 @@ class HomeViewModel: ObservableObject {
     
     func createPlaylist() async {
         do {
-            let id = try await musicKitService.createPlaylist(withTitle: "title bruh", description: "description123")
+            let id = try await musicKitService.createPlaylist(title: "title bruh", description: "description123")
             print("Id: ", id)
         } catch {
             print("Failed: ", error)

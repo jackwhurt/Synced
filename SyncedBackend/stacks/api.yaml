@@ -9,6 +9,8 @@ Parameters:
     Type: String
   UpdateCollaborativePlaylistMetadataFunctionArn:
     Type: String
+  GetCollaborativePlaylistMetadataByIdFunctionArn:
+    Type: String
   AddCollaboratorsFunctionArn:
     Type: String
   DeleteCollaboratorsFunctionArn:
@@ -251,6 +253,73 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/PUT/collaborative-playlists" 
 
+  # Collaborative Playlists / {id}
+  PlaylistIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref PlaylistsResource
+      PathPart: '{id}'
+      RestApiId: !Ref MyApi
+
+  # Get Collaborative Playlist by id
+  GetCollaborativePlaylistByIdMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref PlaylistIdResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCollaborativePlaylistByIdFunctionArn}/invocations"
+     
+  GetCollaborativePlaylistByIdLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetCollaborativePlaylistByIdFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/{id}"
+  
+  # Collaborative Playlists / Metadata / {id}
+  PlaylistMetadataResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref PlaylistsResource
+      PathPart: 'metadata'
+      RestApiId: !Ref MyApi
+
+  MetadataPlaylistIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref PlaylistMetadataResource
+      PathPart: '{id}'
+      RestApiId: !Ref MyApi
+
+  # Get Collaborative Playlist metadata by id
+  GetCollaborativePlaylistMetadataByIdMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref MetadataPlaylistIdResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCollaborativePlaylistMetadataByIdFunctionArn}/invocations"
+     
+  GetCollaborativePlaylistMetadataByIdLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetCollaborativePlaylistMetadataByIdFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/metadata/{id}"
+
   # Collaborative Playlists / Collaborators
   CollaboratorsResource:
     Type: AWS::ApiGateway::Resource
@@ -414,36 +483,6 @@ Resources:
       FunctionName: !Ref GetSongsForAppleMusicFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/songs/apple-music"
-
-  # Collaborative Playlists / {id}
-  PlaylistIdResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !Ref PlaylistsResource
-      PathPart: '{id}'
-      RestApiId: !Ref MyApi
-
-  # Get Collaborative Playlist by id
-  GetCollaborativePlaylistByIdMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      AuthorizationType: COGNITO_USER_POOLS
-      AuthorizerId: !Ref CognitoAuthoriser
-      HttpMethod: GET
-      ResourceId: !Ref PlaylistIdResource
-      RestApiId: !Ref MyApi
-      Integration:
-        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
-        Type: AWS_PROXY
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCollaborativePlaylistByIdFunctionArn}/invocations"
-     
-  GetCollaborativePlaylistByIdLambdaInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Ref GetCollaborativePlaylistByIdFunctionArn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/{id}"
 
 # Deployment of the API
   ApiDeployment:
