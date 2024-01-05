@@ -1,5 +1,5 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -13,7 +13,7 @@ export const getSongsForAppleMusicHandler = async (event) => {
 
     try {
         const userPlaylists = await getUserPlaylists(userId);
-        const filteredPlaylists = filterPlaylists(userPlaylists, timestamp);
+        const filteredPlaylists = await filterPlaylists(userPlaylists, timestamp);
         const playlistsWithSongs = await getSongsForPlaylists(filteredPlaylists);
 
         return {
@@ -40,9 +40,47 @@ async function getUserPlaylists(userId) {
     return queryResult.Items;
 };
 
-function filterPlaylists(playlists, timestamp) {
-    return playlists.filter(playlist => playlist.updatedAt > timestamp && playlist.appleMusicId);
+async function filterPlaylists(playlists, timestamp) {
+    const metadataMap = await getPlaylistsMetadata(playlists);
+    return playlists.filter(playlist => {
+        const metadata = metadataMap[playlist.PK];
+        return metadata && metadata.updatedAt > timestamp && playlist.appleMusicPlaylistId;
+    });
 };
+
+async function getPlaylistsMetadata(playlists) {
+    const chunks = chunkArray(playlists, 100); // Split playlists into chunks of 100
+    let metadataMap = {};
+
+    for (const chunk of chunks) {
+        const keys = chunk.map(playlist => ({ PK: playlist.PK, SK: 'metadata' }));
+        const batchGetParams = {
+            RequestItems: {
+                [playlistsTable]: {
+                    Keys: keys
+                }
+            }
+        };
+
+        const batchGetResult = await ddbDocClient.send(new BatchGetCommand(batchGetParams));
+        const chunkMetadataMap = batchGetResult.Responses[playlistsTable].reduce((acc, item) => {
+            acc[item.PK] = item;
+            return acc;
+        }, {});
+
+        metadataMap = { ...metadataMap, ...chunkMetadataMap };
+    }
+
+    return metadataMap;
+};
+
+function chunkArray(array, chunkSize) {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+}
 
 async function getSongsForPlaylists(playlists) {
     const results = [];
@@ -74,7 +112,7 @@ async function getSongsForPlaylists(playlists) {
 
             results.push({
                 playlistId: playlist.PK.replace('cp#', ''),
-                appleMusicPlaylistId: playlist.appleMusicId,
+                appleMusicPlaylistId: playlist.appleMusicPlaylistId,
                 songs: formattedSongs
             });
         } catch (err) {

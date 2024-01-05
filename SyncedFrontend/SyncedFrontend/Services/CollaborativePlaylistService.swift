@@ -1,7 +1,6 @@
 import Foundation
 import MusicKit
 
-//TODO: Choose error strat and stick with it
 class CollaborativePlaylistService {
     private let apiService: APIService
     private let musicKitService: MusicKitService
@@ -14,12 +13,13 @@ class CollaborativePlaylistService {
     func updatePlaylists() async throws {
         let updates: [UpdateSongsResponse]
         let timestampDict = ["timestamp": getLastUpdatedTimestamp()]
+        let currentDate = Date()
 
         do {
             updates = try await getSongUpdates(parameters: timestampDict)
         } catch {
             print("Failed to retrieve song updates for timestamp: ", timestampDict["timestamp"] ?? "Unknown")
-            throw CollaborativePlaylistServiceError.songUpdatesRetrievalFailed(error)
+            throw CollaborativePlaylistServiceError.songUpdatesRetrievalFailed
         }
         
         var allUpdatesSuccessful = true
@@ -28,14 +28,15 @@ class CollaborativePlaylistService {
                 let playlist = try await getPlaylistOrReplace(appleMusicPlaylistId: update.appleMusicPlaylistId, playlistId: update.playlistId)
                 try await self.musicKitService.editPlaylist(songs: update.songs, to: playlist)
             } catch {
-                print("Failed to update playlist \(update.appleMusicPlaylistId): \(error)")
                 allUpdatesSuccessful = false
-                throw CollaborativePlaylistServiceError.playlistUpdateFailed(update.appleMusicPlaylistId, error)
+                print("Failed to update playlist for backend id: \(update.playlistId): \(error)")
+                throw CollaborativePlaylistServiceError.playlistUpdateFailed
             }
         }
         
-        if allUpdatesSuccessful {
-            updateLastUpdatedTimestamp()
+        if (allUpdatesSuccessful) {
+            updateLastUpdatedTimestamp(currentDate: currentDate)
+            print("Updated last updated timestamp: \(currentDate)")
         }
     }
     
@@ -45,7 +46,8 @@ class CollaborativePlaylistService {
             try await updatePlaylistId(playlistId: playlistId, appleMusicPlaylistId: playlist.id.rawValue)
             return playlist
         } catch {
-            throw CollaborativePlaylistServiceError.playlistCreationFailed("For backend playlist id: \(playlistId)", error)
+            print("Failed to create playlist for backend id: \(playlistId)")
+            throw CollaborativePlaylistServiceError.playlistCreationFailed
         }
     }
     
@@ -54,26 +56,24 @@ class CollaborativePlaylistService {
             let playlist = try await musicKitService.getPlaylist(id: appleMusicPlaylistId)
             return playlist
         } catch {
+            print("Playlist \(appleMusicPlaylistId) not found, replacing playlist backend id \(playlistId)")
             return try await replacePlaylist(playlistId: playlistId)
         }
     }
     
     private func replacePlaylist(playlistId: String) async throws -> Playlist {
         do {
-            // TODO: metadata request not decoding data
             let playlist = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/metadata/\(playlistId)", model: CollaborativePlaylistMetadataResponse.self)
             let newPlaylist = try await createPlaylist(title: playlist.metadata.title, description: playlist.metadata.description ?? "", playlistId: playlistId);
             return newPlaylist
         } catch {
-            throw CollaborativePlaylistServiceError.playlistReplacementFailed("For backend playlist id: \(playlistId)", error)
+            print("Failed to replace playlist for backend id: \(playlistId)")
+            throw CollaborativePlaylistServiceError.playlistReplacementFailed
         }
     }
     
-    
     private func getSongUpdates(parameters: [String: String]) async throws -> [UpdateSongsResponse] {
-        // TODO: REVERT
-//        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self, parameters: parameters)
-        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self)
+        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self, parameters: parameters)
     }
     
     private func updatePlaylistId(playlistId: String, appleMusicPlaylistId: String) async throws {
@@ -81,7 +81,7 @@ class CollaborativePlaylistService {
             let body = UpdateAppleMusicPlaylistIdRequest(playlistId: playlistId, appleMusicPlaylistId: appleMusicPlaylistId)
             let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/metadata/apple-music-id", model: UpdateAppleMusicPlaylistIdResponse.self, body: body)
             if (response.appleMusicPlaylistId != appleMusicPlaylistId) {
-                throw CollaborativePlaylistServiceError.playlistUpdateFailed("For backend playlist id: \(playlistId)", nil)
+                throw CollaborativePlaylistServiceError.playlistUpdateFailed
             }
         } catch {
             print("Failed to update playlist id for backend playlist id: \(playlistId)")
@@ -93,10 +93,9 @@ class CollaborativePlaylistService {
         return UserDefaults.standard.object(forKey: "lastUpdatedTimestamp") as? String ?? ""
     }
     
-    private func updateLastUpdatedTimestamp() {
-        let currentDate = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    private func updateLastUpdatedTimestamp(currentDate: Date) {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate, .withTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
         
         UserDefaults.standard.set(formatter.string(from: currentDate), forKey: "lastUpdatedTimestamp")
     }

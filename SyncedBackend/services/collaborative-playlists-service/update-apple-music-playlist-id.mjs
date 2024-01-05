@@ -18,7 +18,7 @@ export const updateAppleMusicPlaylistIdHandler = async (event) => {
 
         return createResponse(200, { appleMusicPlaylistId: appleMusicPlaylistId });
     } catch (err) {
-        console.error('Error updating appleMusicId:', err);
+        console.error('Error updating appleMusicPlaylistId:', err);
         return createErrorResponse(err);
     }
 }
@@ -31,7 +31,7 @@ async function updatePlaylist(playlistId, userId, appleMusicPlaylistId) {
         throw new Error('No matching item found in the database.');
     }
 
-    console.info(`Updated appleMusicId for collaborator ${userId} in playlist ${playlistId}`);
+    console.info(`Updated appleMusicPlaylistId for collaborator ${userId} in playlist ${playlistId}`);
 }
 
 function parseEventBody(event) {
