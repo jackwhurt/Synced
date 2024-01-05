@@ -99,5 +99,15 @@
     },
     "sync-collaborators": {
         "body": "{\"playlistId\": \"1234567890abcdef\", \"collaboratorIds\": [\"collab1\", \"collab2\", \"collab3\"]}"
+    },
+    "update-apple-music-playlist-id": {
+        "body": "{\"playlistId\": \"bd613977-19a3-4441-a8c5-3049c7e59ae3\", \"appleMusicPlaylistId\": \"abcde12345\"}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "example-cognito-user-id"
+                }
+            }
+        }
     }
 }

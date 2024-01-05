@@ -243,6 +243,7 @@ Resources:
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
 
+  # Collaborative Playlists - Metadata
   UpdateCollaborativePlaylistMetadataFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -263,7 +264,6 @@ Resources:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
-  # Collaborative Playlists - Metadata
   GetCollaborativePlaylistMetadataByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -282,6 +282,26 @@ Resources:
       Environment:
         Variables:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  UpdateAppleMusicPlaylistIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: update-apple-music-playlist-id.updateAppleMusicPlaylistIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update an Apple Music Playlist Id.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName    
 
   # Collaborative Playlists - Collaborators
   AddCollaboratorsFunction:
@@ -494,6 +514,8 @@ Outputs:
     Value: !GetAtt UpdateCollaborativePlaylistMetadataFunction.Arn
   GetCollaborativePlaylistMetadataByIdFunctionArn:
     Value: !GetAtt GetCollaborativePlaylistMetadataByIdFunction.Arn
+  UpdateAppleMusicPlaylistIdFunctionArn:
+    Value: !GetAtt UpdateAppleMusicPlaylistIdFunction.Arn
   AddCollaboratorsFunctionArn:
     Value: !GetAtt AddCollaboratorsFunction.Arn
   DeleteCollaboratorsFunctionArn:

@@ -35,16 +35,38 @@ async function updatePlaylist(playlistId, userId, appleMusicPlaylistId) {
     return result;
 }
 
+function parseEventBody(event) {
+    if (!event.body) {
+        throw new Error('Missing event body');
+    }
+
+    try {
+        const body = JSON.parse(event.body);
+        const { playlistId, appleMusicPlaylistId } = body;
+
+        if (!playlistId || !appleMusicPlaylistId) {
+            throw new Error('Missing required fields: playlistId and appleMusicPlaylistId');
+        }
+
+        return { playlistId, appleMusicPlaylistId };
+    } catch (err) {
+        throw new Error(`Error parsing event body: ${err.message}`);
+    }
+}
+
 function createUpdateParams(playlistId, userId, appleMusicPlaylistId) {
+    const updatedAt = new Date().toISOString();
+
     return {
         TableName: playlistsTable,
         Key: {
             PK: `cp#${playlistId}`,
             SK: `collaborator#${userId}`
         },
-        UpdateExpression: 'SET appleMusicId = :appleMusicId',
+        UpdateExpression: 'SET appleMusicPlaylistId = :appleMusicPlaylistId, updatedAt = :updatedAt',
         ExpressionAttributeValues: {
-            ':appleMusicId': appleMusicPlaylistId
+            ':appleMusicPlaylistId': appleMusicPlaylistId,
+            ':updatedAt': updatedAt
         },
         ConditionExpression: 'attribute_exists(PK) AND attribute_exists(SK)',
         ReturnValues: 'ALL_NEW'

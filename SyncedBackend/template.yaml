@@ -47,6 +47,7 @@ Resources:
         CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
         UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
         GetCollaborativePlaylistMetadataByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistMetadataByIdFunctionArn
+        UpdateAppleMusicPlaylistIdFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicPlaylistIdFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
         DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
         SyncCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.SyncCollaboratorsFunctionArn
