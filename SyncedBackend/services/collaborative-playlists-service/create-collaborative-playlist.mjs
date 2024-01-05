@@ -5,7 +5,6 @@ import { createSpotifyPlaylist, createAppleMusicPlaylist } from '/opt/nodejs/str
 import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { addCollaborators } from '/opt/nodejs/add-collaborators.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
-import { prepareAppleMusicAccounts } from '/opt/nodejs/apple-music-utils.mjs';
 import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -20,7 +19,7 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const validationResult = parseAndValidateEvent(event);
     if (validationResult.error) return createErrorResponse(validationResult.error);
 
-    const { playlist, collaborators, spotifyPlaylist, appleMusicPlaylist } = validationResult.data;
+    const { playlist, collaborators, spotifyPlaylist } = validationResult.data;
     const userId = getUserIdFromEvent(event);
     const timestamp = new Date().toISOString();
     playlist.playlistId = uuidv4();
@@ -29,7 +28,7 @@ export const createCollaborativePlaylistHandler = async (event) => {
     const transactItem = createPlaylistItem(playlist.playlistId, userId, playlist, timestamp);
 
     try {
-        await handlePlaylistCreation(transactItem, playlist, collaborators, userId, spotifyPlaylist, appleMusicPlaylist);
+        await handlePlaylistCreation(transactItem, playlist, collaborators, userId, spotifyPlaylist);
         return createSuccessResponse(playlist, playlist.playlistId, collaborators, timestamp);
     } catch (err) {
         console.error('Error:', err);
@@ -88,24 +87,18 @@ function createPlaylistItem(playlistId, userId, playlist, timestamp) {
     };
 }
 
-const handlePlaylistCreation = async (transactItem, playlist, collaborators, userId, spotifyPlaylist, appleMusicPlaylist) => {
+const handlePlaylistCreation = async (transactItem, playlist, collaborators, userId, spotifyPlaylist) => {
     await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
     await addCollaborators(playlist.playlistId, collaborators, userId, playlistsTable, usersTable);
+    if(!spotifyPlaylist) return;
 
     let spotifyPlaylistId;
-    if (spotifyPlaylist) {
-        spotifyPlaylistId = await handleSpotifyPlaylist(playlist, userId);
-    }
-
     try {
-        if (appleMusicPlaylist) {
-            await handleAppleMusicPlaylist(playlist, userId);
-        }
+        spotifyPlaylistId = await handleSpotifyPlaylist(playlist, userId);
     } catch (err) {
-        console.error('Error creating Apple Music playlist');
-        if (spotifyPlaylistId) {
-            await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUsers[0]);
-        }
+        console.error('Error creating Spotify playlist');
+        await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUsers[0]);
+
         throw err;
     }
 };
@@ -118,15 +111,6 @@ async function handleSpotifyPlaylist(playlist, userId) {
     const spotifyPlaylistId = await createSpotifyPlaylist(playlist, spotifyUsers[0], playlistsTable);
     await updateCollaboratorSyncStatus(playlist.playlistId, userId, true, 'spotify', playlistsTable);
     return spotifyPlaylistId; // Indicate that Spotify playlist was successfully created
-}
-
-// Handle Apple Music Playlist Creation
-async function handleAppleMusicPlaylist(playlist, userId) {
-    const { appleMusicUsers, failedAppleMusicUsers } = await prepareAppleMusicAccounts([userId], tokensTable);
-    if (!failedAppleMusicUsers) throw new Error('Apple Music account could not be prepared for user: ' + userId);
-
-    await createAppleMusicPlaylist(playlist, appleMusicUsers[0], playlistsTable);
-    await updateCollaboratorSyncStatus(playlist.playlistId, userId, true, 'appleMusic', playlistsTable);
 }
 
 // Helper function to rollback in case of an error
