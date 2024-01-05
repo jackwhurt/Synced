@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct TestView: View {
-    @StateObject private var cpViewModel: HomeViewModel
+    @StateObject private var cpViewModel: TestViewModel
     
     init(isLoggedIn: Binding<Bool>) {
-        _cpViewModel = StateObject(wrappedValue: HomeViewModel(
+        _cpViewModel = StateObject(wrappedValue: TestViewModel(
             authenticationService: DIContainer.shared.provideAuthenticationService(),
             appleMusicService: DIContainer.shared.provideAppleMusicService(),
             musicKitService: DIContainer.shared.provideMusicKitService(),

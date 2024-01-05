@@ -22,7 +22,7 @@ struct SignUpView: View {
                     
                     if signUpViewModel.isSignedUp {
                         // Placeholder, will be get info screen
-                        NavigationLink("", destination: HomeView(isLoggedIn: signUpViewModel.isLoggedIn))
+                        NavigationLink("", destination: TestView(isLoggedIn: signUpViewModel.isLoggedIn))
                     }
                 }
                 .padding()

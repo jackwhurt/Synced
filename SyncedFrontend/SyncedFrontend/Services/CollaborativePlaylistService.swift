@@ -51,6 +51,16 @@ class CollaborativePlaylistService {
         }
     }
     
+    func getPlaylists() async throws -> [CollaborativePlaylistResponse] {
+        do {
+            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists", model: [CollaborativePlaylistResponse].self)
+            return response
+        } catch {
+            print("Failed to retrieve collaborative playlists")
+            throw CollaborativePlaylistServiceError.playlistRetrievalFailed
+        }
+    }
+    
     private func getPlaylistOrReplace(appleMusicPlaylistId: String, playlistId: String) async throws -> Playlist {
         do {
             let playlist = try await musicKitService.getPlaylist(id: appleMusicPlaylistId)

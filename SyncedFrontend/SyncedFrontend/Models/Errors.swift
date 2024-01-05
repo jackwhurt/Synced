@@ -42,5 +42,6 @@ enum CollaborativePlaylistServiceError: Error {
     case playlistReplacementFailed
     case playlistCreationFailed
     case failedToFormatTimestamp
+    case playlistRetrievalFailed
 }
 
