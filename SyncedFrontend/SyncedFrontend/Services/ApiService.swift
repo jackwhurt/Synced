@@ -38,7 +38,7 @@ class APIService {
         print("Requesting: \(request)")
         
         let (data, _) = try await URLSession.shared.data(for: request)
-        
+
         do {
             let decodedData = try JSONDecoder().decode(T.self, from: data)
             print("Received: \(decodedData)")

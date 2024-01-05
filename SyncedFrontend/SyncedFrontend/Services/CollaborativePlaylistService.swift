@@ -50,11 +50,18 @@ class CollaborativePlaylistService {
             let playlist = try await musicKitService.getPlaylist(id: appleMusicPlaylistId)
             return playlist
         } catch {
-//            TODO: Implement updating the playlist id on the backend
+            return try await replacePlaylist(playlistId: playlistId)
+        }
+    }
+    
+    private func replacePlaylist(playlistId: String) async throws -> Playlist {
+    //      TODO: Implement updating the playlist id on the backend
+        do {
             let playlist = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/metadata/\(playlistId)", model: CollaborativePlaylistMetadataResponse.self)
             let newPlaylist = try await createPlaylist(title: playlist.metadata.title, description: playlist.metadata.description ?? "", playlistId: playlistId);
-
-            throw error
+            return newPlaylist
+        } catch {
+            throw CollaborativePlaylistServiceError.playlistReplacementFailed("For backend playlist id: \(playlistId)", error)
         }
     }
     
