@@ -196,6 +196,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: get-all-collaborative-playlists.getAllCollaborativePlaylistsHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -456,6 +458,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: get-songs-for-apple-music.getSongsForAppleMusicHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128

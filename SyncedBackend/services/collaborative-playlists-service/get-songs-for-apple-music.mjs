@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { getAllPlaylistsMetadata } from '/opt/nodejs/get-all-playlists-metadata.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -12,8 +13,8 @@ export const getSongsForAppleMusicHandler = async (event) => {
     const userId = claims['sub'];
 
     try {
-        const userPlaylists = await getUserPlaylists(userId);
-        const filteredPlaylists = await filterPlaylists(userPlaylists, timestamp);
+        const { userPlaylists, metadataMap } = await getAllPlaylistsMetadata(userId, playlistsTable);
+        const filteredPlaylists = await filterPlaylists(userPlaylists, metadataMap, timestamp);
         const playlistsWithSongs = await getSongsForPlaylists(filteredPlaylists);
 
         return {
@@ -26,61 +27,12 @@ export const getSongsForAppleMusicHandler = async (event) => {
     }
 };
 
-async function getUserPlaylists(userId) {
-    const queryParams = {
-        TableName: playlistsTable,
-        IndexName: 'CollaboratorIndex',
-        KeyConditionExpression: 'GSI1PK = :gsi1pk',
-        ExpressionAttributeValues: {
-            ':gsi1pk': `collaborator#${userId}`
-        }
-    };
-
-    const queryResult = await ddbDocClient.send(new QueryCommand(queryParams));
-    return queryResult.Items;
-};
-
-async function filterPlaylists(playlists, timestamp) {
-    const metadataMap = await getPlaylistsMetadata(playlists);
+async function filterPlaylists(playlists, metadataMap, timestamp) {
     return playlists.filter(playlist => {
         const metadata = metadataMap[playlist.PK];
         return metadata && metadata.updatedAt > timestamp && playlist.appleMusicPlaylistId;
     });
 };
-
-async function getPlaylistsMetadata(playlists) {
-    const chunks = chunkArray(playlists, 100); // Split playlists into chunks of 100
-    let metadataMap = {};
-
-    for (const chunk of chunks) {
-        const keys = chunk.map(playlist => ({ PK: playlist.PK, SK: 'metadata' }));
-        const batchGetParams = {
-            RequestItems: {
-                [playlistsTable]: {
-                    Keys: keys
-                }
-            }
-        };
-
-        const batchGetResult = await ddbDocClient.send(new BatchGetCommand(batchGetParams));
-        const chunkMetadataMap = batchGetResult.Responses[playlistsTable].reduce((acc, item) => {
-            acc[item.PK] = item;
-            return acc;
-        }, {});
-
-        metadataMap = { ...metadataMap, ...chunkMetadataMap };
-    }
-
-    return metadataMap;
-};
-
-function chunkArray(array, chunkSize) {
-    const chunks = [];
-    for (let i = 0; i < array.length; i += chunkSize) {
-        chunks.push(array.slice(i, i + chunkSize));
-    }
-    return chunks;
-}
 
 async function getSongsForPlaylists(playlists) {
     const results = [];
