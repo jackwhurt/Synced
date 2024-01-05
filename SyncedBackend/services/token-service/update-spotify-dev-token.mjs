@@ -25,7 +25,7 @@ export const updateSpotifyDevTokenHandler = async () => {
             const { newAccessToken, expiresIn, newRefreshToken } = await refreshSpotifyToken(clientId, clientSecret, refreshToken);
 
             // Update the access token (and refresh token, if new one is provided) in DynamoDB
-            await updateAccessToken(tokensTable, 'SpotifyDev', newAccessToken, expiresIn, newRefreshToken);
+            await updateAccessToken(tokensTable, 'spotifyDev', newAccessToken, expiresIn, newRefreshToken);
 
             return { statusCode: 200, body: JSON.stringify({ message: 'Token refreshed successfully' }) };
         } catch (apiError) {
@@ -47,7 +47,7 @@ export const updateSpotifyDevTokenHandler = async () => {
 async function getRefreshToken() {
     const refreshTokenData = await dynamoDBClient.send(new GetCommand({
         TableName: tokensTable,
-        Key: { token_id: 'SpotifyDev' }
+        Key: { token_id: 'spotifyDev' }
     }));
 
     return refreshTokenData.Item.refreshToken;
@@ -88,7 +88,7 @@ async function getParameter(name) {
 }
 
 async function updateAccessToken(tableName, primaryKeyValue, accessToken, expiresIn, newRefreshToken = null) {
-    const updateExpression = 'set access_token = :a, expires_at = :e' + (newRefreshToken ? ', refresh_token = :r' : '');
+    const updateExpression = 'set accessToken = :a, expiresAt = :e' + (newRefreshToken ? ', refreshToken = :r' : '');
 
     const expressionAttributeValues = {
         ':a': accessToken,

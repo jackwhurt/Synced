@@ -89,12 +89,13 @@ function buildTransactItems(playlistId, songs) {
                 PK: `cp#${playlistId}`,
                 SK: 'metadata'
             },
-            UpdateExpression: 'ADD #songCount :decr',
+            UpdateExpression: 'ADD #songCount :decr SET updatedAt = :updatedAt',
             ExpressionAttributeNames: {
                 '#songCount': 'songCount'
             },
             ExpressionAttributeValues: {
-                ':decr': -songs.length
+                ':decr': -songs.length,
+                ':updatedAt': new Date().toISOString() 
             }
         }
     });

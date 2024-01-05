@@ -53,7 +53,8 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     SK: `collaborator#${collaboratorId}`,
                     GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
-                    createdAt: timestamp
+                    createdAt: timestamp,
+                    updatedAt: timestamp
                 },
                 ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
             }

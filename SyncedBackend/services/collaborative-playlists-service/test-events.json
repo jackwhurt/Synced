@@ -1,30 +1,10 @@
 {
     "create-cp": {
-        "body": {
-            "playlist": {
-                "title": "My Playlist",
-                "description": "A collaborative playlist"
-            },
-            "collaborators": [
-                "user1",
-                "user2"
-            ],
-            "songs": [
-                {
-                    "title": "Song 1",
-                    "artist": "Artist 1"
-                },
-                {
-                    "title": "Song 2",
-                    "artist": "Artist 2"
-                }
-            ],
-            "spotifyPlaylist": true
-        },
+        "body": "{\"spotifyPlaylist\": true, \"appleMusicPlaylist\": true, \"playlist\": {\"title\": \"I love Emma\", \"description\": \"A test collaborative playlist\"}, \"collaborators\": [\"bc7510f9-4555-4da3-99e2-204067d32df8\"], \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}]}",
         "requestContext": {
             "authorizer": {
                 "claims": {
-                    "sub": "12345678-user-id"
+                    "sub": "example-cognito-user-id"
                 }
             }
         },
@@ -119,5 +99,15 @@
     },
     "sync-collaborators": {
         "body": "{\"playlistId\": \"1234567890abcdef\", \"collaboratorIds\": [\"collab1\", \"collab2\", \"collab3\"]}"
+    },
+    "update-apple-music-playlist-id": {
+        "body": "{\"playlistId\": \"bd613977-19a3-4441-a8c5-3049c7e59ae3\", \"appleMusicPlaylistId\": \"abcde12345\"}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "example-cognito-user-id"
+                }
+            }
+        }
     }
 }

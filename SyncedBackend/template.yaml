@@ -35,6 +35,7 @@ Resources:
       TemplateURL: 'stacks/events.yaml'
       Parameters:
         UpdateSpotifyDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateSpotifyDevTokenFunctionArn
+        UpdateAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicDevTokenFunctionArn
 
   ApiStack:
     Type: AWS::CloudFormation::Stack
@@ -45,13 +46,18 @@ Resources:
         GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
         CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
         UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
+        GetCollaborativePlaylistMetadataByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistMetadataByIdFunctionArn
+        UpdateAppleMusicPlaylistIdFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicPlaylistIdFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
         DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
         SyncCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.SyncCollaboratorsFunctionArn
         AddSongsFunctionArn: !GetAtt LambdaStack.Outputs.AddSongsFunctionArn
         DeleteSongsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteSongsFunctionArn
+        GetSongsForAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.GetSongsForAppleMusicFunctionArn
         GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
         ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
+        GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn
+        UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

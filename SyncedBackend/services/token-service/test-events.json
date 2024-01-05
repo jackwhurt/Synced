@@ -20,5 +20,15 @@
             "code": "yourAuthorizationCodeHere",
             "state": "yourStateParameterHere"
         }
+    },
+    "update-apple-music-user-token": {
+        "body": "{\"appleMusicUserToken\": \"your-apple-music-user-token\"}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognito-user-id"
+                }
+            }
+        }
     }
 }

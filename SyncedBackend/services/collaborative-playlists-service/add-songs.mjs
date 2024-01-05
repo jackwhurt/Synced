@@ -126,6 +126,7 @@ async function prepareCollaboratorData(playlistId) {
     return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
+// TODO: Add updatedAt
 function buildTransactItems(playlistId, songs, timestamp) {
     let transactItems = [];
 
@@ -136,18 +137,20 @@ function buildTransactItems(playlistId, songs, timestamp) {
                 PK: `cp#${playlistId}`,
                 SK: 'metadata'
             },
-            UpdateExpression: 'ADD #songCount :incr',
+            UpdateExpression: 'ADD #songCount :incr SET updatedAt = :updatedAt',
             ConditionExpression: '#songCount <= :maxSongs',
             ExpressionAttributeNames: {
                 '#songCount': 'songCount'
             },
             ExpressionAttributeValues: {
                 ':incr': songs.length,
-                ':maxSongs': MAX_SONGS - songs.length
+                ':maxSongs': MAX_SONGS - songs.length,
+                ':updatedAt': new Date().toISOString()
             },
             ReturnValuesOnConditionCheckFailure: 'ALL_OLD'
         }
     });
+
 
     songs.forEach(song => {
         const songId = uuidv4();

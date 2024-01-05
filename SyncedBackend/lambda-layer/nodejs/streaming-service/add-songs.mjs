@@ -7,9 +7,9 @@ export async function addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs, 
         'Authorization': `Bearer ${spotifyUser.token}`,
         'Content-Type': 'application/json'
     };
-
     // Function to split the songs array into chunks of 100
     const chunkSize = 100;
+
     for (let i = 0; i < songs.length; i += chunkSize) {
         const songChunk = songs.slice(i, i + chunkSize);
         const songUris = songChunk.map(song => song.spotifyUri);
@@ -31,3 +31,40 @@ export async function addSongsToSpotifyPlaylist(playlistId, spotifyUser, songs, 
         }
     }
 }
+
+export async function addSongsToAppleMusicPlaylist(playlistId, appleMusicUser, songs, playlistsTable, maxRetries = 3) {
+    const url = `https://api.music.apple.com/v1/me/library/playlists/${playlistId}/tracks`;
+    const headers = {
+        'Authorization': `Bearer ${appleMusicUser.devToken}`,
+        'Music-User-Token': appleMusicUser.token,
+        'Content-Type': 'application/json'
+    };
+    const chunkSize = 100;
+
+    for (let i = 0; i < songs.length; i += chunkSize) {
+        const songChunk = songs.slice(i, i + chunkSize);
+        const data = {
+            data: songChunk.map(song => ({
+                id: song.appleMusicId,
+                type: 'songs'
+            }))
+        };
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                await axios.post(url, data, { headers });
+                console.info('Chunk of songs added to Apple Music playlist successfully for user:', appleMusicUser.userId);
+                break; // Break out of the retry loop on success
+            } catch (error) {
+                console.error(`Attempt ${attempt} failed: Error adding songs to Apple Music playlist for user ${appleMusicUser.userId}:`, error);
+                if (attempt === maxRetries) {
+                    await updateCollaboratorSyncStatus(playlistId, appleMusicUser.userId, false, 'appleMusic', playlistsTable);
+                    throw error; // All attempts failed, throw the error
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential back-off
+            }
+        }
+    }
+}
+
+

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-async function deleteSpotifyPlaylist(playlistId, spotifyUser, maxRetries = 3) {
+export async function deleteSpotifyPlaylist(playlistId, spotifyUser, maxRetries = 3) {
     const url = `https://api.spotify.com/v1/playlists/${playlistId}/followers`;
     const headers = {
         'Authorization': `Bearer ${spotifyUser.token}`,
@@ -21,8 +21,4 @@ async function deleteSpotifyPlaylist(playlistId, spotifyUser, maxRetries = 3) {
             }
         }
     }
-}
-
-export async function deletePlaylist(spotifyPlaylistId, spotifyUser) {
-    await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUser); 
 }
