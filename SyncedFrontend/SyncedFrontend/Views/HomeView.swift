@@ -7,7 +7,8 @@ struct HomeView: View {
         _cpViewModel = StateObject(wrappedValue: HomeViewModel(
             authenticationService: DIContainer.shared.provideAuthenticationService(),
             appleMusicService: DIContainer.shared.provideAppleMusicService(),
-            musicKitService: DIContainer.shared.provideMusicKitService()
+            musicKitService: DIContainer.shared.provideMusicKitService(),
+            collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService()
             )
         )
     }

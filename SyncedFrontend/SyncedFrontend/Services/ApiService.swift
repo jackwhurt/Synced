@@ -44,7 +44,7 @@ class APIService {
             print("Received: \(decodedData)")
             return decodedData
         } catch {
-            print("Failed to decode data")
+            print("Failed to decode data: \(error)")
             throw APIServiceError.failedToDecodeResponse
         }
     }

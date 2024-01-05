@@ -38,8 +38,9 @@ enum AppleMusicServiceError: Error {
 
 enum CollaborativePlaylistServiceError: Error {
     case songUpdatesRetrievalFailed(Error)
-    case playlistUpdateFailed(String, Error)
+    case playlistUpdateFailed(String, Error?)
     case playlistReplacementFailed(String, Error)
+    case playlistCreationFailed(String, Error)
     case failedToFormatTimestamp
 }
 

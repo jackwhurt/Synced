@@ -14,9 +14,9 @@ export const updateAppleMusicPlaylistIdHandler = async (event) => {
         const claims = event.requestContext.authorizer?.claims;
         const userId = claims['sub'];
 
-        const result = await updatePlaylist(playlistId, userId, appleMusicPlaylistId);
+        await updatePlaylist(playlistId, userId, appleMusicPlaylistId);
 
-        return createResponse(200, result.Attributes);
+        return createResponse(200, { appleMusicPlaylistId: appleMusicPlaylistId });
     } catch (err) {
         console.error('Error updating appleMusicId:', err);
         return createErrorResponse(err);
@@ -32,7 +32,6 @@ async function updatePlaylist(playlistId, userId, appleMusicPlaylistId) {
     }
 
     console.info(`Updated appleMusicId for collaborator ${userId} in playlist ${playlistId}`);
-    return result;
 }
 
 function parseEventBody(event) {

@@ -7,11 +7,13 @@ class HomeViewModel: ObservableObject {
     private let authenticationService: AuthenticationServiceProtocol?
     private let appleMusicService: AppleMusicService
     private let musicKitService: MusicKitService
+    private let collaborativePlaylistService: CollaborativePlaylistService
 
-    init(authenticationService: AuthenticationServiceProtocol, appleMusicService: AppleMusicService, musicKitService: MusicKitService) {
+    init(authenticationService: AuthenticationServiceProtocol, appleMusicService: AppleMusicService, musicKitService: MusicKitService, collaborativePlaylistService: CollaborativePlaylistService) {
         self.authenticationService = authenticationService
         self.appleMusicService = appleMusicService
         self.musicKitService = musicKitService
+        self.collaborativePlaylistService = collaborativePlaylistService
     }
 
     func logout() {
@@ -29,7 +31,7 @@ class HomeViewModel: ObservableObject {
     
     func createPlaylist() async {
         do {
-            let id = try await musicKitService.createPlaylist(title: "title bruh", description: "description123")
+            let id = try await collaborativePlaylistService.createPlaylist(title: "title bruh", description: "description123", playlistId: "bd613977-19a3-4441-a8c5-3049c7e59ae3")
             print("Id: ", id)
         } catch {
             print("Failed: ", error)

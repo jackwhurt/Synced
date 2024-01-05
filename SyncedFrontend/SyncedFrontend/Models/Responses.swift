@@ -20,13 +20,7 @@ struct PlaylistMetadata: Codable {
     let title: String
 }
 
-// TODO: Remove
-//struct UpdateSongsResponse: Codable {
-//    let id: String
-//    let type: String
-//    let attributes: Attributes
-//}
-//
-//struct Attributes: Codable {
-//    let url: String
-//}
+struct UpdateAppleMusicPlaylistIdResponse: Codable {
+    let appleMusicPlaylistId: String
+}
+
