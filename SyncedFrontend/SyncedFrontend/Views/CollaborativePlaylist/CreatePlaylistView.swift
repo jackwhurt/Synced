@@ -5,7 +5,7 @@ struct CreatePlaylistView: View {
     @StateObject private var createPlaylistViewModel: CreatePlaylistViewModel
     @State private var showErrorAlert = false
     
-    init(collaborativePlaylistViewModel: CollaborativePlaylistViewModel) {
+    init(collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel) {
         _createPlaylistViewModel = StateObject(wrappedValue: CreatePlaylistViewModel(collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(), collaborativePlaylistViewModel: collaborativePlaylistViewModel))
     }
 
@@ -22,7 +22,7 @@ struct CreatePlaylistView: View {
             .navigationBarItems(leading: Button("Cancel", action: { dismiss() }), trailing: Button("Save", action: {
                 Task {
                     await createPlaylistViewModel.save()
-                    if let errorMessage = createPlaylistViewModel.errorMessage {
+                    if (createPlaylistViewModel.errorMessage != nil) {
                         showErrorAlert = true
                     } else {
                         dismiss()
@@ -88,6 +88,6 @@ struct CollaboratorsSection: View {
 
 struct CreatePlaylistView_Previews: PreviewProvider {
     static var previews: some View {
-        CreatePlaylistView(collaborativePlaylistViewModel: CollaborativePlaylistViewModel(collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService()))
+        CreatePlaylistView(collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel(collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService()))
     }
 }

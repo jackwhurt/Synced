@@ -1,29 +1,28 @@
 import Foundation
 
 class CollaborativePlaylistViewModel: ObservableObject {
-    private let collaborativePlaylistService: CollaborativePlaylistService
-    @Published private(set) var playlists: [CollaborativePlaylistResponse] = []
+    @Published var playlist: GetCollaborativePlaylistByIdResponse?
+    @Published var errorMessage: String? // Add an error message property
 
-    init(collaborativePlaylistService: CollaborativePlaylistService) {
+    private let playlistId: String
+    private let collaborativePlaylistService: CollaborativePlaylistService
+
+    init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService) {
+        self.playlistId = playlistId
         self.collaborativePlaylistService = collaborativePlaylistService
     }
 
-    func loadPlaylists() async {
+    func loadPlaylist() async {
         do {
-            let loadedPlaylists = try await collaborativePlaylistService.getPlaylists()
-            print("Loaded playlists: \(loadedPlaylists)")
+            let fetchedPlaylist = try await collaborativePlaylistService.getPlaylistById(playlistId: playlistId)
             DispatchQueue.main.async {
-                self.playlists = loadedPlaylists
+                self.playlist = fetchedPlaylist
             }
         } catch {
-            DispatchQueue.main.async {
-                // Update some state here to show error message
-                print("Failed to load playlists: \(error)")
+            print("Failed to load playlist: \(playlistId)")
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Failed to load playlist, please try again later"
             }
         }
-    }
-    
-    func createPlaylist() async {
-        
     }
 }

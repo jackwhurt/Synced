@@ -9,9 +9,9 @@ class CreatePlaylistViewModel: ObservableObject {
     @Published var createSpotifyPlaylist: Bool = false
     @Published var createAppleMusicPlaylist: Bool = false
     private let collaborativePlaylistService: CollaborativePlaylistService
-    private let collaborativePlaylistViewModel: CollaborativePlaylistViewModel
+    private let collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel
 
-    init(collaborativePlaylistService: CollaborativePlaylistService, collaborativePlaylistViewModel: CollaborativePlaylistViewModel) {
+    init(collaborativePlaylistService: CollaborativePlaylistService, collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel) {
         self.collaborativePlaylistService = collaborativePlaylistService
         self.collaborativePlaylistViewModel = collaborativePlaylistViewModel
     }

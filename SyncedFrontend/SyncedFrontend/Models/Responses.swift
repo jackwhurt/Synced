@@ -10,13 +10,20 @@ struct UpdateSongsResponse: Codable {
     let songs: [Song]
 }
 
-struct CollaborativePlaylistResponse: Codable, Identifiable {
+struct GetCollaborativePlaylistResponse: Codable, Identifiable {
     let id: String
     let title: String
-    let description: String
+    let description: String?
+    let coverImageUrl: String?
 }
 
-struct CollaborativePlaylistMetadataResponse: Codable {
+struct GetCollaborativePlaylistByIdResponse: Codable {
+    let playlistId: String
+    let metadata: PlaylistMetadata
+    let songs: [SongMetadata]
+}
+
+struct GetCollaborativePlaylistMetadataResponse: Codable {
     let playlistId: String
     let metadata: PlaylistMetadata
 }

@@ -108,7 +108,7 @@ class AppleMusicService {
     
     private func replaceAppleMusicPlaylist(playlistId: String) async throws -> Playlist {
         do {
-            let playlist = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/metadata/\(playlistId)", model: CollaborativePlaylistMetadataResponse.self)
+            let playlist = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/metadata/\(playlistId)", model: GetCollaborativePlaylistMetadataResponse.self)
             let newPlaylist = try await createAppleMusicPlaylist(title: playlist.metadata.title, description: playlist.metadata.description ?? "", playlistId: playlistId);
             return newPlaylist
         } catch {

@@ -9,7 +9,7 @@ struct HomeView: View {
     
     var body: some View {
         TabView {
-            CollaborativePlaylistView()
+            CollaborativePlaylistMenuView()
                 .tabItem {
                     Label("", systemImage: "music.note.list")
                 }

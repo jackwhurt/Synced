@@ -1,6 +1,7 @@
 struct PlaylistMetadata: Codable {
-    let description: String?
     let title: String
+    let description: String?
+    let coverImageUrl: String?
 }
 
 struct CollaborativePlaylist: Codable {
