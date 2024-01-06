@@ -11,15 +11,22 @@ struct CollaborativePlaylistView: View {
     
     var body: some View {
         ScrollView {
-            if let playlist = collaborativePlaylistViewModel.playlist {
-                VStack {
-                    PlaylistHeaderView(metadata: playlist.metadata)
-                    SongList(songs: playlist.songs)
-                }
-            } else if collaborativePlaylistViewModel.errorMessage == nil {
-                ProgressView()
-            }
-        }
+             if let playlist = collaborativePlaylistViewModel.playlist {
+                 VStack {
+                     PlaylistHeaderView(metadata: playlist.metadata)
+                     // Check if songs are empty
+                     if playlist.songs.isEmpty {
+                         Text("This playlist is empty")
+                             .foregroundColor(.secondary)
+                             .padding()
+                     } else {
+                         SongList(songs: playlist.songs)
+                     }
+                 }
+             } else if collaborativePlaylistViewModel.errorMessage == nil {
+                 ProgressView()
+             }
+         }
         .navigationBarTitleDisplayMode(.inline)
         .onAppear(perform: loadPlaylist)
         .alert(isPresented: $showErrorAlert, content: errorAlert)

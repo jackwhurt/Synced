@@ -52,8 +52,14 @@ struct PlaylistView: View {
     let playlist: GetCollaborativePlaylistResponse
 
     var body: some View {
-        HStack {
+        HStack(spacing: 10) {
+            // Custom AsyncImageLoader to load and display the cover image
+            AsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
+
+            // Title of the playlist
             Text(playlist.title)
+                .foregroundColor(.primary)
+                .font(.headline)
         }
     }
 }
