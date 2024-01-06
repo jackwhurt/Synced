@@ -25,6 +25,8 @@ Parameters:
     Type: String
   GetSongsForAppleMusicFunctionArn:
     Type: String
+  GetSpotifyApiSongsFunctionArn:
+    Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
@@ -517,7 +519,44 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/songs/apple-music"
 
-# Deployment of the API
+  # Songs
+  SongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: songs
+      RestApiId: !Ref MyApi
+
+  # Songs / Spotify
+  SpotifyApiSongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt SongsResource
+      PathPart: spotify
+      RestApiId: !Ref MyApi
+
+  GetSpotifyApiSongsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref SpotifyApiSongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSpotifyApiSongsFunctionArn}/invocations"
+
+  GetSpotifyaApiSongsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetSpotifyApiSongsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/songs/spotify"
+
+  # Deployment of the API
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:

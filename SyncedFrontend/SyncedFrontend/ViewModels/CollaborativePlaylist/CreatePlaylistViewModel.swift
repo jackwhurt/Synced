@@ -19,7 +19,7 @@ class CreatePlaylistViewModel: ObservableObject {
     func addNewCollaborator() {
         if !newCollaborator.isEmpty {
             collaborators.append(newCollaborator)
-            newCollaborator = "" // Reset the field
+            newCollaborator = ""
         }
     }
 

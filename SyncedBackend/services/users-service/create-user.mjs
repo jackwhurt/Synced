@@ -4,7 +4,7 @@ import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
-const tableName = process.env.USERS_TABLE;
+const usersTable = process.env.USERS_TABLE;
 
 export const createUserHandler = async (event) => {
 	// This function is triggered by a Cognito event, not an API Gateway event,
@@ -16,7 +16,7 @@ export const createUserHandler = async (event) => {
 	const timestamp = new Date().toISOString();
 
 	const params = {
-		TableName: tableName,
+		TableName: usersTable,
 		Item: {
 			cognito_user_id: cognitoUserId,
 			email: email,
