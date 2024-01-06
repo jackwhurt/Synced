@@ -14,7 +14,8 @@ struct HomeView: View {
                     Label("", systemImage: "music.note.list")
                 }
 
-            PlaceholderView()
+            // TODO: Remove
+            TestView(isLoggedIn: .constant(true))
                 .tabItem {
                     Label("", systemImage: "ellipsis.circle.fill")
                 }
@@ -28,7 +29,7 @@ struct HomeView: View {
                 .tabItem {
                     Label("", systemImage: "person")
                 }
-        }
+        }.accentColor(Color("SyncedBlue"))
     }
 }
 

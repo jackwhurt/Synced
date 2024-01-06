@@ -22,4 +22,8 @@ class CollaborativePlaylistViewModel: ObservableObject {
             }
         }
     }
+    
+    func createPlaylist() async {
+        
+    }
 }
