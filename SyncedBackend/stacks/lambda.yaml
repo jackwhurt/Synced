@@ -494,6 +494,28 @@ Resources:
             TableName: !Ref TokensTableName
       Environment:
         Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+
+  # Songs - Spotify - Convert
+  SpotifySongsToAppleMusicFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/songs-service/   
+      Handler: spotify-songs-to-apple-music.spotifySongsToAppleMusicHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to Spotify songs to Apple Music songs.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
           TOKENS_TABLE: !Ref TokensTableName  
 
   # Create User Trigger
@@ -555,5 +577,7 @@ Outputs:
     Value: !GetAtt GetSongsForAppleMusicFunction.Arn
   GetSpotifyApiSongsFunctionArn:
     Value: !GetAtt GetSpotifyApiSongsFunction.Arn
+  SpotifySongsToAppleMusicFunctionArn:
+    Value: !GetAtt SpotifySongsToAppleMusicFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

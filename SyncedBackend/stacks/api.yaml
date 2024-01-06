@@ -27,6 +27,8 @@ Parameters:
     Type: String
   GetSpotifyApiSongsFunctionArn:
     Type: String
+  SpotifySongsToAppleMusicFunctionArn:
+    Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
@@ -531,7 +533,7 @@ Resources:
   SpotifyApiSongsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      ParentId: !GetAtt SongsResource
+      ParentId: !Ref SongsResource
       PathPart: spotify
       RestApiId: !Ref MyApi
 
@@ -548,13 +550,42 @@ Resources:
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSpotifyApiSongsFunctionArn}/invocations"
 
-  GetSpotifyaApiSongsLambdaInvokePermission:
+  GetSpotifyApiSongsLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GetSpotifyApiSongsFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/songs/spotify"
+  
+  # Songs / Spotify / Convert
+  SpotifyConvertResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref SpotifyApiSongsResource
+      PathPart: convert
+      RestApiId: !Ref MyApi
+
+  SpotifySongsToAppleMusicMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref SpotifyConvertResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SpotifySongsToAppleMusicFunctionArn}/invocations"
+
+  SpotifySongsToAppleMusicLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SpotifySongsToAppleMusicFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/songs/spotify/convert"
 
   # Deployment of the API
   ApiDeployment:
