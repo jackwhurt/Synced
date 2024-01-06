@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cognito User Pool Stack for Synced
+Parameters:
+  CognitoTriggerFunctionArn:
+    Type: String
+
+Resources:
+  MyUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties: 
+      UserPoolName: SyncedUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+      LambdaConfig:
+        PreSignUp: !Ref CognitoTriggerFunctionArn
+
+  MyUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref MyUserPool
+      ClientName: SyncedUserPoolClient
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  CognitoTriggerPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref CognitoTriggerFunctionArn 
+      Principal: 'cognito-idp.amazonaws.com'
+      SourceArn: !GetAtt MyUserPool.Arn
+
+Outputs:
+  UserPoolId:
+    Description: The ID of the created user pool
+    Value: !Ref MyUserPool

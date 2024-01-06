@@ -1,0 +1,113 @@
+{
+    "create-cp": {
+        "body": "{\"spotifyPlaylist\": true, \"appleMusicPlaylist\": true, \"playlist\": {\"title\": \"I love Emma\", \"description\": \"A test collaborative playlist\"}, \"collaborators\": [\"bc7510f9-4555-4da3-99e2-204067d32df8\"], \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "example-cognito-user-id"
+                }
+            }
+        },
+        "httpMethod": "POST",
+        "path": "/create-playlist",
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    },
+    "create-cp-with-uris": {
+        "body": "{\"playlist\": {\"title\": \"My Collaborative Playlist\", \"description\": \"A test collaborative playlist\"}, \"collaborators\": [\"user123\", \"user456\"], \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"spotifyUri\": \"spotify:track:123abc\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"spotifyUri\": \"spotify:track:456def\"}]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoUserId123"
+                }
+            }
+        }
+    },
+    "get-cp-by-id": {
+        "httpMethod": "GET",
+        "queryStringParameters": {
+            "id": "cp#18854f60-18c6-49e1-a856-dbd20b2fac63"
+        },
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        },
+        "pathParameters": {
+            "id": "cp#18854f60-18c6-49e1-a856-dbd20b2fac63"
+        },
+        "stageVariables": null,
+        "body": null,
+        "resource": "/collaborative-playlists/{id}"
+    },
+    "get-all-cps": {
+        "httpMethod": "GET",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "12345678-user-id"
+                }
+            }
+        }
+    },
+    "add-collaborators": {
+        "body": "{\"playlistId\":\"playlist123\", \"collaboratorIds\":[\"user1\", \"user2\", \"user3\"]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoUserId123"
+                }
+            }
+        }
+    },
+    "delete-collaborators": {
+        "body": "{\"playlistId\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"collaboratorIds\": [\"user1\", \"user2\"]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "cognitoIdentityId"
+                }
+            }
+        }
+    },
+    "update-collaborative-playlist": {
+        "body": "{\"playlist\": {\"id\": \"17f09c99-7145-4056-83ff-854403c9928d\", \"title\": \"New Playlist Title\", \"description\": \"Updated description\", \"coverImageUrl\": \"http://example.com/image.jpg\"}}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "70f23806-2368-4be9-a1a1-f078d9660b1d"
+                }
+            }
+        },
+        "httpMethod": "PUT"
+    },
+    "delete-songs": {
+        "body": "{\"playlistId\": \"1ebac833-eaa2-40b7-91ca-fdb7d851f9f4\", \"songs\": [{\"title\": \"Song 1\", \"songId\": \"64fefb9b-db14-4f59-ac3a-5329a89b1916\", \"artist\": \"Artist 1\", \"album\": \"Album 1\", \"duration\": 210, \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}, {\"title\": \"Song 2\", \"songId\": \"9f48f681-343f-49de-b36b-efc34e5f33a4\", \"artist\": \"Artist 2\", \"album\": \"Album 2\", \"duration\": 180, \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}]}"
+    },
+    "add-songs": {
+        "body": "{\"playlistId\": \"a6ac3e05-2579-4603-a31a-110fea2b8d76\", \"songs\": [{\"title\": \"Song 1\", \"artist\": \"Artist 1\", \"album\": \"Album 1\", \"duration\": 210, \"spotifyUri\": \"spotify:track:468DttYUU2bVUs49GOhMFB\"}, {\"title\": \"Song 2\", \"artist\": \"Artist 2\", \"album\": \"Album 2\", \"duration\": 180, \"spotifyUri\": \"spotify:track:3FoF0CZh1JJLJumig6KSWe\"}]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "user1"
+                }
+            }
+        }
+    },
+    "sync-collaborators": {
+        "body": "{\"playlistId\": \"1234567890abcdef\", \"collaboratorIds\": [\"collab1\", \"collab2\", \"collab3\"]}"
+    },
+    "update-apple-music-playlist-id": {
+        "body": "{\"playlistId\": \"bd613977-19a3-4441-a8c5-3049c7e59ae3\", \"appleMusicPlaylistId\": \"abcde12345\"}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "example-cognito-user-id"
+                }
+            }
+        }
+    }
+}

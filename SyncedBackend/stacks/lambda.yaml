@@ -1,0 +1,536 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Lambda Stack for Synced
+Parameters:
+  UsersTableName:
+    Type: String
+  PlaylistsTableName:
+    Type: String
+  TokensTableName:
+    Type: String
+  LambdaFailureTopicName:
+    Type: String
+
+Resources:
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ../lambda-layer
+      CompatibleRuntimes:
+        - nodejs18.x
+      Description: "Common Node.js dependencies for Lambda"
+
+  # Authorisation - Spotify
+  UpdateSpotifyDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-spotify-dev-token.updateSpotifyDevTokenHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the Spotify Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
+            - Effect: "Allow"
+              Action:
+                - "sns:Publish"
+              Resource: !Ref LambdaFailureTopicName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName
+
+  GetSpotifyAuthUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-spotify-auth-url.spotifyAuthUrlHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to initiate Spotify authorisation flow
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+  
+  ExchangeSpotifyTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: exchange-spotify-token.spotifyTokenExchangeHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      MemorySize: 128
+      Timeout: 100
+      Description: Lambda function to exchange Spotify tokens
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
+
+  # Authorisation - Apple Music
+  GetAppleMusicDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: get-apple-music-dev-token.getAppleMusicDevTokenHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get the Apple Music Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+
+  UpdateAppleMusicUserTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-apple-music-user-token.updateAppleMusicUserTokenHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update an Apple Music User token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+
+  UpdateAppleMusicDevTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/
+      Handler: update-apple-music-dev-token.updateAppleMusicDevTokenHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the Apple Music Developer token in the Tokens database.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
+            - Effect: "Allow"
+              Action:
+                - "sns:Publish"
+              Resource: !Ref LambdaFailureTopicName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
+          LAMBDA_FAILURE_TOPIC: !Ref LambdaFailureTopicName 
+
+  # Collaborative Playlists
+  GetCollaborativePlaylistByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/   
+      Handler: get-collaborative-playlist-by-id.getCollaborativePlaylistByIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get all items for a given playlist ID.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+
+  GetAllCollaborativePlaylistsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: get-all-collaborative-playlists.getAllCollaborativePlaylistsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get all the Collaborative Playlists for a given user.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  CreateCollaborativePlaylistFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: create-collaborative-playlist.createCollaborativePlaylistHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to create a Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
+
+  # Collaborative Playlists - Metadata
+  UpdateCollaborativePlaylistMetadataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: update-collaborative-playlist-metadata.updateCollaborativePlaylistMetadataHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update Collaborative Playlists metadata.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  GetCollaborativePlaylistMetadataByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/   
+      Handler: get-collaborative-playlist-metadata-by-id.getCollaborativePlaylistMetadataByIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get metadata for a given playlist ID.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  UpdateAppleMusicPlaylistIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: update-apple-music-playlist-id.updateAppleMusicPlaylistIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update an Apple Music Playlist Id.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName    
+
+  # Collaborative Playlists - Collaborators
+  AddCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: add-collaborators.addCollaboratorsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to add Collaborators to Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+
+  DeleteCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-collaborators.deleteCollaboratorsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete Collaborators from Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  SyncCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: sync-collaborators.syncCollaboratorsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to sync Collaborators in a Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName 
+
+  # Collaborative Playlists - Songs
+  AddSongsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: add-songs.addSongsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to add songs to Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName 
+
+  DeleteSongsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-songs.deleteSongsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete songs to Collaborative Playlists.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+
+  # Collaborative Playlists - Songs - Apple Music
+  GetSongsForAppleMusicFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: get-songs-for-apple-music.getSongsForAppleMusicHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get all Apple Music songs to update for a given user.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName 
+
+  # Create User Trigger
+  CognitoTriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/users-service/
+      Handler: create-user.createUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to create new Cognito users to the Users database.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          USERS_TABLE: !Ref UsersTableName
+
+Outputs:
+  UpdateSpotifyDevTokenFunctionArn:
+    Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
+  GetSpotifyAuthUrlFunctionArn:
+    Value: !GetAtt GetSpotifyAuthUrlFunction.Arn
+  ExchangeSpotifyTokenFunctionArn:
+    Value: !GetAtt ExchangeSpotifyTokenFunction.Arn
+  UpdateAppleMusicDevTokenFunctionArn:
+    Value: !GetAtt UpdateAppleMusicDevTokenFunction.Arn
+  GetAppleMusicDevTokenFunctionArn:
+    Value: !GetAtt GetAppleMusicDevTokenFunction.Arn
+  UpdateAppleMusicUserTokenFunctionArn:
+    Value: !GetAtt UpdateAppleMusicUserTokenFunction.Arn
+  GetCollaborativePlaylistByIdFunctionArn:
+    Value: !GetAtt GetCollaborativePlaylistByIdFunction.Arn
+  GetAllCollaborativePlaylistsFunctionArn:
+    Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
+  CreateCollaborativePlaylistFunctionArn:
+    Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
+  UpdateCollaborativePlaylistMetadataFunctionArn:
+    Value: !GetAtt UpdateCollaborativePlaylistMetadataFunction.Arn
+  GetCollaborativePlaylistMetadataByIdFunctionArn:
+    Value: !GetAtt GetCollaborativePlaylistMetadataByIdFunction.Arn
+  UpdateAppleMusicPlaylistIdFunctionArn:
+    Value: !GetAtt UpdateAppleMusicPlaylistIdFunction.Arn
+  AddCollaboratorsFunctionArn:
+    Value: !GetAtt AddCollaboratorsFunction.Arn
+  DeleteCollaboratorsFunctionArn:
+    Value: !GetAtt DeleteCollaboratorsFunction.Arn
+  SyncCollaboratorsFunctionArn:
+    Value: !GetAtt SyncCollaboratorsFunction.Arn
+  AddSongsFunctionArn:
+    Value: !GetAtt AddSongsFunction.Arn
+  DeleteSongsFunctionArn:
+    Value: !GetAtt DeleteSongsFunction.Arn
+  GetSongsForAppleMusicFunctionArn:
+    Value: !GetAtt GetSongsForAppleMusicFunction.Arn
+  CognitoTriggerFunctionArn:
+    Value: !GetAtt CognitoTriggerFunction.Arn

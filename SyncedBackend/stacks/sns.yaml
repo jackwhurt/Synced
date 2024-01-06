@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: SNS Stack for Synced
+
+Resources:
+  LambdaFailureTopic:
+    Type: "AWS::SNS::Topic"
+
+  LamdbaFailureSubscription:
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      TopicArn: !Ref LambdaFailureTopic
+      Protocol: "email" 
+      Endpoint: '{{resolve:ssm:emailAddress:1}}'
+
+Outputs:
+  LambdaFailureTopicName:
+    Value: !Ref LambdaFailureTopic
