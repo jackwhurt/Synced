@@ -39,11 +39,15 @@ enum AppleMusicServiceError: Error {
     case playlistReplacementFailed
     case playlistCreationFailed
     case failedToFormatTimestamp
+    case playlistEditFailed
+    case songConversionFailed
 }
 
 enum CollaborativePlaylistServiceError: Error {
     case playlistRetrievalFailed
     case playlistCreationFailed
     case backendPlaylistCreationFailed
+    case failedToDeleteSongs
+    case failedToEditSongs
 }
 

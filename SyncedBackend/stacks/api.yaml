@@ -440,7 +440,7 @@ Resources:
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists/collaborators/sync"
 
   # Collaborative Playlists / Songs
-  SongsResource:
+  PlaylistSongsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref PlaylistsResource 
@@ -454,7 +454,7 @@ Resources:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref CognitoAuthoriser
       HttpMethod: POST
-      ResourceId: !Ref SongsResource
+      ResourceId: !Ref PlaylistSongsResource
       RestApiId: !Ref MyApi
       Integration:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
@@ -476,7 +476,7 @@ Resources:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref CognitoAuthoriser
       HttpMethod: DELETE
-      ResourceId: !Ref SongsResource
+      ResourceId: !Ref PlaylistSongsResource
       RestApiId: !Ref MyApi
       Integration:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST

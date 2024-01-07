@@ -4,7 +4,6 @@ import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-stre
 import { createSpotifyPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
 import { addSongsToSpotifyPlaylist } from '/opt/nodejs/streaming-service/add-songs.mjs';
 import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
-import { deleteSpotifyPlaylist } from './delete-streaming-service-playlist.mjs';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);

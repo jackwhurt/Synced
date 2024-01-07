@@ -9,3 +9,8 @@ struct CreateCollaborativePlaylistRequest: Codable {
     let spotifyPlaylist: Bool
     let appleMusicPlaylist: Bool
 }
+
+struct DeleteSongsRequest: Codable {
+    let playlistId: String
+    let songs: [SongMetadata]
+}

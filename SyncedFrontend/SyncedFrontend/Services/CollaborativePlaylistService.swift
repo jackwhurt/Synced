@@ -47,8 +47,20 @@ class CollaborativePlaylistService {
             throw CollaborativePlaylistServiceError.playlistCreationFailed
         }
     }
-
     
+    func editSongs(appleMusicPlaylistId: String?, playlistId: String, songsToDelete: [SongMetadata], songsToAdd: [SongMetadata], allSongs: [SongMetadata]) async throws {
+        do {
+//            apiService.makePostRequest(endpoint: "/songs", model: AddSongsResponse.self, body: request)
+            try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
+            if let appleMusicPlaylistId = appleMusicPlaylistId {
+                try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: allSongs)
+            }
+        } catch {
+            print("Failed to edit songs")
+            throw CollaborativePlaylistServiceError.failedToEditSongs
+        }
+    }
+
     private func createBackendPlaylist(request: CreateCollaborativePlaylistRequest) async throws -> String {
         do {
             let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists", model: CreateCollaborativePlaylistResponse.self, body: request)

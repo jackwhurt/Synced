@@ -19,6 +19,7 @@ struct GetCollaborativePlaylistResponse: Codable, Identifiable {
 
 struct GetCollaborativePlaylistByIdResponse: Codable {
     let playlistId: String
+    let appleMusicPlaylistId: String?
     let metadata: PlaylistMetadata
     let songs: [SongMetadata]
 }
@@ -34,5 +35,9 @@ struct UpdateAppleMusicPlaylistIdResponse: Codable {
 
 struct CreateCollaborativePlaylistResponse: Codable {
     let id: String
+}
+
+struct DeleteSongsResponse: Codable {
+    
 }
 

@@ -32,7 +32,8 @@ struct CreatePlaylistView: View {
             .alert(isPresented: $showErrorAlert) {
                 Alert(title: Text("Error"), message: Text(createPlaylistViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
             }
-        }.accentColor(Color("SyncedBlue"))
+        }
+        .accentColor(Color("SyncedBlue"))
     }
 }
 

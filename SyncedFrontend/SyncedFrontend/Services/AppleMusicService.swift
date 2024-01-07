@@ -59,6 +59,34 @@ class AppleMusicService {
         }
     }
     
+    func editPlaylist(appleMusicPlaylistId: String, playlistId: String, songs: [SongMetadata]) async throws {
+        do {
+            let appleMusicSongs = try convertToMusicKitSongs(from: songs)
+            let playlist = try await getAppleMusicPlaylistOrReplace(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId)
+            try await musicKitService.editPlaylist(songs: appleMusicSongs, to: playlist)
+        } catch {
+            print("Failed to edit playlist apple music id: \(appleMusicPlaylistId), backend id: \(playlistId)")
+            throw AppleMusicServiceError.playlistEditFailed
+        }
+        
+    }
+    
+    private func convertToMusicKitSongs(from songMetadataArray: [SongMetadata]) throws -> [Song] {
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+
+        do {
+            let jsonData = try encoder.encode(songMetadataArray)
+            let songs = try decoder.decode([Song].self, from: jsonData)
+            
+            return songs
+        } catch {
+            print("Error during song conversion: \(error)")
+            
+            throw AppleMusicServiceError.songConversionFailed
+        }
+    }
+    
     private func getDeveloperToken() async throws -> String {
         do {
             let tokenResponse: DeveloperTokenResponse = try await apiService.makeGetRequest(endpoint: "/auth/apple-music/dev", model: DeveloperTokenResponse.self)

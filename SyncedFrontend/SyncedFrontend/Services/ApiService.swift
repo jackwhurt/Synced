@@ -16,6 +16,11 @@ class APIService {
         let bodyData = try JSONEncoder().encode(body)
         return try await makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: bodyData)
     }
+    
+    func makeDeleteRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B) async throws -> T {
+        let bodyData = try JSONEncoder().encode(body)
+        return try await makeRequest(endpoint: endpoint, httpMethod: "DELETE", model: model, body: bodyData)
+    }
 
     private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil) async throws -> T {
         guard let idToken = getIdToken() else {
@@ -30,7 +35,7 @@ class APIService {
         request.httpMethod = httpMethod
         request.addValue("Bearer \(idToken)", forHTTPHeaderField: "Authorization")
         
-        if let body = body, httpMethod == "POST" {
+        if let body = body, httpMethod == "POST" || httpMethod == "DELETE" {
             request.httpBody = body
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }

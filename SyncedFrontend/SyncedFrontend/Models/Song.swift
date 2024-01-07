@@ -1,4 +1,5 @@
 struct SongMetadata: Codable {
+    let songId: String?
     let title: String
     let artist: String
     let spotifyUri: String?
