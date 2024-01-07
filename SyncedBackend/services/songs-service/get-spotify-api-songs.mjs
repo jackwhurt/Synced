@@ -12,10 +12,11 @@ export const getSpotifyApiSongsHandler = async (event) => {
 
     try {
         const searchQuery = event.queryStringParameters.searchQuery;
-        const page = event.queryStringParameters.page || 0; 
-        const limit = event.queryStringParameters.limit || 20; 
+        const page = event.queryStringParameters.page || 0;
+        const limit = event.queryStringParameters.limit || 20;
         const spotifyToken = await getSpotifyAccessToken();
         const result = await querySpotifySongs(spotifyToken, searchQuery, page, limit);
+        console.info('returned:', result)
 
         return createResponse(200, result);
     } catch (err) {
@@ -35,8 +36,15 @@ async function querySpotifySongs(token, searchQuery, page, limit) {
 
     try {
         const response = await axios(config);
+        const formattedItems = response.data.tracks.items.map(item => ({
+            title: item.name,
+            artist: item.artists.map(artist => artist.name).join(', '),
+            album: item.album.name,
+            spotifyUri: item.uri,
+            coverImageUrl: item.album.images && item.album.images.length != 0 ? item.album.images[item.album.images.length - 1].url : ''
+        }));
         return {
-            items: response.data.tracks.items,
+            items: formattedItems,
             total: response.data.tracks.total,
             limit: response.data.tracks.limit,
             page: response.data.tracks.page,

@@ -13,10 +13,9 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
         const { userPlaylists, metadataMap } = await getAllPlaylistsMetadata(userId, tableName);
 
         const playlists = Object.values(metadataMap).map(playlist => {
-            // Destructure the PK from the playlist and rename it to id
             const { PK: id, ...rest } = playlist;
             return { id, ...rest };
-        });
+        }).sort((a, b) => a.title.localeCompare(b.title));
 
         return {
             statusCode: 200,

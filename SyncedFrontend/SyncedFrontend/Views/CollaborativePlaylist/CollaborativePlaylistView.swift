@@ -16,19 +16,21 @@ struct CollaborativePlaylistView: View {
             if let playlist = collaborativePlaylistViewModel.playlist {
                 PlaylistHeaderView(metadata: playlist.metadata)
                     .listRowSeparator(.hidden)
-                if !playlist.songs.isEmpty {
-                    SongList(songs: playlist.songs,
-                             isEditing: collaborativePlaylistViewModel.isEditing,
-                             onAddSongs: {
-                        showingAddSongsSheet = true
-                    },
-                             onDelete: { indexSet in
-                        guard let index = indexSet.first else { return }
-                        let songToDelete = playlist.songs[index]
-                        collaborativePlaylistViewModel.deleteSong(song: songToDelete)
-                    })
-                } else {
+
+                SongList(songs: playlist.songs,
+                         isEditing: collaborativePlaylistViewModel.isEditing,
+                         onAddSongs: {
+                    showingAddSongsSheet = true
+                },
+                         onDelete: { indexSet in
+                    guard let index = indexSet.first else { return }
+                    let songToDelete = playlist.songs[index]
+                    collaborativePlaylistViewModel.deleteSong(song: songToDelete)
+                })
+
+                if playlist.songs.isEmpty {
                     Text("Playlist is empty")
+                        .foregroundColor(.secondary)
                         .listRowSeparator(.hidden)
                 }
             } else if collaborativePlaylistViewModel.errorMessage == nil {
@@ -168,20 +170,3 @@ struct CollaborativePlaylistView_Previews: PreviewProvider {
         CollaborativePlaylistView(playlistId: "")
     }
 }
-
-let samplePlaylistResponse = GetCollaborativePlaylistByIdResponse(
-    playlistId: "id", appleMusicPlaylistId: nil,
-    metadata: PlaylistMetadata(title: "Collaborative Hits", description: "A collection of top collaborative tracks.",
-                               coverImageUrl: ""),
-    songs: (1...50).map { index in
-        SongMetadata(
-            songId: nil,
-            title: "Song \(index)",
-            artist: "Artist \(index)",
-            spotifyUri: nil,
-            appleMusicUrl: nil,
-            appleMusicId: nil,
-            coverImageUrl: "https://i.scdn.co/image/ab67616d0000b2736aa1a0eae5f023675b4e9818"
-        )
-    }
-)

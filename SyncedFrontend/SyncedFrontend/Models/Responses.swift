@@ -37,6 +37,7 @@ struct CreateCollaborativePlaylistResponse: Codable {
     let id: String
 }
 
+// TODO: Complete
 struct DeleteSongsResponse: Codable {
     
 }

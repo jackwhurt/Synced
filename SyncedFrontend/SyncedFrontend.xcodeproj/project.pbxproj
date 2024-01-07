@@ -20,6 +20,9 @@
 		802184F42B4986FA0096F702 /* CreatePlaylistViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184F32B4986FA0096F702 /* CreatePlaylistViewModel.swift */; };
 		802184F62B498B1B0096F702 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184F52B498B1B0096F702 /* Playlist.swift */; };
 		802184F82B498C620096F702 /* Song.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184F72B498C620096F702 /* Song.swift */; };
+		8023D1EF2B4B09E6000A1C57 /* SongService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8023D1EE2B4B09E6000A1C57 /* SongService.swift */; };
+		8023D1F12B4B0BFC000A1C57 /* Paginated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8023D1F02B4B0BFC000A1C57 /* Paginated.swift */; };
+		8023D1F32B4B0D9D000A1C57 /* AddSongsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8023D1F22B4B0D9D000A1C57 /* AddSongsViewModel.swift */; };
 		80550D392B17CB1A00678B11 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80550D382B17CB1A00678B11 /* KeychainService.swift */; };
 		80550D3B2B17D18500678B11 /* ContentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80550D3A2B17D18500678B11 /* ContentViewModel.swift */; };
 		80550D3D2B17D3D400678B11 /* TestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80550D3C2B17D3D400678B11 /* TestViewModel.swift */; };
@@ -68,6 +71,9 @@
 		802184F32B4986FA0096F702 /* CreatePlaylistViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreatePlaylistViewModel.swift; sourceTree = "<group>"; };
 		802184F52B498B1B0096F702 /* Playlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playlist.swift; sourceTree = "<group>"; };
 		802184F72B498C620096F702 /* Song.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Song.swift; sourceTree = "<group>"; };
+		8023D1EE2B4B09E6000A1C57 /* SongService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongService.swift; sourceTree = "<group>"; };
+		8023D1F02B4B0BFC000A1C57 /* Paginated.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Paginated.swift; sourceTree = "<group>"; };
+		8023D1F22B4B0D9D000A1C57 /* AddSongsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSongsViewModel.swift; sourceTree = "<group>"; };
 		80550D382B17CB1A00678B11 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		80550D3A2B17D18500678B11 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
 		80550D3C2B17D3D400678B11 /* TestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewModel.swift; sourceTree = "<group>"; };
@@ -160,6 +166,7 @@
 				802184EB2B488A340096F702 /* CollaborativePlaylistMenuViewModel.swift */,
 				802184F32B4986FA0096F702 /* CreatePlaylistViewModel.swift */,
 				80B82C002B49DE3400277AEA /* CollaborativePlaylistViewModel.swift */,
+				8023D1F22B4B0D9D000A1C57 /* AddSongsViewModel.swift */,
 			);
 			path = CollaborativePlaylist;
 			sourceTree = "<group>";
@@ -243,6 +250,7 @@
 				8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */,
 				8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */,
 				8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */,
+				8023D1EE2B4B09E6000A1C57 /* SongService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -263,6 +271,7 @@
 				802184E32B482F0F0096F702 /* Requests.swift */,
 				802184F52B498B1B0096F702 /* Playlist.swift */,
 				802184F72B498C620096F702 /* Song.swift */,
+				8023D1F02B4B0BFC000A1C57 /* Paginated.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -415,11 +424,13 @@
 				802184F42B4986FA0096F702 /* CreatePlaylistViewModel.swift in Sources */,
 				805D49452B0FDE100081B076 /* ContentView.swift in Sources */,
 				80AD235C2B154B94003A8E20 /* TestView.swift in Sources */,
+				8023D1F32B4B0D9D000A1C57 /* AddSongsViewModel.swift in Sources */,
 				802184F82B498C620096F702 /* Song.swift in Sources */,
 				8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */,
 				80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */,
 				8061CE082B29DAAF00B0FFD6 /* Errors.swift in Sources */,
 				805D49592B0FF31D0081B076 /* RoundButton.swift in Sources */,
+				8023D1EF2B4B09E6000A1C57 /* SongService.swift in Sources */,
 				80B82C032B4AC5F400277AEA /* AddSongsView.swift in Sources */,
 				80550D392B17CB1A00678B11 /* KeychainService.swift in Sources */,
 				80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */,
@@ -435,6 +446,7 @@
 				802184E82B4885F30096F702 /* HomeViewModel.swift in Sources */,
 				80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */,
 				80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */,
+				8023D1F12B4B0BFC000A1C57 /* Paginated.swift in Sources */,
 				801CC9502B16622A006FB76D /* TextLink.swift in Sources */,
 				80550D3D2B17D3D400678B11 /* TestViewModel.swift in Sources */,
 			);

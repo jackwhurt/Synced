@@ -13,6 +13,10 @@ class DIContainer {
         return APIService(keychainService: provideKeychainService())
     }
     
+    func provideSongsService() -> SongService {
+        return SongService(apiService: provideAPIService())
+    }
+    
     func provideAppleMusicService() -> AppleMusicService {
         return AppleMusicService(apiService: provideAPIService(), musicKitService: provideMusicKitService())
     }
