@@ -1,12 +1,14 @@
 import SwiftUI
 
 struct AddSongsView: View {
-    @StateObject private var addSongsViewModel: AddSongsViewModel
+    @Binding var showSheet: Bool
     @State private var searchText = ""
+    @StateObject private var addSongsViewModel: AddSongsViewModel
     @FocusState private var isTextFieldFocused: Bool
     
-    init() {
-        _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService()))
+    init(showSheet: Binding<Bool>, songsToAdd: [SongMetadata]) {
+        _showSheet = showSheet
+        _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService(), songsToAdd: songsToAdd))
     }
     
     var body: some View {
@@ -23,8 +25,7 @@ struct AddSongsView: View {
                                 await addSongsViewModel.searchSpotifyApi(query: searchText, page: 0)
                             }
                         }
-
-                    // Cancel button appears when TextField is focused
+                    
                     if isTextFieldFocused {
                         Button("Cancel") {
                             isTextFieldFocused = false
@@ -33,7 +34,7 @@ struct AddSongsView: View {
                     }
                 }
                 .padding()
-
+                
                 List {
                     ForEach(addSongsViewModel.spotifySongs, id: \.self) { song in
                         SongRowToAdd(addSongsViewModel: addSongsViewModel, song: song)
@@ -45,15 +46,19 @@ struct AddSongsView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
                         Task {
-                            await addSongsViewModel.saveSongs()
+                            await addSongsViewModel.convertSongs()
                         }
                     }
                 }
             }
         }
+        .onAppear {
+            addSongsViewModel.dismissAction = {
+                showSheet = false
+            }
+        }
     }
 }
-
 
 struct SongRowToAdd: View {
     @ObservedObject var addSongsViewModel: AddSongsViewModel
@@ -73,9 +78,9 @@ struct SongRowToAdd: View {
             }
             Spacer()
             Button(action: {
-                addSongsViewModel.toggleSongSelection(spotifyUri: song.spotifyUri)
+                addSongsViewModel.toggleSongSelection(song: song)
             }) {
-                Image(systemName: addSongsViewModel.selectedSongUris.contains(song.spotifyUri) ? "checkmark" : "plus")
+                Image(systemName: addSongsViewModel.selectedSongs.contains(song) ? "checkmark" : "plus")
             }
         }
     }
@@ -83,6 +88,6 @@ struct SongRowToAdd: View {
 
 struct AddSongsView_Previews: PreviewProvider {
     static var previews: some View {
-        AddSongsView()
+        AddSongsView(showSheet: .constant(true), songsToAdd: [])
     }
 }

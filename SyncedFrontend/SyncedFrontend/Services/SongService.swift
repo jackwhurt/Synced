@@ -14,4 +14,14 @@ class SongService {
             throw SongServiceError.spotifySearchFailed
         }
     }
+    
+    func convertSongs(spotifySongs: [SongMetadata]) async throws -> [SongMetadata] {
+        do {
+            let response = try await apiService.makePostRequest(endpoint: "/songs/spotify/convert", model: [SongMetadata].self, body: spotifySongs)
+            return response
+        } catch {
+            print("Error converting Spotify songs to Apple Music: \(error)")
+            throw SongServiceError.songConversionFailed
+        }
+    }
 }

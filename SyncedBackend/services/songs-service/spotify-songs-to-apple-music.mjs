@@ -12,14 +12,14 @@ export const spotifySongsToAppleMusicHandler = async (event) => {
 
     try {
         // Parse Spotify track list from event body
-        const spotifyTracks = JSON.parse(event.body).items;
-        const parsedSpotifyTracks = parseSpotifyTrackData(spotifyTracks);
+        const spotifyTracks = JSON.parse(event.body);
 
         // Get Apple Music token
         const appleMusicToken = await getAppleMusicAccessToken();
 
         // Search for corresponding tracks on Apple Music
-        const appleMusicTracks = await searchForAppleMusicTracks(parsedSpotifyTracks, appleMusicToken);
+        const appleMusicTracks = await searchForAppleMusicTracks(spotifyTracks, appleMusicToken);
+        console.info('returned:', appleMusicTracks)
 
         return createResponse(200, appleMusicTracks);
     } catch (err) {
@@ -32,8 +32,9 @@ async function searchForAppleMusicTracks(spotifyTracks, appleMusicToken) {
     const appleMusicTracks = [];
     for (const track of spotifyTracks) {
         try {
-            const results = await searchAppleMusicTrack(track.artistNames, track.trackName, track.albumName, appleMusicToken);
-            appleMusicTracks.push(...results);
+            const results = await searchAppleMusicTrack(track.artist, track.title, track.album, appleMusicToken);
+            const modifiedResults = results.map(result => ({ ...result, spotifyUri: track.spotifyUri }));
+            appleMusicTracks.push(...modifiedResults);
         } catch (error) {
             console.error('Error searching for a track on Apple Music:', error);
             // TODO: Handle individual track search error
@@ -57,7 +58,15 @@ async function searchAppleMusicTrack(artist, track, album, appleMusicToken) {
     try {
         const response = await axios(config);
         if (response.data && response.data.results && response.data.results.songs) {
-            return response.data.results.songs.data; 
+            const formattedResponse = response.data.results.songs.data.map(item => ({
+                title: item.attributes.name,
+                artist: item.attributes.artistName,
+                album: item.attributes.albumName,
+                appleMusicId: item.id,
+                appleMusicUrl: item.href
+            }));
+
+            return formattedResponse; 
         } else {
             return []; 
         }
@@ -65,14 +74,6 @@ async function searchAppleMusicTrack(artist, track, album, appleMusicToken) {
         console.error('Error searching Apple Music:', error);
         throw error;
     }
-}
-
-function parseSpotifyTrackData(spotifyData) {
-    return spotifyData.map(track => ({
-        artistNames: track.artists.map(artist => artist.name).join(', '),
-        trackName: track.name,
-        albumName: track.album.name
-    }));
 }
 
 async function getAppleMusicAccessToken() {

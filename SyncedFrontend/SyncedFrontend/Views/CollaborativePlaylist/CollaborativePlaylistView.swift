@@ -42,7 +42,9 @@ struct CollaborativePlaylistView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(collaborativePlaylistViewModel.isEditing)
         .toolbar { navigationBarMenu() }
-        .sheet(isPresented: $showingAddSongsSheet) { AddSongsView() }
+        .sheet(isPresented: $showingAddSongsSheet) {
+            AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: collaborativePlaylistViewModel.songsToAdd)
+        }
         .onAppear(perform: loadPlaylist)
         .alert(isPresented: $showErrorAlert, content: errorAlert)
     }

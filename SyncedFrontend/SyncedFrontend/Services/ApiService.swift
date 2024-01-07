@@ -22,6 +22,7 @@ class APIService {
         return try await makeRequest(endpoint: endpoint, httpMethod: "DELETE", model: model, body: bodyData)
     }
 
+    // TODO: Error if status code 5xx
     private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil) async throws -> T {
         guard let idToken = getIdToken() else {
             throw APIServiceError.tokenRetrievalFailed

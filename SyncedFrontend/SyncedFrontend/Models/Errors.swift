@@ -53,5 +53,6 @@ enum CollaborativePlaylistServiceError: Error {
 
 enum SongServiceError: Error {
     case spotifySearchFailed
+    case songConversionFailed
 }
 

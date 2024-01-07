@@ -4,12 +4,12 @@ class CollaborativePlaylistViewModel: ObservableObject {
     @Published var playlist: GetCollaborativePlaylistByIdResponse?
     @Published var errorMessage: String?
     @Published var isEditing = false
+    var songsToAdd: [SongMetadata] = []
     
     private let playlistId: String
     private let collaborativePlaylistService: CollaborativePlaylistService
     private var savedPlaylist: GetCollaborativePlaylistByIdResponse? = nil
     private var songsToDelete: [SongMetadata] = []
-    private var songsToAdd: [SongMetadata] = []
 
     init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService) {
         self.playlistId = playlistId
@@ -32,10 +32,6 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     func deleteSong(song: SongMetadata) {
         songsToDelete.append(song)
-    }
-    
-    func addSong(song: SongMetadata) {
-        songsToAdd.append(song)
     }
     
     func setEditingTrue() {
