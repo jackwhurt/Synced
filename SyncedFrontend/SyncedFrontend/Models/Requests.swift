@@ -14,3 +14,8 @@ struct DeleteSongsRequest: Codable {
     let playlistId: String
     let songs: [SongMetadata]
 }
+
+struct AddSongsRequest: Codable {
+    let playlistId: String
+    let songs: [SongMetadata]
+}

@@ -48,7 +48,8 @@ class CollaborativePlaylistViewModel: ObservableObject {
                 self.isEditing = false
             }
         } catch {
-            
+            print("Failed to save changes")
+            // TODO: Error alert
         }
     }
 

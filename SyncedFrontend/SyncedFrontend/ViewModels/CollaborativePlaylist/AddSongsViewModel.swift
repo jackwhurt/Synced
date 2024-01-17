@@ -1,16 +1,17 @@
 import Foundation
+import SwiftUI
 
 class AddSongsViewModel: ObservableObject {
     @Published var spotifySongs: [SongMetadata] = []
     @Published var selectedSongs = Set<SongMetadata>()
-    var songsToAdd: [SongMetadata]
+    @Binding var songsToAdd: [SongMetadata]
     var dismissAction: () -> Void = {}
     
     private let songService: SongService
     
-    init(songService: SongService, songsToAdd: [SongMetadata]) {
+    init(songService: SongService, songsToAdd: Binding<[SongMetadata]>) {
         self.songService = songService
-        self.songsToAdd = songsToAdd
+        self._songsToAdd = songsToAdd
     }
     
     // TODO: Display error to user
@@ -40,11 +41,10 @@ class AddSongsViewModel: ObservableObject {
             let convertedSongs = try await songService.convertSongs(spotifySongs: Array(selectedSongs))
             print("Successfully converted songs to: \(convertedSongs)")
             dismissAction()
+            songsToAdd.append(contentsOf: convertedSongs)
+            selectedSongs = Set<SongMetadata>()
         } catch {
             print("Failed saving songs to playlist: \(error)")
         }
-        
-        songsToAdd.append(contentsOf: selectedSongs)
-        selectedSongs = Set<SongMetadata>()
     }
 }

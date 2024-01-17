@@ -74,9 +74,12 @@ class AppleMusicService {
     private func convertToMusicKitSongs(from songMetadataArray: [SongMetadata]) throws -> [Song] {
         let encoder = JSONEncoder()
         let decoder = JSONDecoder()
-
+        let songMetadataAppleMusicArray = songMetadataArray.map { song in
+            return SongMetadataAppleMusic(id: song.appleMusicId ?? "", type: "track", attributes: Attributes(url: song.appleMusicUrl ?? ""))
+        }
+        
         do {
-            let jsonData = try encoder.encode(songMetadataArray)
+            let jsonData = try encoder.encode(songMetadataAppleMusicArray)
             let songs = try decoder.decode([Song].self, from: jsonData)
             
             return songs

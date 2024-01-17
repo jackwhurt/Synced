@@ -50,18 +50,28 @@ class CollaborativePlaylistService {
     
     func editSongs(appleMusicPlaylistId: String?, playlistId: String, songsToDelete: [SongMetadata], songsToAdd: [SongMetadata], allSongs: [SongMetadata]) async throws {
         do {
-//            TODO: Dont perform if lists are empty
-//            TODO: Actually save songs
-//            apiService.makePostRequest(endpoint: "collaborative-playlists/songs", model: AddSongsResponse.self, body: request)
-            try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
-            if let appleMusicPlaylistId = appleMusicPlaylistId {
-                try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: allSongs)
+            var newSongs = allSongs + songsToAdd
+            let deleteSet = Set(songsToDelete.map { $0.spotifyUri })
+            newSongs = newSongs.filter { !deleteSet.contains($0.spotifyUri) }
+
+            if !songsToAdd.isEmpty {
+                let addResponse = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd))
+                print("Successfully added songs to backend")
+            }
+            if !songsToDelete.isEmpty {
+                let deleteResponse = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
+                print("Successfully deleted songs from backend")
+            }
+            if !songsToAdd.isEmpty || !songsToDelete.isEmpty, let appleMusicPlaylistId = appleMusicPlaylistId {
+                try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: newSongs)
+                print("Successfully edited apple music playlist songs")
             }
         } catch {
             print("Failed to edit songs")
             throw CollaborativePlaylistServiceError.failedToEditSongs
         }
     }
+
 
     private func createBackendPlaylist(request: CreateCollaborativePlaylistRequest) async throws -> String {
         do {

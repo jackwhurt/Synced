@@ -6,7 +6,7 @@ struct AddSongsView: View {
     @StateObject private var addSongsViewModel: AddSongsViewModel
     @FocusState private var isTextFieldFocused: Bool
     
-    init(showSheet: Binding<Bool>, songsToAdd: [SongMetadata]) {
+    init(showSheet: Binding<Bool>, songsToAdd: Binding<[SongMetadata]>) {
         _showSheet = showSheet
         _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService(), songsToAdd: songsToAdd))
     }
@@ -72,7 +72,7 @@ struct SongRowToAdd: View {
                     .bold()
                     .foregroundColor(.primary)
                     .font(.system(size: 14))
-                Text(song.artist)
+                Text(song.artist ?? "")
                     .foregroundColor(.secondary)
                     .font(.system(size: 12))
             }
@@ -87,7 +87,10 @@ struct SongRowToAdd: View {
 }
 
 struct AddSongsView_Previews: PreviewProvider {
+    @State static var dummySongsToAdd: [SongMetadata] = []
+
     static var previews: some View {
-        AddSongsView(showSheet: .constant(true), songsToAdd: [])
+        AddSongsView(showSheet: .constant(true), songsToAdd: $dummySongsToAdd)
     }
 }
+

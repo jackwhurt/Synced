@@ -43,7 +43,7 @@ struct CollaborativePlaylistView: View {
         .navigationBarBackButtonHidden(collaborativePlaylistViewModel.isEditing)
         .toolbar { navigationBarMenu() }
         .sheet(isPresented: $showingAddSongsSheet) {
-            AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: collaborativePlaylistViewModel.songsToAdd)
+            AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: $collaborativePlaylistViewModel.songsToAdd)
         }
         .onAppear(perform: loadPlaylist)
         .alert(isPresented: $showErrorAlert, content: errorAlert)
@@ -157,7 +157,7 @@ struct SongRow: View {
                     .bold()
                     .foregroundColor(.primary)
                     .font(.system(size: 14))
-                Text(song.artist)
+                Text(song.artist ?? "")
                     .foregroundColor(.secondary)
                     .font(.system(size: 12))
             }

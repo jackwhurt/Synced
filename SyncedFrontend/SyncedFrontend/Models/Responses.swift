@@ -42,3 +42,8 @@ struct DeleteSongsResponse: Codable {
     
 }
 
+// TODO: Complete
+struct AddSongsResponse: Codable {
+    
+}
+
