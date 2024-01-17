@@ -3,8 +3,10 @@ import SwiftUI
 struct AddSongsView: View {
     @Binding var showSheet: Bool
     @State private var searchText = ""
+    @State private var showErrorAlert = false
     @StateObject private var addSongsViewModel: AddSongsViewModel
     @FocusState private var isTextFieldFocused: Bool
+    @Environment(\.presentationMode) var presentationMode
     
     init(showSheet: Binding<Bool>, songsToAdd: Binding<[SongMetadata]>) {
         _showSheet = showSheet
@@ -23,6 +25,7 @@ struct AddSongsView: View {
                         .onSubmit {
                             Task {
                                 await addSongsViewModel.searchSpotifyApi(query: searchText, page: 0)
+                                showErrorAlert = addSongsViewModel.errorMessage != nil
                             }
                         }
                     
@@ -47,16 +50,26 @@ struct AddSongsView: View {
                     Button("Save") {
                         Task {
                             await addSongsViewModel.convertSongs()
+                            showErrorAlert = addSongsViewModel.errorMessage != nil
                         }
                     }
                 }
             }
+            .alert(isPresented: $showErrorAlert, content: errorAlert)
         }
         .onAppear {
             addSongsViewModel.dismissAction = {
                 showSheet = false
             }
         }
+        .accentColor(Color("SyncedBlue"))
+    }
+    
+    
+    private func errorAlert() -> Alert {
+        Alert(title: Text("Error"),
+              message: Text(addSongsViewModel.errorMessage ?? "Unknown error"),
+              dismissButton: .default(Text("OK")))
     }
 }
 
@@ -88,7 +101,7 @@ struct SongRowToAdd: View {
 
 struct AddSongsView_Previews: PreviewProvider {
     @State static var dummySongsToAdd: [SongMetadata] = []
-
+    
     static var previews: some View {
         AddSongsView(showSheet: .constant(true), songsToAdd: $dummySongsToAdd)
     }

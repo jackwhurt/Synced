@@ -94,9 +94,9 @@ class AuthenticationService: AuthenticationServiceProtocol {
         if let accessTokenData = accessToken.data(using: .utf8),
            let idTokenData = idToken.data(using: .utf8),
            let refreshTokenData = refreshToken.data(using: .utf8) {
-            keychainService.save(key: "accessToken", data: accessTokenData)
-            keychainService.save(key: "idToken", data: idTokenData)
-            keychainService.save(key: "refreshToken", data: refreshTokenData)
+            _ = keychainService.save(key: "accessToken", data: accessTokenData)
+            _ = keychainService.save(key: "idToken", data: idTokenData)
+            _ = keychainService.save(key: "refreshToken", data: refreshTokenData)
         } else {
             throw AuthenticationServiceError.failedToSaveTokens
         }
@@ -108,7 +108,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
     }
     
     func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let refreshToken = loadRefreshToken() else {
+        guard loadRefreshToken() != nil else {
             completion(.failure(AuthenticationServiceError.noRefreshTokenFound))
             return
         }

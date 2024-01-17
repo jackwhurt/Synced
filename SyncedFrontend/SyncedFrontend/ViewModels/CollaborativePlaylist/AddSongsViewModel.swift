@@ -4,6 +4,7 @@ import SwiftUI
 class AddSongsViewModel: ObservableObject {
     @Published var spotifySongs: [SongMetadata] = []
     @Published var selectedSongs = Set<SongMetadata>()
+    @Published var errorMessage: String?
     @Binding var songsToAdd: [SongMetadata]
     var dismissAction: () -> Void = {}
     
@@ -14,7 +15,6 @@ class AddSongsViewModel: ObservableObject {
         self._songsToAdd = songsToAdd
     }
     
-    // TODO: Display error to user
     func searchSpotifyApi(query: String, page: Int) async {
         do {
             let response = try await songService.searchSpotifyApi(query: query, page: page)
@@ -23,6 +23,9 @@ class AddSongsViewModel: ObservableObject {
             }
         } catch {
             print("Failed to search spotify api: \(error)")
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Failed to load songs. Please try again later"
+            }
         }
     }
     
@@ -35,18 +38,20 @@ class AddSongsViewModel: ObservableObject {
     }
     
     // TODO: Intermediatory step to confirm we have the correct conversions
-    // TODO: Display error to user
     func convertSongs() async {
         do {
             let convertedSongs = try await songService.convertSongs(spotifySongs: Array(selectedSongs))
             print("Successfully converted songs to: \(convertedSongs)")
             DispatchQueue.main.async { [weak self] in
-                self?.dismissAction()
                 self?.songsToAdd.append(contentsOf: convertedSongs)
                 self?.selectedSongs = Set<SongMetadata>()
+                self?.dismissAction()
             }
         } catch {
             print("Failed saving songs to playlist: \(error)")
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Failed to convert songs from Spotify to Apple Music. Please try again later"
+            }
         }
     }
 }
