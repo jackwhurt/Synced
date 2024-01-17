@@ -1,14 +1,20 @@
 import Foundation
 
 class CollaborativePlaylistViewModel: ObservableObject {
-    @Published var playlist: GetCollaborativePlaylistByIdResponse?
+    @Published var playlistSongs: [SongMetadata] = []
+    @Published var playlistMetadata: PlaylistMetadata?
     @Published var errorMessage: String?
     @Published var isEditing = false
-    var songsToAdd: [SongMetadata] = []
+    @Published var songsToAdd: [SongMetadata] = []
+    var autoDismiss = false
+    var appleMusicPlaylistId: String? = nil
+    var songsToDisplay: [SongMetadata] {
+        return playlistSongs + songsToAdd
+    }
     
     private let playlistId: String
     private let collaborativePlaylistService: CollaborativePlaylistService
-    private var savedPlaylist: GetCollaborativePlaylistByIdResponse? = nil
+    private var savedSongs: [SongMetadata] = []
     private var songsToDelete: [SongMetadata] = []
 
     init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService) {
@@ -19,12 +25,15 @@ class CollaborativePlaylistViewModel: ObservableObject {
     func loadPlaylist() async {
         do {
             let fetchedPlaylist = try await collaborativePlaylistService.getPlaylistById(playlistId: playlistId)
-            DispatchQueue.main.async {
-                self.playlist = fetchedPlaylist
+            DispatchQueue.main.async { [weak self] in
+                self?.playlistMetadata = fetchedPlaylist.metadata
+                self?.playlistSongs = fetchedPlaylist.songs
+                self?.appleMusicPlaylistId = fetchedPlaylist.appleMusicPlaylistId
             }
         } catch {
             print("Failed to load playlist: \(playlistId)")
             DispatchQueue.main.async { [weak self] in
+                self?.autoDismiss = true
                 self?.errorMessage = "Failed to load playlist, please try again later"
             }
         }
@@ -35,28 +44,36 @@ class CollaborativePlaylistViewModel: ObservableObject {
     }
     
     func setEditingTrue() {
-        DispatchQueue.main.async {
-            self.isEditing = true
-        }
-        self.savedPlaylist = self.playlist
+        self.isEditing = true
+        self.savedSongs = self.playlistSongs
     }
     
     func saveChanges() async {
         do {
-            try await collaborativePlaylistService.editSongs(appleMusicPlaylistId: playlist?.appleMusicPlaylistId, playlistId: playlistId, songsToDelete: songsToDelete, songsToAdd: songsToAdd, allSongs: playlist?.songs ?? [])
-            DispatchQueue.main.async {
-                self.isEditing = false
+            try await collaborativePlaylistService.editSongs(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songsToDelete: songsToDelete, songsToAdd: songsToAdd, allSongs: playlistSongs )
+            let newSongs = self.songsToAdd
+            setEditingFalse()
+            DispatchQueue.main.async { [weak self] in
+                self?.playlistSongs.append(contentsOf: newSongs)
             }
         } catch {
-            print("Failed to save changes")
-            // TODO: Error alert
+            print("Failed to save changes for playlist \(playlistId): \(error)")
+            DispatchQueue.main.async { [weak self] in
+                self?.autoDismiss = false
+                self?.errorMessage = "Failed to save changes"
+            }
         }
     }
 
     func cancelChanges() {
-        DispatchQueue.main.async {
-            self.isEditing = false
-            self.playlist = self.savedPlaylist
+        setEditingFalse()
+    }
+    
+    private func setEditingFalse() {
+        self.songsToDelete = []
+        DispatchQueue.main.async { [weak self] in
+            self?.isEditing = false
+            self?.songsToAdd = []
         }
     }
 }

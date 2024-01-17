@@ -55,11 +55,11 @@ class CollaborativePlaylistService {
             newSongs = newSongs.filter { !deleteSet.contains($0.spotifyUri) }
 
             if !songsToAdd.isEmpty {
-                let addResponse = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd))
+                _ = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd))
                 print("Successfully added songs to backend")
             }
             if !songsToDelete.isEmpty {
-                let deleteResponse = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
+                _ = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
                 print("Successfully deleted songs from backend")
             }
             if !songsToAdd.isEmpty || !songsToDelete.isEmpty, let appleMusicPlaylistId = appleMusicPlaylistId {

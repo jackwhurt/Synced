@@ -37,13 +37,11 @@ struct CreateCollaborativePlaylistResponse: Codable {
     let id: String
 }
 
-// TODO: Complete
 struct DeleteSongsResponse: Codable {
-    
+    let message: String
 }
 
-// TODO: Complete
 struct AddSongsResponse: Codable {
-    
+    let message: String
 }
 

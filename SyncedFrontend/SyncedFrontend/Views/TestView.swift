@@ -33,16 +33,6 @@ struct TestView: View {
                 .padding()
                 .background(Color.red)
                 .cornerRadius(10)
-                
-                Button("Create Playlist") {
-                    Task {
-                        await cpViewModel.createPlaylist()
-                    }
-                }
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.red)
-                .cornerRadius(10)
             } else {
                 Text("Not logged in.")
             }

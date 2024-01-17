@@ -13,22 +13,22 @@ struct CollaborativePlaylistView: View {
     
     var body: some View {
         List {
-            if let playlist = collaborativePlaylistViewModel.playlist {
-                PlaylistHeaderView(metadata: playlist.metadata)
+            if let playlistMetadata = collaborativePlaylistViewModel.playlistMetadata {
+                PlaylistHeaderView(metadata: playlistMetadata)
                     .listRowSeparator(.hidden)
-
-                SongList(songs: playlist.songs,
+                
+                SongList(songs: collaborativePlaylistViewModel.songsToDisplay,
                          isEditing: collaborativePlaylistViewModel.isEditing,
                          onAddSongs: {
                     showingAddSongsSheet = true
                 },
                          onDelete: { indexSet in
                     guard let index = indexSet.first else { return }
-                    let songToDelete = playlist.songs[index]
+                    let songToDelete = collaborativePlaylistViewModel.songsToDisplay[index]
                     collaborativePlaylistViewModel.deleteSong(song: songToDelete)
                 })
-
-                if playlist.songs.isEmpty {
+                
+                if collaborativePlaylistViewModel.songsToDisplay.isEmpty {
                     Text("Playlist is empty")
                         .foregroundColor(.secondary)
                         .listRowSeparator(.hidden)
@@ -74,6 +74,7 @@ struct CollaborativePlaylistView: View {
                     Button("Save") {
                         Task{
                             await collaborativePlaylistViewModel.saveChanges()
+                            showErrorAlert = collaborativePlaylistViewModel.errorMessage != nil
                         }
                     }
                 } else {
@@ -97,12 +98,17 @@ struct CollaborativePlaylistView: View {
     }
     
     private func errorAlert() -> Alert {
-        Alert(title: Text("Error"),
-              message: Text(collaborativePlaylistViewModel.errorMessage ?? "Unknown error"),
-              dismissButton: .default(Text("OK"), action: {
-            presentationMode.wrappedValue.dismiss()
-        }))
+        let dismissButton: Alert.Button = .default(Text("OK"), action: {
+            if collaborativePlaylistViewModel.autoDismiss {
+                presentationMode.wrappedValue.dismiss()
+            }
+        })
+
+        return Alert(title: Text("Error"),
+                     message: Text(collaborativePlaylistViewModel.errorMessage ?? "Unknown error"),
+                     dismissButton: dismissButton)
     }
+
 }
 
 struct PlaylistHeaderView: View {

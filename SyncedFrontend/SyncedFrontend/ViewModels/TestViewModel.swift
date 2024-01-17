@@ -29,15 +29,6 @@ class TestViewModel: ObservableObject {
         }
     }
     
-    func createPlaylist() async {
-        do {
-            let id = try await appleMusicService.createAppleMusicPlaylist(title: "title bruh", description: "description123", playlistId: "bd613977-19a3-4441-a8c5-3049c7e59ae3")
-            print("Id: ", id)
-        } catch {
-            print("Failed: ", error)
-        }
-    }
-    
     func connectAppleMusic() async {
         await authenticateAndRequestToken()
     }

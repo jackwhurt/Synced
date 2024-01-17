@@ -18,8 +18,8 @@ class AddSongsViewModel: ObservableObject {
     func searchSpotifyApi(query: String, page: Int) async {
         do {
             let response = try await songService.searchSpotifyApi(query: query, page: page)
-            DispatchQueue.main.async {
-                self.spotifySongs = response
+            DispatchQueue.main.async { [weak self] in
+                self?.spotifySongs = response
             }
         } catch {
             print("Failed to search spotify api: \(error)")
@@ -40,9 +40,11 @@ class AddSongsViewModel: ObservableObject {
         do {
             let convertedSongs = try await songService.convertSongs(spotifySongs: Array(selectedSongs))
             print("Successfully converted songs to: \(convertedSongs)")
-            dismissAction()
-            songsToAdd.append(contentsOf: convertedSongs)
-            selectedSongs = Set<SongMetadata>()
+            DispatchQueue.main.async { [weak self] in
+                self?.dismissAction()
+                self?.songsToAdd.append(contentsOf: convertedSongs)
+                self?.selectedSongs = Set<SongMetadata>()
+            }
         } catch {
             print("Failed saving songs to playlist: \(error)")
         }
