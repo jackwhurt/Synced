@@ -100,7 +100,6 @@ class CollaborativePlaylistViewModel: ObservableObject {
     }
     
     private func setPlaylistOwner() {
-        let userId = authenticationService.getUserId()
         let valueToSet = playlistMetadata?.createdBy == authenticationService.getUserId()
         DispatchQueue.main.async { [weak self] in
             self?.playlistOwner = valueToSet

@@ -29,26 +29,39 @@ class AppleMusicService {
         }
     }
     
+    // TODO: Move to cp service & create endpoint to clear delete flags
     func updatePlaylists() async throws {
-        let updates: [UpdateSongsResponse]
+        let update: UpdatePlaylistsResponse
         let timestampDict = ["timestamp": getLastUpdatedTimestamp()]
         let currentDate = Date()
 
         do {
-            updates = try await getSongUpdates(parameters: timestampDict)
+            update = try await getSongUpdates(parameters: timestampDict)
         } catch {
             print("Failed to retrieve song updates for timestamp: ", timestampDict["timestamp"] ?? "Unknown")
             throw AppleMusicServiceError.songUpdatesRetrievalFailed
         }
         
         var allUpdatesSuccessful = true
-        for update in updates {
+        for songUpdate in update.songUpdates {
             do {
-                let playlist = try await getAppleMusicPlaylistOrReplace(appleMusicPlaylistId: update.appleMusicPlaylistId, playlistId: update.playlistId)
-                try await self.musicKitService.editPlaylist(songs: update.songs, to: playlist)
+                let playlist = try await getAppleMusicPlaylistOrReplace(appleMusicPlaylistId: songUpdate.appleMusicPlaylistId, playlistId: songUpdate.playlistId)
+                try await self.musicKitService.editPlaylist(songs: songUpdate.songs, to: playlist)
             } catch {
                 allUpdatesSuccessful = false
-                print("Failed to update playlist for backend id: \(update.playlistId): \(error)")
+                print("Failed to update playlist songs for backend id: \(songUpdate.playlistId): \(error)")
+                throw AppleMusicServiceError.songUpdateFailed
+            }
+        }
+        
+        for playlistUpdate in update.playlistUpdates {
+            do {
+                if playlistUpdate.delete ?? false {
+                    let playlist = try await musicKitService.getPlaylist(id: playlistUpdate.appleMusicPlaylistId)
+                    try await self.musicKitService.softDeletePlaylist(playlist: playlist)
+                }
+            } catch {
+                print("Failed to update playlist for apple music id: \(playlistUpdate.appleMusicPlaylistId): \(error)")
                 throw AppleMusicServiceError.playlistUpdateFailed
             }
         }
@@ -147,8 +160,8 @@ class AppleMusicService {
         }
     }
     
-    private func getSongUpdates(parameters: [String: String]) async throws -> [UpdateSongsResponse] {
-        return try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/songs/apple-music", model: [UpdateSongsResponse].self, parameters: parameters)
+    private func getSongUpdates(parameters: [String: String]) async throws -> UpdatePlaylistsResponse {
+        return try await apiService.makeGetRequest(endpoint: "/songs/apple-music", model: UpdatePlaylistsResponse.self, parameters: parameters)
     }
     
     private func updatePlaylistId(playlistId: String, appleMusicPlaylistId: String) async throws {

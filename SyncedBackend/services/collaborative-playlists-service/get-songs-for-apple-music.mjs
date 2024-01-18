@@ -5,6 +5,7 @@ import { getAllPlaylistsMetadata } from '/opt/nodejs/get-all-playlists-metadata.
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 
+// TODO: Add metadata update as well
 export const getSongsForAppleMusicHandler = async (event) => {
     console.info('Received:', event);
 
@@ -16,10 +17,11 @@ export const getSongsForAppleMusicHandler = async (event) => {
         const { userPlaylists, metadataMap } = await getAllPlaylistsMetadata(userId, playlistsTable);
         const filteredPlaylists = await filterPlaylists(userPlaylists, metadataMap, timestamp);
         const playlistsWithSongs = await getSongsForPlaylists(filteredPlaylists);
+        const playlistsToDelete = await getPlaylistsToDelete(userId);
 
         return {
             statusCode: 200,
-            body: JSON.stringify(playlistsWithSongs)
+            body: JSON.stringify({ playlistUpdates: playlistsToDelete, songUpdates: playlistsWithSongs })
         };
     } catch (err) {
         console.error('Error:', err);
@@ -74,6 +76,35 @@ async function getSongsForPlaylists(playlists) {
 
     return results;
 };
+
+async function getPlaylistsToDelete(userId) {
+    const results = [];
+
+    try {
+        const queryParams = {
+            TableName: playlistsTable,
+            KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
+            ExpressionAttributeValues: {
+                ':pk': `deleteFlag#${userId}`,
+                ':sk': 'appleMusic'
+            }
+        };
+
+        const queryResult = await ddbDocClient.send(new QueryCommand(queryParams));
+
+        const formattedPlaylists = queryResult.Items.map(item => {
+            return {
+                delete: true,
+                appleMusicPlaylistId: item.appleMusicPlaylistId
+            };
+        });
+        Array.prototype.push.apply(results, formattedPlaylists);
+    } catch (err) {
+        console.error(`Error querying songs for playlist ${playlist.PK}:`, err);
+    }
+
+    return results
+}
 
 // Helper functions for creating error and success responses
 function createErrorResponse(message) {

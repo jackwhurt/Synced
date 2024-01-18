@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "805D493E2B0FDE100081B076"
-               BuildableName = "SyncedFrontend.app"
-               BlueprintName = "SyncedFrontend"
+               BuildableName = "Synced.app"
+               BlueprintName = "Synced"
                ReferencedContainer = "container:SyncedFrontend.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,8 +44,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "805D493E2B0FDE100081B076"
-            BuildableName = "SyncedFrontend.app"
-            BlueprintName = "SyncedFrontend"
+            BuildableName = "Synced.app"
+            BlueprintName = "Synced"
             ReferencedContainer = "container:SyncedFrontend.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -78,8 +78,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "805D493E2B0FDE100081B076"
-            BuildableName = "SyncedFrontend.app"
-            BlueprintName = "SyncedFrontend"
+            BuildableName = "Synced.app"
+            BlueprintName = "Synced"
             ReferencedContainer = "container:SyncedFrontend.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

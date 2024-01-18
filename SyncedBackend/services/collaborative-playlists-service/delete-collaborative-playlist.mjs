@@ -37,6 +37,8 @@ export const deleteCollaborativePlaylistHandler = async (event) => {
         const spotifyDetails = extractSpotifyPlaylistDetails(playlistRecords);
         await deleteSpotifyPlaylists(spotifyDetails);
 
+        await addAppleMusicDeleteFlag(playlistRecords);
+
         return createSuccessResponse(playlistId);
     } catch (err) {
         console.error('Error:', err);
@@ -92,6 +94,22 @@ async function deletePlaylistRecords(playlistRecords) {
     return { deletedRecords, error };
 }
 
+async function addAppleMusicDeleteFlag(playlistRecords) {
+    const deleteFlags = playlistRecords
+        .filter(record => record.SK.startsWith('collaborator#') && record.appleMusicPlaylistId)
+        .map(record => ({
+            PK: `deleteFlag#${record.SK.split('#')[1]}`,
+            SK: 'appleMusic',
+            appleMusicPlaylistId: record.appleMusicPlaylistId
+        }));
+    const transactItems = deleteFlags.map(record => ({ Put: { TableName: playlistsTable, Item: record } }));
+
+    try {
+        await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+    } catch (err) {
+        console.error('Failed to add Apple Music delete flags:', err);
+    }
+}
 
 function createDeleteBatch(batch) {
     return batch.map(record => ({ Delete: { TableName: playlistsTable, Key: { PK: record.PK, SK: record.SK } } }));

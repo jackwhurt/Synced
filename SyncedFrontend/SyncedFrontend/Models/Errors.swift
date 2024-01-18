@@ -22,6 +22,7 @@ enum MusicKitError: Error {
     case failedToEditPlaylist
     case failedToRetrievePlaylist
     case playlistNotInLibrary
+    case failedToSoftDeletePlaylist
 }
 
 enum APIServiceError: Error {
@@ -38,6 +39,7 @@ enum AppleMusicServiceError: Error {
     case playlistUpdateFailed
     case playlistReplacementFailed
     case playlistCreationFailed
+    case songUpdateFailed
     case failedToFormatTimestamp
     case playlistEditFailed
     case songConversionFailed

@@ -4,10 +4,22 @@ struct DeveloperTokenResponse: Codable {
     let appleMusicToken: String
 }
 
-struct UpdateSongsResponse: Codable {
+struct UpdatePlaylistsResponse: Codable {
+    let songUpdates: [SongUpdate]
+    let playlistUpdates: [PlaylistUpdate]
+}
+
+struct SongUpdate: Codable {
     let playlistId: String
     let appleMusicPlaylistId: String
     let songs: [Song]
+}
+
+struct PlaylistUpdate: Codable {
+    let appleMusicPlaylistId: String
+    let description: String?
+    let title: String?
+    let delete: Bool?
 }
 
 struct GetCollaborativePlaylistResponse: Codable, Identifiable {

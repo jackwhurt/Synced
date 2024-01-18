@@ -77,7 +77,7 @@
 		80550D382B17CB1A00678B11 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		80550D3A2B17D18500678B11 /* ContentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentViewModel.swift; sourceTree = "<group>"; };
 		80550D3C2B17D3D400678B11 /* TestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewModel.swift; sourceTree = "<group>"; };
-		805D493F2B0FDE100081B076 /* SyncedFrontend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SyncedFrontend.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		805D493F2B0FDE100081B076 /* Synced.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Synced.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		805D49422B0FDE100081B076 /* SyncedFrontendApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncedFrontendApp.swift; sourceTree = "<group>"; };
 		805D49442B0FDE100081B076 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		805D49462B0FDE120081B076 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -184,7 +184,7 @@
 		805D49402B0FDE100081B076 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				805D493F2B0FDE100081B076 /* SyncedFrontend.app */,
+				805D493F2B0FDE100081B076 /* Synced.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -296,9 +296,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		805D493E2B0FDE100081B076 /* SyncedFrontend */ = {
+		805D493E2B0FDE100081B076 /* Synced */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 805D494D2B0FDE120081B076 /* Build configuration list for PBXNativeTarget "SyncedFrontend" */;
+			buildConfigurationList = 805D494D2B0FDE120081B076 /* Build configuration list for PBXNativeTarget "Synced" */;
 			buildPhases = (
 				B7343C8C1833260C8E5E5B79 /* [CP] Check Pods Manifest.lock */,
 				805D493B2B0FDE100081B076 /* Sources */,
@@ -310,9 +310,9 @@
 			);
 			dependencies = (
 			);
-			name = SyncedFrontend;
+			name = Synced;
 			productName = SyncedFrontend;
-			productReference = 805D493F2B0FDE100081B076 /* SyncedFrontend.app */;
+			productReference = 805D493F2B0FDE100081B076 /* Synced.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -343,7 +343,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				805D493E2B0FDE100081B076 /* SyncedFrontend */,
+				805D493E2B0FDE100081B076 /* Synced */,
 			);
 		};
 /* End PBXProject section */
@@ -507,11 +507,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Synced;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = Synced;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -564,10 +566,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Synced;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = Synced;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -660,7 +664,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		805D494D2B0FDE120081B076 /* Build configuration list for PBXNativeTarget "SyncedFrontend" */ = {
+		805D494D2B0FDE120081B076 /* Build configuration list for PBXNativeTarget "Synced" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				805D494E2B0FDE120081B076 /* Debug */,

@@ -543,7 +543,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GetSongsForAppleMusicFunctionArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/songs/apple-music"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/songs/apple-music"
 
   # Songs
   SongsResource:
