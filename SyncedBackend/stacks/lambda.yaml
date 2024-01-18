@@ -224,7 +224,40 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A function to create a Collaborative Playlists.
+      Description: A function to create a Collaborative Playlist.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
+
+  DeleteCollaborativePlaylistFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-collaborative-playlist.deleteCollaborativePlaylistHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete a Collaborative Playlist.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
@@ -557,6 +590,8 @@ Outputs:
     Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
   CreateCollaborativePlaylistFunctionArn:
     Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
+  DeleteCollaborativePlaylistFunctionArn:
+    Value: !GetAtt DeleteCollaborativePlaylistFunction.Arn
   UpdateCollaborativePlaylistMetadataFunctionArn:
     Value: !GetAtt UpdateCollaborativePlaylistMetadataFunction.Arn
   GetCollaborativePlaylistMetadataByIdFunctionArn:

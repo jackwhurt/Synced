@@ -7,6 +7,8 @@ Parameters:
     Type: String
   CreateCollaborativePlaylistFunctionArn:
     Type: String
+  DeleteCollaborativePlaylistFunctionArn:
+    Type: String
   UpdateCollaborativePlaylistMetadataFunctionArn:
     Type: String
   GetCollaborativePlaylistMetadataByIdFunctionArn:
@@ -288,6 +290,28 @@ Resources:
       FunctionName: !Ref GetCollaborativePlaylistByIdFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/{id}"
+
+  # Delete Collaborative Playlist
+  DeleteCollaborativePlaylistMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref PlaylistIdResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteCollaborativePlaylistFunctionArn}/invocations"
+     
+  DeleteCollaborativePlaylistInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteCollaborativePlaylistFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/{id}"
   
   # Collaborative Playlists / Metadata
   PlaylistMetadataResource:

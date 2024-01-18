@@ -48,6 +48,14 @@ class CollaborativePlaylistService {
         }
     }
     
+//    func deletePlaylist(request: DeleteCollaborativePlaylistRequest) async throws -> String {
+//        do {
+//            
+//        } catch {
+//            print("Failed to delete playlist ")
+//        }
+//    }
+    
     func editSongs(appleMusicPlaylistId: String?, playlistId: String, songsToDelete: [SongMetadata], songsToAdd: [SongMetadata], allSongs: [SongMetadata]) async throws {
         do {
             var newSongs = allSongs + songsToAdd

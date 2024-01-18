@@ -82,6 +82,11 @@ struct CollaborativePlaylistView: View {
                         Button("Edit Playlist") {
                             collaborativePlaylistViewModel.setEditingTrue()
                         }
+                        Button("Delete Playlist") {
+                            Task {
+                                await collaborativePlaylistViewModel.deletePlaylist()
+                            }
+                        }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }

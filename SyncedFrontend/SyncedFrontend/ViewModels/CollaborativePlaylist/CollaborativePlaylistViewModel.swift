@@ -64,6 +64,18 @@ class CollaborativePlaylistViewModel: ObservableObject {
             }
         }
     }
+    
+    func deletePlaylist() async {
+        do {
+//            try await collaborativePlaylistService.deletePlaylist()
+        } catch {
+            print("Failed to delete playlist \(playlistId): \(error)")
+            DispatchQueue.main.async { [weak self] in
+                self?.autoDismiss = false
+                self?.errorMessage = "Failed to delete playlist"
+            }
+        }
+    }
 
     func cancelChanges() {
         setEditingFalse()
