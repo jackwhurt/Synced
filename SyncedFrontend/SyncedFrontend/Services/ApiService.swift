@@ -41,7 +41,7 @@ class APIService {
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         }
 
-        print("Requesting: \(request)")
+        print("Requesting \(httpMethod): \(request)")
         
         let (data, _) = try await URLSession.shared.data(for: request)
 

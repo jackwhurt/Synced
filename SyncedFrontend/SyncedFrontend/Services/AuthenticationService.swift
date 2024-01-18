@@ -55,7 +55,6 @@ class AuthenticationService: AuthenticationServiceProtocol {
         }
     }
 
-    
     func logoutUser(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = userPool.currentUser() else {
             completion(.failure(AuthenticationServiceError.noCurrentUserFound))
@@ -150,5 +149,9 @@ class AuthenticationService: AuthenticationServiceProtocol {
                 completion(false)
             }
         }
+    }
+    
+    func getUserId() -> String? {
+        return userPool.currentUser()?.username
     }
 }

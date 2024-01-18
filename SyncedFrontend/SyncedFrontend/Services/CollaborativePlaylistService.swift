@@ -48,13 +48,16 @@ class CollaborativePlaylistService {
         }
     }
     
-//    func deletePlaylist(request: DeleteCollaborativePlaylistRequest) async throws -> String {
-//        do {
-//            
-//        } catch {
-//            print("Failed to delete playlist ")
-//        }
-//    }
+    func deletePlaylist(playlistId: String) async throws -> String {
+        do {
+            let deletedPlaylistId = try await deleteBackendPlaylist(playlistId: playlistId)
+            print("Successfully deleted backend playlist, id: \(deletedPlaylistId)")
+            return deletedPlaylistId
+        } catch {
+            print("Failed to delete playlist \(playlistId)")
+            throw CollaborativePlaylistServiceError.playlistDeletionFailed
+        }
+    }
     
     func editSongs(appleMusicPlaylistId: String?, playlistId: String, songsToDelete: [SongMetadata], songsToAdd: [SongMetadata], allSongs: [SongMetadata]) async throws {
         do {
@@ -80,14 +83,29 @@ class CollaborativePlaylistService {
         }
     }
 
-
     private func createBackendPlaylist(request: CreateCollaborativePlaylistRequest) async throws -> String {
         do {
             let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists", model: CreateCollaborativePlaylistResponse.self, body: request)
-            return response.id
+            guard let playlistID = response.id else {
+                throw CollaborativePlaylistServiceError.backendPlaylistCreationFailed
+            }
+            return playlistID
         } catch {
             print("Failed to create playlist \(request.playlist.title) on the backend")
             throw CollaborativePlaylistServiceError.backendPlaylistCreationFailed
+        }
+    }
+    
+    private func deleteBackendPlaylist(playlistId: String) async throws -> String {
+        do {
+            let response = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/\(playlistId)", model: DeleteCollaborativePlaylistResponse.self, body: "")
+            guard let playlistID = response.id else {
+                throw CollaborativePlaylistServiceError.backendPlaylistDeletionFailed
+            }
+            return playlistID
+        } catch {
+            print("Failed to delete playlist \(playlistId) on the backend")
+            throw CollaborativePlaylistServiceError.backendPlaylistDeletionFailed
         }
     }
 }

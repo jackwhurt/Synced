@@ -6,20 +6,25 @@ class CollaborativePlaylistViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isEditing = false
     @Published var songsToAdd: [SongMetadata] = []
+    @Published var playlistOwner = false
     var autoDismiss = false
     var appleMusicPlaylistId: String? = nil
+    var dismissAction: (() -> Void)?
     var songsToDisplay: [SongMetadata] {
         return playlistSongs + songsToAdd
     }
     
     private let playlistId: String
     private let collaborativePlaylistService: CollaborativePlaylistService
+    private let authenticationService: AuthenticationServiceProtocol
     private var savedSongs: [SongMetadata] = []
     private var songsToDelete: [SongMetadata] = []
 
-    init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService) {
+    init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService, authenticationService: AuthenticationServiceProtocol, dismissAction: (() -> Void)? = nil) {
         self.playlistId = playlistId
         self.collaborativePlaylistService = collaborativePlaylistService
+        self.authenticationService = authenticationService
+        self.dismissAction = dismissAction
     }
 
     func loadPlaylist() async {
@@ -30,6 +35,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
                 self?.playlistSongs = fetchedPlaylist.songs
                 self?.appleMusicPlaylistId = fetchedPlaylist.appleMusicPlaylistId
             }
+            setPlaylistOwner()
         } catch {
             print("Failed to load playlist: \(playlistId)")
             DispatchQueue.main.async { [weak self] in
@@ -67,12 +73,16 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     func deletePlaylist() async {
         do {
-//            try await collaborativePlaylistService.deletePlaylist()
+            let deletedPlaylistId = try await collaborativePlaylistService.deletePlaylist(playlistId: playlistId)
+            print("Successfully deleted playlist \(deletedPlaylistId)")
+            DispatchQueue.main.async { [weak self] in
+                self?.dismissAction?()
+            }
         } catch {
             print("Failed to delete playlist \(playlistId): \(error)")
             DispatchQueue.main.async { [weak self] in
                 self?.autoDismiss = false
-                self?.errorMessage = "Failed to delete playlist"
+                self?.errorMessage = "Failed to delete playlist. Please try again later"
             }
         }
     }
@@ -86,6 +96,14 @@ class CollaborativePlaylistViewModel: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             self?.isEditing = false
             self?.songsToAdd = []
+        }
+    }
+    
+    private func setPlaylistOwner() {
+        let userId = authenticationService.getUserId()
+        let valueToSet = playlistMetadata?.createdBy == authenticationService.getUserId()
+        DispatchQueue.main.async { [weak self] in
+            self?.playlistOwner = valueToSet
         }
     }
 }

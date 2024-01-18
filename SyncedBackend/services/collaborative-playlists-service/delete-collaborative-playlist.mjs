@@ -14,12 +14,12 @@ const MAX_TRANSACTION_ITEMS = 100;
 export const deleteCollaborativePlaylistHandler = async (event) => {
     console.info('Received:', event);
 
-    if (!event.pathParameters || !event.pathParameters.playlistId) {
+    if (!event.pathParameters || !event.pathParameters.id) {
         return createErrorResponse({ statusCode: 400, message: 'Missing playlistId in path parameters' });
     }
 
     const userId = event.requestContext.authorizer.claims.sub;
-    const playlistId = event.pathParameters.playlistId;
+    const playlistId = event.pathParameters.id;
     let deletedRecords, error;
 
     try {
@@ -37,8 +37,7 @@ export const deleteCollaborativePlaylistHandler = async (event) => {
         const spotifyDetails = extractSpotifyPlaylistDetails(playlistRecords);
         await deleteSpotifyPlaylists(spotifyDetails);
 
-        console.info('Deleted playlist data:', { playlistId });
-        return createSuccessResponse('Collaborative Playlist and associated Spotify playlists successfully deleted');
+        return createSuccessResponse(playlistId);
     } catch (err) {
         console.error('Error:', err);
         await rollbackDeletes(deletedRecords);
@@ -112,10 +111,12 @@ async function rollbackDeletes(deletedRecords) {
     }
 }
 
-function createSuccessResponse(message) {
-    return { statusCode: 200, body: JSON.stringify({ message }) };
+function createSuccessResponse(playlistId) {
+    console.info('Deleted playlist data:', { playlistId });
+    return { statusCode: 200, body: JSON.stringify({ id: playlistId }) };
 }
 
 function createErrorResponse(error) {
+    console.error(error.message || 'Error processing request');
     return { statusCode: error.statusCode || 500, body: JSON.stringify({ message: error.message || 'Error processing request' }) };
 }

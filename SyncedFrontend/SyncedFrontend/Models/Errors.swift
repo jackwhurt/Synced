@@ -46,9 +46,11 @@ enum AppleMusicServiceError: Error {
 enum CollaborativePlaylistServiceError: Error {
     case playlistRetrievalFailed
     case playlistCreationFailed
+    case playlistDeletionFailed
     case backendPlaylistCreationFailed
     case failedToDeleteSongs
     case failedToEditSongs
+    case backendPlaylistDeletionFailed
 }
 
 enum SongServiceError: Error {

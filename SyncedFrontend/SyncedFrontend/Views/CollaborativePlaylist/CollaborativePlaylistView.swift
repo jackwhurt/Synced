@@ -1,14 +1,18 @@
 import SwiftUI
 
 struct CollaborativePlaylistView: View {
+    @Environment(\.presentationMode) var presentationMode
     @StateObject private var collaborativePlaylistViewModel: CollaborativePlaylistViewModel
     @State private var showErrorAlert = false
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
-    @Environment(\.presentationMode) var presentationMode
     
     init(playlistId: String) {
-        _collaborativePlaylistViewModel = StateObject(wrappedValue: CollaborativePlaylistViewModel(playlistId: playlistId, collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService()))
+        let viewModel = CollaborativePlaylistViewModel(
+            playlistId: playlistId,
+            collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(), authenticationService: DIContainer.shared.provideAuthenticationService()
+        )
+        _collaborativePlaylistViewModel = StateObject(wrappedValue: viewModel)
     }
     
     var body: some View {
@@ -20,14 +24,14 @@ struct CollaborativePlaylistView: View {
                 SongList(songs: collaborativePlaylistViewModel.songsToDisplay,
                          isEditing: collaborativePlaylistViewModel.isEditing,
                          onAddSongs: {
-                    showingAddSongsSheet = true
-                },
+                            showingAddSongsSheet = true
+                         },
                          onDelete: { indexSet in
-                    guard let index = indexSet.first else { return }
-                    let songToDelete = collaborativePlaylistViewModel.songsToDisplay[index]
-                    collaborativePlaylistViewModel.deleteSong(song: songToDelete)
-                })
-                
+                            guard let index = indexSet.first else { return }
+                            let songToDelete = collaborativePlaylistViewModel.songsToDisplay[index]
+                            collaborativePlaylistViewModel.deleteSong(song: songToDelete)
+                        })
+
                 if collaborativePlaylistViewModel.songsToDisplay.isEmpty {
                     Text("Playlist is empty")
                         .foregroundColor(.secondary)
@@ -45,8 +49,17 @@ struct CollaborativePlaylistView: View {
         .sheet(isPresented: $showingAddSongsSheet) {
             AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: $collaborativePlaylistViewModel.songsToAdd)
         }
-        .onAppear(perform: loadPlaylist)
+        .onAppear {
+            collaborativePlaylistViewModel.dismissAction = {
+                self.presentationMode.wrappedValue.dismiss()
+            }
+            loadPlaylist()
+        }
         .alert(isPresented: $showErrorAlert, content: errorAlert)
+    }
+    
+    private func dismissView() {
+        presentationMode.wrappedValue.dismiss()
     }
     
     // Playlist Loading View
@@ -82,9 +95,12 @@ struct CollaborativePlaylistView: View {
                         Button("Edit Playlist") {
                             collaborativePlaylistViewModel.setEditingTrue()
                         }
-                        Button("Delete Playlist") {
-                            Task {
-                                await collaborativePlaylistViewModel.deletePlaylist()
+
+                        if collaborativePlaylistViewModel.playlistOwner {
+                            Button("Delete Playlist") {
+                                Task {
+                                    await collaborativePlaylistViewModel.deletePlaylist()
+                                }
                             }
                         }
                     } label: {

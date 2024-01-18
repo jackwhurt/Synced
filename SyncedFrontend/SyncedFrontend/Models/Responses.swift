@@ -34,7 +34,11 @@ struct UpdateAppleMusicPlaylistIdResponse: Codable {
 }
 
 struct CreateCollaborativePlaylistResponse: Codable {
-    let id: String
+    let id: String?
+}
+
+struct DeleteCollaborativePlaylistResponse: Codable {
+    let id: String?
 }
 
 struct DeleteSongsResponse: Codable {
