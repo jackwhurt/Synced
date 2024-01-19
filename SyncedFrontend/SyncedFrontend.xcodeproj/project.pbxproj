@@ -102,6 +102,9 @@
 		80B82C002B49DE3400277AEA /* CollaborativePlaylistViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistViewModel.swift; sourceTree = "<group>"; };
 		80B82C022B4AC5F400277AEA /* AddSongsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddSongsView.swift; sourceTree = "<group>"; };
 		80CE06AB2B2CB23A00D926E2 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		80D896E12B5AD42200543685 /* ci_post_clone.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_clone.sh; sourceTree = "<group>"; };
+		80D896E22B5AD43D00543685 /* ci_post_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_post_xcodebuild.sh; sourceTree = "<group>"; };
+		80D896E32B5AD44C00543685 /* ci_pre_xcodebuild.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = ci_pre_xcodebuild.sh; sourceTree = "<group>"; };
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
 		80E2EB332B22775F00E99BF9 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
@@ -176,6 +179,7 @@
 		805D49362B0FDE100081B076 = {
 			isa = PBXGroup;
 			children = (
+				80D896E02B5AD40100543685 /* ci_scripts */,
 				805D49412B0FDE100081B076 /* SyncedFrontend */,
 				805D49402B0FDE100081B076 /* Products */,
 				DD29B25B3FADFB701A0B0A36 /* Pods */,
@@ -263,6 +267,16 @@
 				8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */,
 			);
 			path = Protocols;
+			sourceTree = "<group>";
+		};
+		80D896E02B5AD40100543685 /* ci_scripts */ = {
+			isa = PBXGroup;
+			children = (
+				80D896E12B5AD42200543685 /* ci_post_clone.sh */,
+				80D896E22B5AD43D00543685 /* ci_post_xcodebuild.sh */,
+				80D896E32B5AD44C00543685 /* ci_pre_xcodebuild.sh */,
+			);
+			path = ci_scripts;
 			sourceTree = "<group>";
 		};
 		80E2EB302B22747400E99BF9 /* Models */ = {
