@@ -7,6 +7,8 @@ Parameters:
     Type: String
   CreateCollaborativePlaylistFunctionArn:
     Type: String
+  DeleteCollaborativePlaylistFunctionArn:
+    Type: String
   UpdateCollaborativePlaylistMetadataFunctionArn:
     Type: String
   GetCollaborativePlaylistMetadataByIdFunctionArn:
@@ -24,6 +26,12 @@ Parameters:
   DeleteSongsFunctionArn:
     Type: String
   GetSongsForAppleMusicFunctionArn:
+    Type: String
+  DeleteAppleMusicDeleteFlagsFunctionArn:
+    Type: String
+  GetSpotifyApiSongsFunctionArn:
+    Type: String
+  SpotifySongsToAppleMusicFunctionArn:
     Type: String
   GetSpotifyAuthUrlFunctionArn:
     Type: String
@@ -284,6 +292,28 @@ Resources:
       FunctionName: !Ref GetCollaborativePlaylistByIdFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/{id}"
+
+  # Delete Collaborative Playlist
+  DeleteCollaborativePlaylistMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref PlaylistIdResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteCollaborativePlaylistFunctionArn}/invocations"
+     
+  DeleteCollaborativePlaylistInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteCollaborativePlaylistFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/{id}"
   
   # Collaborative Playlists / Metadata
   PlaylistMetadataResource:
@@ -436,7 +466,7 @@ Resources:
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/collaborative-playlists/collaborators/sync"
 
   # Collaborative Playlists / Songs
-  SongsResource:
+  PlaylistSongsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !Ref PlaylistsResource 
@@ -450,7 +480,7 @@ Resources:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref CognitoAuthoriser
       HttpMethod: POST
-      ResourceId: !Ref SongsResource
+      ResourceId: !Ref PlaylistSongsResource
       RestApiId: !Ref MyApi
       Integration:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
@@ -472,7 +502,7 @@ Resources:
       AuthorizationType: COGNITO_USER_POOLS
       AuthorizerId: !Ref CognitoAuthoriser
       HttpMethod: DELETE
-      ResourceId: !Ref SongsResource
+      ResourceId: !Ref PlaylistSongsResource
       RestApiId: !Ref MyApi
       Integration:
         IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
@@ -487,7 +517,15 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/songs"
 
-  # Collaborative Playlists / Songs / Apple Music
+  # Songs
+  SongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: songs
+      RestApiId: !Ref MyApi
+
+  # Songs / Apple Music
   AppleMusicSongsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -515,9 +553,89 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GetSongsForAppleMusicFunctionArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/songs/apple-music"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/songs/apple-music"
 
-# Deployment of the API
+  # Delete Apple Music Delete Flags
+  DeleteAppleMusicDeleteFlagsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref AppleMusicSongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteAppleMusicDeleteFlagsFunctionArn}/invocations"
+
+  DeleteAppleMusicDeleteFlagsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteAppleMusicDeleteFlagsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/songs/apple-music"
+
+  # Songs / Spotify
+  SpotifyApiSongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref SongsResource
+      PathPart: spotify
+      RestApiId: !Ref MyApi
+
+  GetSpotifyApiSongsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref SpotifyApiSongsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSpotifyApiSongsFunctionArn}/invocations"
+
+  GetSpotifyApiSongsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetSpotifyApiSongsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/songs/spotify"
+  
+  # Songs / Spotify / Convert
+  SpotifyConvertResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref SpotifyApiSongsResource
+      PathPart: convert
+      RestApiId: !Ref MyApi
+
+  SpotifySongsToAppleMusicMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: POST
+      ResourceId: !Ref SpotifyConvertResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SpotifySongsToAppleMusicFunctionArn}/invocations"
+
+  SpotifySongsToAppleMusicLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SpotifySongsToAppleMusicFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/songs/spotify/convert"
+
+  # Deployment of the API
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:

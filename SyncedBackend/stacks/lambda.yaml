@@ -196,6 +196,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: get-all-collaborative-playlists.getAllCollaborativePlaylistsHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -222,7 +224,40 @@ Resources:
         - x86_64
       MemorySize: 128
       Timeout: 100
-      Description: A function to create a Collaborative Playlists.
+      Description: A function to create a Collaborative Playlist.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*"
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          TOKENS_TABLE: !Ref TokensTableName  
+          USERS_TABLE: !Ref UsersTableName
+
+  DeleteCollaborativePlaylistFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-collaborative-playlist.deleteCollaborativePlaylistHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete a Collaborative Playlist.
       Policies:
         # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
@@ -456,6 +491,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: get-songs-for-apple-music.getSongsForAppleMusicHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -468,7 +505,71 @@ Resources:
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+
+  DeleteAppleMusicDeleteFlagsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/
+      Handler: delete-apple-music-delete-flags.deleteAppleMusicDeleteFlagsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete Apple Music delete flags.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName 
+
+  # Songs - Spotify
+  GetSpotifyApiSongsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/songs-service/   
+      Handler: get-spotify-api-songs.getSpotifyApiSongsHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get songs from the Spotify API.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName
+
+  # Songs - Spotify - Convert
+  SpotifySongsToAppleMusicFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/songs-service/   
+      Handler: spotify-songs-to-apple-music.spotifySongsToAppleMusicHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to Spotify songs to Apple Music songs.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+      Environment:
+        Variables:
+          TOKENS_TABLE: !Ref TokensTableName  
 
   # Create User Trigger
   CognitoTriggerFunction:
@@ -488,7 +589,6 @@ Resources:
             TableName: !Ref UsersTableName
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           USERS_TABLE: !Ref UsersTableName
 
 Outputs:
@@ -510,6 +610,8 @@ Outputs:
     Value: !GetAtt GetAllCollaborativePlaylistsFunction.Arn
   CreateCollaborativePlaylistFunctionArn:
     Value: !GetAtt CreateCollaborativePlaylistFunction.Arn
+  DeleteCollaborativePlaylistFunctionArn:
+    Value: !GetAtt DeleteCollaborativePlaylistFunction.Arn
   UpdateCollaborativePlaylistMetadataFunctionArn:
     Value: !GetAtt UpdateCollaborativePlaylistMetadataFunction.Arn
   GetCollaborativePlaylistMetadataByIdFunctionArn:
@@ -528,5 +630,11 @@ Outputs:
     Value: !GetAtt DeleteSongsFunction.Arn
   GetSongsForAppleMusicFunctionArn:
     Value: !GetAtt GetSongsForAppleMusicFunction.Arn
+  DeleteAppleMusicDeleteFlagsFunctionArn:
+    Value: !GetAtt DeleteAppleMusicDeleteFlagsFunction.Arn
+  GetSpotifyApiSongsFunctionArn:
+    Value: !GetAtt GetSpotifyApiSongsFunction.Arn
+  SpotifySongsToAppleMusicFunctionArn:
+    Value: !GetAtt SpotifySongsToAppleMusicFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

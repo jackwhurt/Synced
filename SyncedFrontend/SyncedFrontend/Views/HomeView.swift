@@ -1,58 +1,58 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var cpViewModel: HomeViewModel
+    @StateObject private var homeViewModel: HomeViewModel
     
     init(isLoggedIn: Binding<Bool>) {
-        _cpViewModel = StateObject(wrappedValue: HomeViewModel(
-            authenticationService: DIContainer.shared.provideAuthenticationService(),
-            appleMusicService: DIContainer.shared.provideAppleMusicService(),
-            musicKitService: DIContainer.shared.provideMusicKitService(),
-            collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService()
-            )
-        )
+        _homeViewModel = StateObject(wrappedValue: HomeViewModel(isLoggedIn: isLoggedIn))
     }
     
     var body: some View {
-        VStack {
-            if cpViewModel.isLoggedIn {
-                Text("Logged in. Hello, World!")
-                Button("Logout") {
-                    cpViewModel.logout()
+        TabView {
+            CollaborativePlaylistMenuView()
+                .tabItem {
+                    Label("", systemImage: "music.note.list")
                 }
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.red)
-                .cornerRadius(10)
-                Button("Connect Apple Music") {
-                    Task {
-                        await cpViewModel.connectAppleMusic()
-                    }
+
+            // TODO: Remove
+            TestView(isLoggedIn: .constant(true))
+                .tabItem {
+                    Label("", systemImage: "ellipsis.circle.fill")
                 }
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.red)
-                .cornerRadius(10)
-                
-                Button("Create Playlist") {
-                    Task {
-                        await cpViewModel.createPlaylist()
-                    }
+            
+            ActivitiesView()
+                .tabItem {
+                    Label("", systemImage: "person.3")
                 }
-                .foregroundColor(.white)
-                .padding()
-                .background(Color.red)
-                .cornerRadius(10)
-            } else {
-                Text("Not logged in.")
-            }
-        }
+            
+            ProfileView()
+                .tabItem {
+                    Label("", systemImage: "person")
+                }
+        }.accentColor(Color("SyncedBlue"))
     }
 }
 
-// For preview
-struct CollaborativePlaylistsView_Previews: PreviewProvider {
+struct ProfileView: View {
+    var body: some View {
+        Text("Profile View")
+    }
+}
+
+struct ActivitiesView: View {
+    var body: some View {
+        Text("Activities View")
+    }
+}
+
+struct PlaceholderView: View {
+    var body: some View {
+        Text("Placeholder View")
+    }
+}
+
+struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView(isLoggedIn: .constant(false))
+        HomeView(isLoggedIn: .constant(true))
     }
 }

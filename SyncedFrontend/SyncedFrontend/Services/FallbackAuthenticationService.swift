@@ -20,4 +20,8 @@ class FallbackAuthenticationService: AuthenticationServiceProtocol {
     func checkSession(completion: @escaping (Bool) -> Void) {
         completion(false)
     }
+    
+    func getUserId() -> String? {
+        ""
+    }
 }

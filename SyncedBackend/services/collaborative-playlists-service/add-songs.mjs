@@ -31,6 +31,8 @@ export const addSongsHandler = async (event) => {
 
         transactItems = buildTransactItems(playlistId, songs, timestamp);
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+
+        console.info("Successfully added songs to db");
     } catch (err) {
         console.error('Error in collaborator preparation:', err);
         return buildErrorResponse(err);
@@ -39,6 +41,7 @@ export const addSongsHandler = async (event) => {
     try {
         let unsuccessfulUpdateUserIds = failedSpotifyUsers.map(user => user.userId);
         unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap));
+        console.info("Successfully added songs to spotify");
 
         return buildSuccessResponse(unsuccessfulUpdateUserIds);
     } catch (err) {
@@ -57,16 +60,25 @@ async function validateEvent(playlistId, userId, songs) {
         return { statusCode: 400, body: JSON.stringify({ message: `Song limit reached: ${MAX_SONGS}` }) };
     }
 
-    if (!await isPlaylistValid(playlistId, playlistsTable)) {
-        return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
+    let existingUris;
+
+    try {
+        if (!await isPlaylistValid(playlistId, playlistsTable)) {
+            return { statusCode: 400, body: JSON.stringify({ message: 'Playlist doesn\'t exist: ' + playlistId }) };
+        }
+
+        if (!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
+            return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
+        }
+
+        // Combined check for duplicate URIs within the submission and against the playlist
+        existingUris = await getExistingUrisForPlaylist(playlistId);
+    } catch (error) {
+        console.error('Failed validating event: ', error)
+
+        return buildErrorResponse(error)
     }
 
-    if (!await isCollaboratorInPlaylist(playlistId, userId, playlistsTable)) {
-        return { statusCode: 403, body: JSON.stringify({ message: 'Not authorised to edit this playlist' }) };
-    }
-
-    // Combined check for duplicate URIs within the submission and against the playlist
-    const existingUris = await getExistingUrisForPlaylist(playlistId);
     const uriSet = new Set(existingUris);
     const duplicateUris = [];
 
@@ -236,21 +248,31 @@ function buildSuccessResponse(unsuccessfulUpdateUserIds) {
         message = `Songs added successfully except for the following user(s): ${failedUserIds}`;
     }
 
-    return {
+    let response = {
         statusCode: 200,
         body: JSON.stringify({ message })
     };
+    console.error('returned: ', response);
+
+    return response;
 }
 
 export function buildErrorResponse(err) {
+    let response;
+
     if (err.name === 'TransactionCanceledException') {
-        return {
+        response = {
             statusCode: 400,
             body: JSON.stringify({ message: `Failed to add songs, reached maximum limit of ${MAX_SONGS}.` })
         };
+    } else {
+        response = {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error adding songs to Collaborative Playlist' })
+        };
     }
-    return {
-        statusCode: 500,
-        body: JSON.stringify({ message: 'Error adding songs to Collaborative Playlist' })
-    };
+
+    console.error('returned: ', response);
+
+    return response;
 }

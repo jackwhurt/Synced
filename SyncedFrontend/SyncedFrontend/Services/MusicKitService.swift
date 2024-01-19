@@ -21,6 +21,17 @@ class MusicKitService {
         }
     }
     
+    func softDeletePlaylist(playlist: Playlist) async throws {
+        do {
+            let emptySongsList: [Song] = []
+            try await editPlaylist(songs: emptySongsList, to: playlist)
+            try await editPlaylistMetadata(playlist: playlist, title: "Deleted Playlist", description: "", authorDisplayName: nil)
+        } catch {
+            print("Error performing soft delete on playlist \(playlist.name): \(error)")
+            throw MusicKitError.failedToSoftDeletePlaylist
+        }
+    }
+
     func getPlaylist(id: String) async throws -> Playlist {
         var response: MusicLibraryResponse<Playlist>
         var request = MusicLibraryRequest<Playlist>()
@@ -37,6 +48,15 @@ class MusicKitService {
             return playlist
         } else {
             throw MusicKitError.playlistNotInLibrary
+        }
+    }
+    
+    func editPlaylistMetadata(playlist: Playlist, title: String?, description: String?, authorDisplayName: String?) async throws {
+        do {
+            try await MusicLibrary.shared.edit(playlist, name: title, description: description, authorDisplayName: authorDisplayName)
+        } catch {
+            print("Failed to edit playlist metadata for playlist \(playlist.id): \(error)")
+            throw MusicKitError.failedToEditPlaylist
         }
     }
 }

@@ -6,4 +6,5 @@ protocol AuthenticationServiceProtocol {
     func signUpUser(email: String, password: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void)
     func refreshToken(completion: @escaping (Result<Void, Error>) -> Void)
     func checkSession(completion: @escaping (Bool) -> Void)
+    func getUserId() -> String?
 }

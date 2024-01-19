@@ -14,18 +14,23 @@ export const getCollaborativePlaylistByIdHandler = async (event) => {
 		return { statusCode: 400, body: JSON.stringify('No playlist ID provided') };
 	}
 	const playlistId = 'cp#' + playlistUuid;
+	const claims = event.requestContext.authorizer?.claims;
+	const userId = claims['sub'];
 
 	try {
 		const playlistItemsData = await queryPlaylistItems(playlistId);
-		const { collaborators, playlistMetadata, songs } = await processPlaylistItems(playlistItemsData.Items);
+		const { appleMusicPlaylistId, collaborators, playlistMetadata, songs } = await processPlaylistItems(playlistItemsData.Items, userId);
 
 		if (!playlistMetadata && collaborators.length === 0 && songs.length === 0) {
 			return { statusCode: 404, body: JSON.stringify('Playlist not found') };
 		}
 
+		const response = { playlistId: playlistUuid, metadata: playlistMetadata, collaborators: collaborators, songs: songs }
+		if (appleMusicPlaylistId) response.appleMusicPlaylistId = appleMusicPlaylistId;
+
 		return {
 			statusCode: 200,
-			body: JSON.stringify({ playlistId: playlistId, metadata: playlistMetadata, collaborators: collaborators, songs: songs })
+			body: JSON.stringify(response)
 		};
 	} catch (err) {
 		console.error('Error', err);
@@ -44,11 +49,16 @@ async function queryPlaylistItems(playlistId) {
 	return ddbDocClient.send(new QueryCommand(playlistItemsParams));
 }
 
-async function processPlaylistItems(items) {
-	let collaborators = [], playlistMetadata = null, songs = [];
+async function processPlaylistItems(items, userId) {
+	let collaborators = [], playlistMetadata = null, songs = [], appleMusicPlaylistId = '';
 	const userIds = items
 		.filter(item => item.SK.startsWith('collaborator#'))
 		.map(item => ({ cognito_user_id: item.GSI1PK.split('#')[1] }));
+
+	const userItem = items.find(item => item.SK === `collaborator#${userId}`);
+	if (userItem && userItem.appleMusicPlaylistId) {
+		appleMusicPlaylistId = userItem.appleMusicPlaylistId;
+	}
 
 	collaborators = await fetchUsersData(userIds);
 
@@ -56,11 +66,13 @@ async function processPlaylistItems(items) {
 		if (item.SK === 'metadata') {
 			playlistMetadata = item;
 		} else if (item.SK.startsWith('song#')) {
+			item.songId = item.SK.substring(5);
+			delete item.SK;
 			songs.push(item);
 		}
 	}
 
-	return { collaborators, playlistMetadata, songs };
+	return { appleMusicPlaylistId, collaborators, playlistMetadata, songs };
 }
 
 async function fetchUsersData(userIds) {

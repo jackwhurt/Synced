@@ -1,0 +1,9 @@
+{
+    "get-spotify-songs": {
+        "queryStringParameters": {
+            "searchQuery": "Imagine Dragons",
+            "page": "1",
+            "limit": "10"
+        }
+    }
+}

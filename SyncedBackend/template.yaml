@@ -45,6 +45,7 @@ Resources:
         GetCollaborativePlaylistByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistByIdFunctionArn
         GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
         CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
+        DeleteCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaborativePlaylistFunctionArn
         UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
         GetCollaborativePlaylistMetadataByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistMetadataByIdFunctionArn
         UpdateAppleMusicPlaylistIdFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicPlaylistIdFunctionArn
@@ -54,6 +55,9 @@ Resources:
         AddSongsFunctionArn: !GetAtt LambdaStack.Outputs.AddSongsFunctionArn
         DeleteSongsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteSongsFunctionArn
         GetSongsForAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.GetSongsForAppleMusicFunctionArn
+        DeleteAppleMusicDeleteFlagsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteAppleMusicDeleteFlagsFunctionArn
+        GetSpotifyApiSongsFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyApiSongsFunctionArn
+        SpotifySongsToAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.SpotifySongsToAppleMusicFunctionArn
         GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
         ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
         GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn

@@ -22,7 +22,7 @@ struct SignUpView: View {
                     
                     if signUpViewModel.isSignedUp {
                         // Placeholder, will be get info screen
-                        NavigationLink("", destination: HomeView(isLoggedIn: signUpViewModel.isLoggedIn))
+                        NavigationLink("", destination: TestView(isLoggedIn: signUpViewModel.isLoggedIn))
                     }
                 }
                 .padding()
@@ -52,11 +52,11 @@ struct SignUpInputFields: View {
             LongInputField(placeholder: "Email", text: $signUpViewModel.email)
             LongSecureInputField(placeholder: "Password", text: $signUpViewModel.password)
                 .onChange(of: signUpViewModel.password) {
-                    signUpViewModel.validatePasswordCriteria()
+                    _ = signUpViewModel.validatePasswordCriteria()
                 }
             LongSecureInputField(placeholder: "Confirm Password", text: $signUpViewModel.confirmPassword)
                 .onChange(of: signUpViewModel.confirmPassword) {
-                    signUpViewModel.validatePasswordCriteria()
+                    _ = signUpViewModel.validatePasswordCriteria()
                 }
             if(signUpViewModel.passwordValidationMessage != "") {
                 Text(signUpViewModel.passwordValidationMessage)

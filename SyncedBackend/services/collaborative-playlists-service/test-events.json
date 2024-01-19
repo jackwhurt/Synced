@@ -109,5 +109,27 @@
                 }
             }
         }
+    },
+    "delete-playlist": {
+        "pathParameters": {
+            "id": "a0916787-a7f6-4410-8989-406834651e61"
+        },
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "70f23806-2368-4be9-a1a1-f078d9660b1d"
+                }
+            }
+        }
+    },
+    "delete-delete-flags": {
+        "body": "{\"playlistIds\": [\"playlist1\", \"playlist2\", \"playlist3\"]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "user123"
+                }
+            }
+        }
     }
 }
