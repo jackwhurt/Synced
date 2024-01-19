@@ -22,7 +22,7 @@ class DIContainer {
     }
     
     func provideCollaborativePlaylistService() -> CollaborativePlaylistService {
-        return CollaborativePlaylistService(apiService: provideAPIService(), appleMusicService: provideAppleMusicService())
+        return CollaborativePlaylistService(apiService: provideAPIService(), appleMusicService: provideAppleMusicService(), musicKitService: provideMusicKitService())
     }
     
     func provideAuthenticationService() -> AuthenticationServiceProtocol {

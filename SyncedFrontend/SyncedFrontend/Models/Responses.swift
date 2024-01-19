@@ -17,6 +17,7 @@ struct SongUpdate: Codable {
 
 struct PlaylistUpdate: Codable {
     let appleMusicPlaylistId: String
+    let playlistId: String
     let description: String?
     let title: String?
     let delete: Bool?
@@ -58,6 +59,10 @@ struct DeleteSongsResponse: Codable {
 }
 
 struct AddSongsResponse: Codable {
+    let message: String
+}
+
+struct DeleteAppleMusicDeleteFlagsResponse: Codable {
     let message: String
 }
 

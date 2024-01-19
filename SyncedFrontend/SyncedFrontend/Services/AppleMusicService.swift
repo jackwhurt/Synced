@@ -29,49 +29,6 @@ class AppleMusicService {
         }
     }
     
-    // TODO: Move to cp service & create endpoint to clear delete flags
-    func updatePlaylists() async throws {
-        let update: UpdatePlaylistsResponse
-        let timestampDict = ["timestamp": getLastUpdatedTimestamp()]
-        let currentDate = Date()
-
-        do {
-            update = try await getSongUpdates(parameters: timestampDict)
-        } catch {
-            print("Failed to retrieve song updates for timestamp: ", timestampDict["timestamp"] ?? "Unknown")
-            throw AppleMusicServiceError.songUpdatesRetrievalFailed
-        }
-        
-        var allUpdatesSuccessful = true
-        for songUpdate in update.songUpdates {
-            do {
-                let playlist = try await getAppleMusicPlaylistOrReplace(appleMusicPlaylistId: songUpdate.appleMusicPlaylistId, playlistId: songUpdate.playlistId)
-                try await self.musicKitService.editPlaylist(songs: songUpdate.songs, to: playlist)
-            } catch {
-                allUpdatesSuccessful = false
-                print("Failed to update playlist songs for backend id: \(songUpdate.playlistId): \(error)")
-                throw AppleMusicServiceError.songUpdateFailed
-            }
-        }
-        
-        for playlistUpdate in update.playlistUpdates {
-            do {
-                if playlistUpdate.delete ?? false {
-                    let playlist = try await musicKitService.getPlaylist(id: playlistUpdate.appleMusicPlaylistId)
-                    try await self.musicKitService.softDeletePlaylist(playlist: playlist)
-                }
-            } catch {
-                print("Failed to update playlist for apple music id: \(playlistUpdate.appleMusicPlaylistId): \(error)")
-                throw AppleMusicServiceError.playlistUpdateFailed
-            }
-        }
-        
-        if (allUpdatesSuccessful) {
-            updateLastUpdatedTimestamp(currentDate: currentDate)
-            print("Updated last updated timestamp: \(currentDate)")
-        }
-    }
-    
     func editPlaylist(appleMusicPlaylistId: String, playlistId: String, songs: [SongMetadata]) async throws {
         do {
             let appleMusicSongs = try convertToMusicKitSongs(from: songs)
@@ -82,6 +39,27 @@ class AppleMusicService {
             throw AppleMusicServiceError.playlistEditFailed
         }
         
+    }
+    
+    func createAppleMusicPlaylist(title: String, description: String, playlistId: String) async throws -> Playlist {
+        do {
+            let playlist = try await musicKitService.createPlaylist(title: title, description: description)
+            try await updatePlaylistId(playlistId: playlistId, appleMusicPlaylistId: playlist.id.rawValue)
+            return playlist
+        } catch {
+            print("Failed to create playlist for backend id: \(playlistId)")
+            throw AppleMusicServiceError.playlistCreationFailed
+        }
+    }
+    
+    func getAppleMusicPlaylistOrReplace(appleMusicPlaylistId: String, playlistId: String) async throws -> Playlist {
+        do {
+            let playlist = try await musicKitService.getPlaylist(id: appleMusicPlaylistId)
+            return playlist
+        } catch {
+            print("Playlist \(appleMusicPlaylistId) not found, replacing playlist backend id \(playlistId)")
+            return try await replaceAppleMusicPlaylist(playlistId: playlistId)
+        }
     }
     
     private func convertToMusicKitSongs(from songMetadataArray: [SongMetadata]) throws -> [Song] {
@@ -128,27 +106,6 @@ class AppleMusicService {
         }
     }
     
-    func createAppleMusicPlaylist(title: String, description: String, playlistId: String) async throws -> Playlist {
-        do {
-            let playlist = try await musicKitService.createPlaylist(title: title, description: description)
-            try await updatePlaylistId(playlistId: playlistId, appleMusicPlaylistId: playlist.id.rawValue)
-            return playlist
-        } catch {
-            print("Failed to create playlist for backend id: \(playlistId)")
-            throw AppleMusicServiceError.playlistCreationFailed
-        }
-    }
-    
-    private func getAppleMusicPlaylistOrReplace(appleMusicPlaylistId: String, playlistId: String) async throws -> Playlist {
-        do {
-            let playlist = try await musicKitService.getPlaylist(id: appleMusicPlaylistId)
-            return playlist
-        } catch {
-            print("Playlist \(appleMusicPlaylistId) not found, replacing playlist backend id \(playlistId)")
-            return try await replaceAppleMusicPlaylist(playlistId: playlistId)
-        }
-    }
-    
     private func replaceAppleMusicPlaylist(playlistId: String) async throws -> Playlist {
         do {
             let playlist = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/metadata/\(playlistId)", model: GetCollaborativePlaylistMetadataResponse.self)
@@ -158,10 +115,6 @@ class AppleMusicService {
             print("Failed to replace playlist for backend id: \(playlistId)")
             throw AppleMusicServiceError.playlistReplacementFailed
         }
-    }
-    
-    private func getSongUpdates(parameters: [String: String]) async throws -> UpdatePlaylistsResponse {
-        return try await apiService.makeGetRequest(endpoint: "/songs/apple-music", model: UpdatePlaylistsResponse.self, parameters: parameters)
     }
     
     private func updatePlaylistId(playlistId: String, appleMusicPlaylistId: String) async throws {
@@ -175,16 +128,5 @@ class AppleMusicService {
             print("Failed to update playlist id for backend playlist id: \(playlistId)")
             throw error
         }
-    }
-    
-    private func getLastUpdatedTimestamp() -> String {
-        return UserDefaults.standard.object(forKey: "lastUpdatedTimestamp") as? String ?? ""
-    }
-    
-    private func updateLastUpdatedTimestamp(currentDate: Date) {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate, .withTime, .withDashSeparatorInDate, .withColonSeparatorInTime]
-        
-        UserDefaults.standard.set(formatter.string(from: currentDate), forKey: "lastUpdatedTimestamp")
     }
 }

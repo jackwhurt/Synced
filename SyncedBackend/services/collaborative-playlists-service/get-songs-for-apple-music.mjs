@@ -83,10 +83,9 @@ async function getPlaylistsToDelete(userId) {
     try {
         const queryParams = {
             TableName: playlistsTable,
-            KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
+            KeyConditionExpression: 'PK = :pk',
             ExpressionAttributeValues: {
-                ':pk': `deleteFlag#${userId}`,
-                ':sk': 'appleMusic'
+                ':pk': `deleteFlag#${userId}`
             }
         };
 
@@ -95,7 +94,8 @@ async function getPlaylistsToDelete(userId) {
         const formattedPlaylists = queryResult.Items.map(item => {
             return {
                 delete: true,
-                appleMusicPlaylistId: item.appleMusicPlaylistId
+                appleMusicPlaylistId: item.appleMusicPlaylistId,
+                playlistId: item.SK.replace('cp#', '')
             };
         });
         Array.prototype.push.apply(results, formattedPlaylists);

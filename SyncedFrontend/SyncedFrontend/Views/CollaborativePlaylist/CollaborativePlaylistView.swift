@@ -6,7 +6,8 @@ struct CollaborativePlaylistView: View {
     @State private var showErrorAlert = false
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
-    
+    @State private var showingDeleteConfirmation = false
+
     init(playlistId: String) {
         let viewModel = CollaborativePlaylistViewModel(
             playlistId: playlistId,
@@ -56,6 +57,8 @@ struct CollaborativePlaylistView: View {
             loadPlaylist()
         }
         .alert(isPresented: $showErrorAlert, content: errorAlert)
+        .alert(isPresented: $showingDeleteConfirmation, content: deletePlaylistConfirmationAlert)
+
     }
     
     private func dismissView() {
@@ -98,9 +101,7 @@ struct CollaborativePlaylistView: View {
 
                         if collaborativePlaylistViewModel.playlistOwner {
                             Button("Delete Playlist") {
-                                Task {
-                                    await collaborativePlaylistViewModel.deletePlaylist()
-                                }
+                                showingDeleteConfirmation = true
                             }
                         }
                     } label: {
@@ -128,6 +129,19 @@ struct CollaborativePlaylistView: View {
         return Alert(title: Text("Error"),
                      message: Text(collaborativePlaylistViewModel.errorMessage ?? "Unknown error"),
                      dismissButton: dismissButton)
+    }
+    
+    private func deletePlaylistConfirmationAlert() -> Alert {
+        Alert(
+            title: Text("Delete Playlist"),
+            message: Text("Are you sure you want to delete this playlist?"),
+            primaryButton: .destructive(Text("Delete")) {
+                Task {
+                    await collaborativePlaylistViewModel.deletePlaylist()
+                }
+            },
+            secondaryButton: .cancel()
+        )
     }
 
 }

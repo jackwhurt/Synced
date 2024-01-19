@@ -6,7 +6,7 @@ struct ContentView: View {
     init() {
         _contentViewModel = StateObject(wrappedValue: ContentViewModel(
             authenticationService: DIContainer.shared.provideAuthenticationService(),
-            appleMusicService: DIContainer.shared.provideAppleMusicService())
+            collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService())
         )
     }
     

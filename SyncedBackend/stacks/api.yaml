@@ -27,6 +27,8 @@ Parameters:
     Type: String
   GetSongsForAppleMusicFunctionArn:
     Type: String
+  DeleteAppleMusicDeleteFlagsFunctionArn:
+    Type: String
   GetSpotifyApiSongsFunctionArn:
     Type: String
   SpotifySongsToAppleMusicFunctionArn:
@@ -515,7 +517,15 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/songs"
 
-  # Collaborative Playlists / Songs / Apple Music
+  # Songs
+  SongsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: songs
+      RestApiId: !Ref MyApi
+
+  # Songs / Apple Music
   AppleMusicSongsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -545,13 +555,27 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/songs/apple-music"
 
-  # Songs
-  SongsResource:
-    Type: AWS::ApiGateway::Resource
+  # Delete Apple Music Delete Flags
+  DeleteAppleMusicDeleteFlagsMethod:
+    Type: AWS::ApiGateway::Method
     Properties:
-      ParentId: !GetAtt MyApi.RootResourceId
-      PathPart: songs
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: DELETE
+      ResourceId: !Ref AppleMusicSongsResource
       RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DeleteAppleMusicDeleteFlagsFunctionArn}/invocations"
+
+  DeleteAppleMusicDeleteFlagsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DeleteAppleMusicDeleteFlagsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/songs/apple-music"
 
   # Songs / Spotify
   SpotifyApiSongsResource:

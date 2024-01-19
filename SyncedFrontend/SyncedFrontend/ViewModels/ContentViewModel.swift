@@ -4,11 +4,11 @@ class ContentViewModel: ObservableObject {
     @Published var isLoggedIn = false
     @Published var isLoading = true
     private let authenticationService: AuthenticationServiceProtocol
-    private let appleMusicService: AppleMusicService
+    private let collaborativePlaylistService: CollaborativePlaylistService
     
-    init(authenticationService: AuthenticationServiceProtocol, appleMusicService: AppleMusicService) {
+    init(authenticationService: AuthenticationServiceProtocol, collaborativePlaylistService: CollaborativePlaylistService) {
         self.authenticationService = authenticationService
-        self.appleMusicService = appleMusicService
+        self.collaborativePlaylistService = collaborativePlaylistService
     }
     
     func onOpen() async {
@@ -18,7 +18,7 @@ class ContentViewModel: ObservableObject {
         
         checkUserSession()
         do {
-            try await appleMusicService.updatePlaylists()
+            try await collaborativePlaylistService.updatePlaylists()
         } catch{
             print("Update playlists failed")
         }

@@ -51,7 +51,6 @@ class MusicKitService {
         }
     }
     
-    // TODO: Complete
     func editPlaylistMetadata(playlist: Playlist, title: String?, description: String?, authorDisplayName: String?) async throws {
         do {
             try await MusicLibrary.shared.edit(playlist, name: title, description: description, authorDisplayName: authorDisplayName)

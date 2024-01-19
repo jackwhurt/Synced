@@ -121,5 +121,15 @@
                 }
             }
         }
+    },
+    "delete-delete-flags": {
+        "body": "{\"playlistIds\": [\"playlist1\", \"playlist2\", \"playlist3\"]}",
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "user123"
+                }
+            }
+        }
     }
 }

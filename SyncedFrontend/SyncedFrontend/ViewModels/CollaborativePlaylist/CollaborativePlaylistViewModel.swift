@@ -47,6 +47,10 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     func deleteSong(song: SongMetadata) {
         songsToDelete.append(song)
+        
+        if let index = playlistSongs.firstIndex(of: song) {
+            playlistSongs.remove(at: index)
+        }
     }
     
     func setEditingTrue() {
@@ -56,7 +60,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     func saveChanges() async {
         do {
-            try await collaborativePlaylistService.editSongs(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songsToDelete: songsToDelete, songsToAdd: songsToAdd, allSongs: playlistSongs )
+            try await collaborativePlaylistService.editSongs(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songsToDelete: songsToDelete, songsToAdd: songsToAdd, newSongs: playlistSongs )
             let newSongs = self.songsToAdd
             setEditingFalse()
             DispatchQueue.main.async { [weak self] in
@@ -100,7 +104,8 @@ class CollaborativePlaylistViewModel: ObservableObject {
     }
     
     private func setPlaylistOwner() {
-        let valueToSet = playlistMetadata?.createdBy == authenticationService.getUserId()
+        let userId = authenticationService.getUserId()
+        let valueToSet = playlistMetadata?.createdBy == userId
         DispatchQueue.main.async { [weak self] in
             self?.playlistOwner = valueToSet
         }

@@ -19,3 +19,7 @@ struct AddSongsRequest: Codable {
     let playlistId: String
     let songs: [SongMetadata]
 }
+
+struct DeleteAppleMusicDeleteFlagsRequest: Codable {
+    let playlistIds: [String]
+}

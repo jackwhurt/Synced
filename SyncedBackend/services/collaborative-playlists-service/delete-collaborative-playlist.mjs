@@ -99,7 +99,7 @@ async function addAppleMusicDeleteFlag(playlistRecords) {
         .filter(record => record.SK.startsWith('collaborator#') && record.appleMusicPlaylistId)
         .map(record => ({
             PK: `deleteFlag#${record.SK.split('#')[1]}`,
-            SK: 'appleMusic',
+            SK: record.PK,
             appleMusicPlaylistId: record.appleMusicPlaylistId
         }));
     const transactItems = deleteFlags.map(record => ({ Put: { TableName: playlistsTable, Item: record } }));
