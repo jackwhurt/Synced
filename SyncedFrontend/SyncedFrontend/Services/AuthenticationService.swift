@@ -28,9 +28,9 @@ class AuthenticationService: AuthenticationServiceProtocol {
         self.userPool = userPool
     }
 
-    func loginUser(username: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
-        let user = userPool.getUser(username)
-        user.getSession(username, password: password, validationData: nil).continueWith { [weak self] task -> Any? in
+    func loginUser(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let user = userPool.getUser(email)
+        user.getSession(email, password: password, validationData: nil).continueWith { [weak self] task -> Any? in
             guard let self = self else { return nil }
             DispatchQueue.main.async {
                 if let error = task.error {
@@ -74,9 +74,10 @@ class AuthenticationService: AuthenticationServiceProtocol {
         }
     }
 
-    func signUpUser(email: String, password: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
+    func signUpUser(email: String, password: String, username: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
         let emailAttribute = AWSCognitoIdentityUserAttributeType(name: "email", value: email)
-        userPool.signUp(email, password: password, userAttributes: [emailAttribute], validationData: nil).continueWith { [weak self] task -> Any? in
+        let usernameAttribute = AWSCognitoIdentityUserAttributeType(name: "custom:username", value: username)
+        userPool.signUp(email, password: password, userAttributes: [emailAttribute, usernameAttribute], validationData: nil).continueWith { [weak self] task -> Any? in
             guard self != nil else { return nil }
             DispatchQueue.main.async {
                 if let error = task.error {
@@ -88,7 +89,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
             return nil
         }
     }
-    
+
     private func saveTokens(accessToken: String, idToken: String, refreshToken: String) throws {
         if let accessTokenData = accessToken.data(using: .utf8),
            let idTokenData = idToken.data(using: .utf8),

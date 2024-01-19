@@ -569,7 +569,27 @@ Resources:
             TableName: !Ref TokensTableName
       Environment:
         Variables:
-          TOKENS_TABLE: !Ref TokensTableName  
+          TOKENS_TABLE: !Ref TokensTableName
+
+  # Users
+  GetUsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/users-service/   
+      Handler: get-users.getUsersHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get paginated Users.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTableName
 
   # Create User Trigger
   CognitoTriggerFunction:
@@ -636,5 +656,7 @@ Outputs:
     Value: !GetAtt GetSpotifyApiSongsFunction.Arn
   SpotifySongsToAppleMusicFunctionArn:
     Value: !GetAtt SpotifySongsToAppleMusicFunction.Arn
+  GetUsersFunctionArn:
+    Value: !GetAtt GetUsersFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

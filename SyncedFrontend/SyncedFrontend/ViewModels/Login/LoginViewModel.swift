@@ -1,7 +1,7 @@
 import SwiftUI
 
 class LoginViewModel: ObservableObject {
-    @Published var username: String = ""
+    @Published var email: String = ""
     @Published var password: String = ""
     @Published var showingLoginError = false
     @Published var isLoggedIn: Binding<Bool>
@@ -14,7 +14,7 @@ class LoginViewModel: ObservableObject {
     }
 
     func loginUser() {
-        authenticationService.loginUser(username: username, password: password) { [weak self] result in
+        authenticationService.loginUser(email: email, password: password) { [weak self] result in
             switch result {
             case .success():
                 print("Login successful")

@@ -6,7 +6,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const usersTable = process.env.USERS_TABLE;
 
-export const queryUserByUsernameHandler = async (event) => {
+export const getUsersHandler = async (event) => {
     console.info('received:', event);
 
     try {
@@ -25,9 +25,10 @@ export const queryUserByUsernameHandler = async (event) => {
 async function queryUserByUsername(username, page, lastEvaluatedKey) {
     const params = {
         TableName: usersTable,
-        IndexName: 'UsernameIndex',
-        KeyConditionExpression: 'username = :username',
+        IndexName: 'SearchIndex',
+        KeyConditionExpression: 'userAttribute = :userAttribute AND begins_with(attributeValue, :username)',
         ExpressionAttributeValues: {
+            ':userAttribute': 'username',
             ':username': username
         },
         Limit: 10,

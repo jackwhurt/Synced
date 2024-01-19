@@ -103,18 +103,24 @@ async function fetchSpotifyUserId(accessToken) {
     return response.data.id;
 }
 
-async function storeUserCredentials(cognitoId, spotifyUserId) {
-    const params = {
+async function storeUserCredentials(cognitoId, spotifyUserId, usersTable) {
+	const updateParams = {
         TableName: usersTable,
         Key: {
-            cognito_user_id: cognitoId
+            userId: cognitoId
         },
         UpdateExpression: "set spotifyUserId = :suid, updatedAt = :ts",
         ExpressionAttributeValues: {
             ":suid": spotifyUserId,
-            ":ts": Date.now()
+            ":ts": new Date().toISOString()
         }
     };
 
-    await dynamoDbDocumentClient.send(new UpdateCommand(params));
+    try {
+		await dynamoDbDocumentClient.send(new UpdateCommand(updateParams));
+        console.log('User credentials updated successfully');
+    } catch (error) {
+        console.error('Error in storing user credentials:', error);
+        throw error;
+    }
 }

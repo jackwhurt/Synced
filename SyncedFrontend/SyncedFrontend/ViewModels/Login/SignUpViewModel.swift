@@ -3,10 +3,10 @@ import SwiftUI
 class SignUpViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
+    @Published var username: String = ""
     @Published var confirmPassword: String = ""
     @Published var showingSignUpError = false
     @Published var signUpErrorMessage: String = ""
-    @Published var isSignedUp = false
     @Published var passwordValidationMessage: String = ""
     @Published var isLoggedIn: Binding<Bool>
     
@@ -22,16 +22,15 @@ class SignUpViewModel: ObservableObject {
             return
         }
             
-        authenticationService.signUpUser(email: email, password: password) { [weak self] result in
+        authenticationService.signUpUser(email: email, password: password, username: username) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
                     print("Sign up successful")
-                    self?.isSignedUp = true
 
                 case .failure(let error):
                     print("Sign up error: \(error.localizedDescription)")
-                    self?.signUpErrorMessage = error.localizedDescription
+                    self?.signUpErrorMessage = "Failed to sign up. Please try again later"
                     self?.showingSignUpError = true
                 }
             }

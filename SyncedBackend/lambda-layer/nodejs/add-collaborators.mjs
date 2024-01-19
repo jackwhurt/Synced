@@ -65,7 +65,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
 }
 
 async function areValidCollaborators(collaboratorIds, usersTable) {
-    const keysToGet = collaboratorIds.map(id => ({ cognito_user_id: id }));
+    const keysToGet = collaboratorIds.map(id => ({ userId: id }));
     const params = {
         RequestItems: {
             [usersTable]: {
@@ -76,7 +76,7 @@ async function areValidCollaborators(collaboratorIds, usersTable) {
 
     try {
         const { Responses } = await ddbDocClient.send(new BatchGetCommand(params));
-        const foundIds = Responses[usersTable].map(item => item.cognito_user_id);
+        const foundIds = Responses[usersTable].map(item => item.userId);
 
         return collaboratorIds.every(id => foundIds.includes(id));
     } catch (err) {

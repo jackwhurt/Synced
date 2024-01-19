@@ -1,7 +1,7 @@
 import AWSCognitoIdentityProvider
 
 class FallbackAuthenticationService: AuthenticationServiceProtocol {
-    func loginUser(username: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    func loginUser(email: String, password: String, completion: @escaping (Result<Void, Error>) -> Void) {
         completion(.failure(FallbackAuthenticationError.loginNotAvailable))
     }
     
@@ -9,7 +9,7 @@ class FallbackAuthenticationService: AuthenticationServiceProtocol {
         completion(.failure(FallbackAuthenticationError.logoutNotAvailable))
     }
     
-    func signUpUser(email: String, password: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
+    func signUpUser(email: String, password: String, username: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
         completion(.failure(FallbackAuthenticationError.signupNotAvailable))
     }
     

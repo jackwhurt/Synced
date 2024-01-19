@@ -99,7 +99,7 @@ async function getSpotifyUserId(userId, usersTable) {
     const params = {
         TableName: usersTable,
         Key: {
-            cognito_user_id: userId
+            userId: userId
         }
     };
 

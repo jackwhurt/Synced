@@ -7,47 +7,35 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 const usersTable = process.env.USERS_TABLE;
 
 export const createUserHandler = async (event) => {
-	// This function is triggered by a Cognito event, not an API Gateway event,
-	// so we don't check for `event.httpMethod` here.
-	console.info('Received Cognito event:', JSON.stringify(event, null, 2));
+    console.info('Received Cognito event:', JSON.stringify(event, null, 2));
 
-	const cognitoUserId = event.userName;
-	const email = event.request.userAttributes.email;
-	const timestamp = new Date().toISOString();
+    const cognitoUserId = event.userName;
+    const email = event.request.userAttributes.email;
+    const username = event.request.userAttributes['custom:username'] || 'defaultUsername';
+    const timestamp = new Date().toISOString();
 
-	const params = {
-		TableName: usersTable,
-		Item: {
-			cognito_user_id: cognitoUserId,
-			email: email,
-			createdAt: timestamp,
-			updatedAt: timestamp
-		}
-	};
+    try {
+        await addUserToDynamoDB(cognitoUserId, username, email, timestamp);
+        console.info('Success - user added:', cognitoUserId);
+    } catch (err) {
+        console.error('Error adding user to DynamoDB', err);
+    }
 
-	try {
-		const data = await ddbDocClient.send(new PutCommand(params));
-		console.log('Success - user added to DynamoDB', data);
-
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				message: 'User successfully added',
-				userId: cognitoUserId,
-				email: email
-			})
-		};
-
-	} catch (err) {
-		console.error('Error adding user to DynamoDB', err);
-
-		return {
-			statusCode: 500,
-			body: JSON.stringify({
-				message: 'Error adding user to DynamoDB',
-				userId: cognitoUserId,
-				email: email
-			})
-		};
-	}
+    return event;
 };
+
+async function addUserToDynamoDB(userId, username, email, timestamp) {
+    const params = {
+        TableName: usersTable,
+        Item: {
+            userId: userId,
+            userAttribute: 'username',
+            value: username,
+            email: email,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+        }
+    };
+
+    await ddbDocClient.send(new PutCommand(params));
+}
