@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */; };
 		801CC9502B16622A006FB76D /* TextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC94F2B16622A006FB76D /* TextLink.swift */; };
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
@@ -51,12 +52,12 @@
 		80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
 		80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
 		80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB332B22775F00E99BF9 /* ApiService.swift */; };
-		E35596426375EB0DB5A75920 /* Pods_SyncedFrontend.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52CBEB30C2C7D336A526BC4F /* Pods_SyncedFrontend.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		52CBEB30C2C7D336A526BC4F /* Pods_SyncedFrontend.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SyncedFrontend.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Synced.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		70EEB0157DAEF91E69E9404A /* Pods-SyncedFrontend.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.debug.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.debug.xcconfig"; sourceTree = "<group>"; };
+		72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.release.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.release.xcconfig"; sourceTree = "<group>"; };
 		74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.release.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.release.xcconfig"; sourceTree = "<group>"; };
 		801CC94F2B16622A006FB76D /* TextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLink.swift; sourceTree = "<group>"; };
 		801CC9512B167183006FB76D /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
@@ -104,6 +105,7 @@
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
 		80E2EB332B22775F00E99BF9 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
+		D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.debug.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,7 +113,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E35596426375EB0DB5A75920 /* Pods_SyncedFrontend.framework in Frameworks */,
+				61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,7 +281,7 @@
 		885AEAF4EE7D11E35AC0DA93 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				52CBEB30C2C7D336A526BC4F /* Pods_SyncedFrontend.framework */,
+				3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -289,6 +291,8 @@
 			children = (
 				70EEB0157DAEF91E69E9404A /* Pods-SyncedFrontend.debug.xcconfig */,
 				74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */,
+				D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */,
+				72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -368,13 +372,15 @@
 			files = (
 			);
 			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Synced/Pods-Synced-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Synced/Pods-Synced-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Synced/Pods-Synced-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		B7343C8C1833260C8E5E5B79 /* [CP] Check Pods Manifest.lock */ = {
@@ -392,7 +398,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-SyncedFrontend-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Synced-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -578,7 +584,7 @@
 		};
 		805D494E2B0FDE120081B076 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 70EEB0157DAEF91E69E9404A /* Pods-SyncedFrontend.debug.xcconfig */;
+			baseConfigurationReference = D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -615,7 +621,7 @@
 		};
 		805D494F2B0FDE120081B076 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */;
+			baseConfigurationReference = 72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
