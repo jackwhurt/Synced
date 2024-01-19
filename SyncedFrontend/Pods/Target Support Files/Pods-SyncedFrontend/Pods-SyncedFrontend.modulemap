@@ -1,0 +1,6 @@
+framework module Pods_SyncedFrontend {
+  umbrella header "Pods-SyncedFrontend-umbrella.h"
+
+  export *
+  module * { export * }
+}
