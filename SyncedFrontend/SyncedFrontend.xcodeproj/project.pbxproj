@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */; };
+		8002EBDE2B657CBC0017C01A /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDD2B657CBC0017C01A /* ActivityView.swift */; };
+		8002EBE02B658EB70017C01A /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDF2B658EB70017C01A /* Notification.swift */; };
 		801CC9502B16622A006FB76D /* TextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC94F2B16622A006FB76D /* TextLink.swift */; };
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
@@ -61,6 +63,8 @@
 		70EEB0157DAEF91E69E9404A /* Pods-SyncedFrontend.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.debug.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.debug.xcconfig"; sourceTree = "<group>"; };
 		72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.release.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.release.xcconfig"; sourceTree = "<group>"; };
 		74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.release.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.release.xcconfig"; sourceTree = "<group>"; };
+		8002EBDD2B657CBC0017C01A /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		8002EBDF2B658EB70017C01A /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		801CC94F2B16622A006FB76D /* TextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLink.swift; sourceTree = "<group>"; };
 		801CC9512B167183006FB76D /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		801CC9572B167326006FB76D /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
@@ -234,6 +238,7 @@
 				805D49442B0FDE100081B076 /* ContentView.swift */,
 				80AD235B2B154B94003A8E20 /* TestView.swift */,
 				802184E52B4885E90096F702 /* HomeView.swift */,
+				8002EBDD2B657CBC0017C01A /* ActivityView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -294,6 +299,7 @@
 				802184F72B498C620096F702 /* Song.swift */,
 				8023D1F02B4B0BFC000A1C57 /* Paginated.swift */,
 				80D896E42B5B1B8C00543685 /* User.swift */,
+				8002EBDF2B658EB70017C01A /* Notification.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -441,6 +447,7 @@
 				801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */,
 				802184F62B498B1B0096F702 /* Playlist.swift in Sources */,
 				80B82BFF2B49DB5800277AEA /* AsyncImageLoader.swift in Sources */,
+				8002EBE02B658EB70017C01A /* Notification.swift in Sources */,
 				802184F02B497F570096F702 /* CreatePlaylistView.swift in Sources */,
 				805D495C2B0FF8350081B076 /* LongInput.swift in Sources */,
 				802184F42B4986FA0096F702 /* CreatePlaylistViewModel.swift in Sources */,
@@ -463,6 +470,7 @@
 				8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */,
 				8061CE0A2B29EC4400B0FFD6 /* DIContainer.swift in Sources */,
 				802184E42B482F0F0096F702 /* Requests.swift in Sources */,
+				8002EBDE2B657CBC0017C01A /* ActivityView.swift in Sources */,
 				80550D3B2B17D18500678B11 /* ContentViewModel.swift in Sources */,
 				80CE06AC2B2CB23A00D926E2 /* LoadingView.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,

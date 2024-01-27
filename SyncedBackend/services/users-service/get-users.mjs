@@ -15,7 +15,7 @@ export const getUsersHandler = async (event) => {
         const username = event.queryStringParameters.username;
         const page = parseInt(event.queryStringParameters.page || "1", 10);
         const lastEvaluatedKey = event.queryStringParameters.lastEvaluatedKey || null;
-        const result = await queryUserByUsername(username, userId, page, lastEvaluatedKey); // Pass userId to the function
+        const result = await queryUserByUsername(username, userId, page, lastEvaluatedKey);
         console.info('Found: ', result)
 
         return createResponse(200, result);
