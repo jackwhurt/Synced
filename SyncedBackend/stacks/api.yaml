@@ -41,6 +41,8 @@ Parameters:
     Type: String
   UpdateAppleMusicUserTokenFunctionArn:
     Type: String
+  GetRequestsFunctionArn:
+    Type: String
   GetUsersFunctionArn:
     Type: String
   UserPoolId: 
@@ -637,7 +639,36 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/songs/spotify/convert"
   
-  # Users GetUsersFunctionArn
+  # Requests
+  RequestsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: requests
+      RestApiId: !Ref MyApi
+
+  GetRequestsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref RequestsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetRequestsFunctionArn}/invocations"
+
+  GetRequestsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetRequestsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/requests"
+
+  # Users
   UsersResource:
     Type: AWS::ApiGateway::Resource
     Properties:

@@ -20,6 +20,7 @@ Resources:
         PlaylistsTableName: !GetAtt DatabaseStack.Outputs.PlaylistsTableName
         UsersTableName: !GetAtt DatabaseStack.Outputs.UsersTableName
         TokensTableName: !GetAtt DatabaseStack.Outputs.TokensTableName
+        ActivitiesTableName: !GetAtt DatabaseStack.Outputs.ActivitiesTableName
         LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
 
   CognitoStack:
@@ -62,6 +63,7 @@ Resources:
         ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
         GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn
         UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
+        GetRequestsFunctionArn: !GetAtt LambdaStack.Outputs.GetRequestsFunctionArn
         GetUsersFunctionArn: !GetAtt LambdaStack.Outputs.GetUsersFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 

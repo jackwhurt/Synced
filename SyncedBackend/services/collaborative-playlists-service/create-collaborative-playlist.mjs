@@ -11,6 +11,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const activitiesTable = process.env.ACTIVITIES_TABLE
 const MAX_COLLABORATORS = 10;
 
 export const createCollaborativePlaylistHandler = async (event) => {
@@ -89,7 +90,7 @@ function createPlaylistItem(playlistId, userId, playlist, timestamp) {
 
 const handlePlaylistCreation = async (transactItem, playlist, collaborators, userId, spotifyPlaylist) => {
     await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
-    await addCollaborators(playlist.playlistId, collaborators, userId, playlistsTable, usersTable);
+    await addCollaborators(playlist.playlistId, collaborators, userId, playlistsTable, activitiesTable, usersTable);
     if(!spotifyPlaylist) return;
 
     let spotifyPlaylistId;

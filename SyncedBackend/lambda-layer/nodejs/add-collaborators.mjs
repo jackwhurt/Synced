@@ -1,19 +1,20 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const MAX_COLLABORATORS = 10;
 
-export async function addCollaborators(playlistId, collaboratorIds, cognitoUserId, playlistsTable, usersTable) {
+export async function addCollaborators(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable) {
     const timestamp = new Date().toISOString();
 
     if (!await areValidCollaborators(collaboratorIds, usersTable)) {
         throw new Error('Collaborator(s) not found');
     }
 
-    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, timestamp);
+    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
@@ -23,7 +24,7 @@ export async function addCollaborators(playlistId, collaboratorIds, cognitoUserI
     }
 }
 
-function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, timestamp) {
+function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, timestamp) {
     const transactItems = [];
 
     // Increment the counter and add new collaborators atomically
@@ -59,6 +60,20 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                 ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
             }
         });
+
+        if(collaboratorId != cognitoUserId) {
+            transactItems.push({
+                Put: {
+                    TableName: activitiesTable,
+                    Item: {
+                        PK: collaboratorId,
+                        SK: `requestPlaylist#${uuidv4()}`,
+                        createdBy: cognitoUserId,
+                        createdAt: timestamp
+                    }
+                }
+            });
+        }
     }
 
     return transactItems;
