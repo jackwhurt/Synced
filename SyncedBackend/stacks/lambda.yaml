@@ -595,9 +595,12 @@ Resources:
         # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref ActivitiesTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
       Environment:
         Variables:
           ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
   # Users
   GetUsersFunction:

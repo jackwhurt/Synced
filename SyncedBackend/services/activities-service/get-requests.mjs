@@ -1,10 +1,11 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, QueryCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const activitiesTable = process.env.ACTIVITIES_TABLE;
+const playlistsTable = process.env.PLAYLISTS_TABLE;
 
 export const getRequestsHandler = async (event) => {
     console.info('received:', event);
@@ -17,7 +18,7 @@ export const getRequestsHandler = async (event) => {
         const result = await queryRequestsByUserId(userId, page, lastEvaluatedKey);
         console.info('Found: ', result)
 
-        return createResponse(200, result);
+        return createSuccessResponse(200, result);
     } catch (err) {
         console.error('Error querying requests by userId:', err);
         return createErrorResponse(err);
@@ -25,42 +26,87 @@ export const getRequestsHandler = async (event) => {
 }
 
 async function queryRequestsByUserId(userId, page, lastEvaluatedKey) {
+    const queryResult = await executeQuery(userId, lastEvaluatedKey);
+    let items = transformItems(queryResult.Items);
+
+    const playlistIds = extractUniquePlaylistIds(items);
+    if (playlistIds.length > 0) {
+        const playlistTitles = await fetchPlaylistTitles(playlistIds);
+        items = addPlaylistTitlesToItems(items, playlistTitles);
+    }
+
+    console.info(`Page ${page} of requests found for userId: ${userId}`);
+    return formatResponse(items, queryResult.LastEvaluatedKey);
+}
+
+async function executeQuery(userId, lastEvaluatedKey) {
     const params = {
         TableName: activitiesTable,
         KeyConditionExpression: 'PK = :userId AND begins_with(SK, :requestPrefix)',
-        ExpressionAttributeValues: {
-            ':userId': userId,
-            ':requestPrefix': 'request'
-        },
+        ExpressionAttributeValues: { ':userId': userId, ':requestPrefix': 'request' },
         Limit: 10,
+        ExclusiveStartKey: lastEvaluatedKey ? JSON.parse(lastEvaluatedKey) : undefined
     };
 
-    if (lastEvaluatedKey) {
-        params.ExclusiveStartKey = JSON.parse(lastEvaluatedKey);
-    }
+    return await ddbDocClient.send(new QueryCommand(params));
+}
 
-    const result = await ddbDocClient.send(new QueryCommand(params));
+function transformItems(items) {
+    return items.map(({ PK, SK, ...rest }) => ({
+        ...rest,
+        userId: PK,
+        requestId: SK
+    }));
+}
 
-    console.info(`Page ${page} of requests found for userId: ${userId}`);
+function extractUniquePlaylistIds(items) {
+    return [...new Set(items.filter(item => item.requestId.startsWith('requestPlaylist'))
+        .map(item => item.playlistId))];
+}
+
+async function fetchPlaylistTitles(playlistIds) {
+    const keysToGet = playlistIds.map(id => ({ PK: `cp#${id}`, SK: 'metadata' }));
+    const batchParams = { RequestItems: { [playlistsTable]: { Keys: keysToGet } } };
+    const batchResult = await ddbDocClient.send(new BatchGetCommand(batchParams));
+
+    return batchResult.Responses[playlistsTable].reduce((acc, item) => {
+        acc[item.PK.split('#')[1]] = item.title;
+        return acc;
+    }, {});
+}
+
+function addPlaylistTitlesToItems(items, playlistTitles) {
+    return items.map(item => {
+        if (item.requestId.startsWith('requestPlaylist')) {
+            const playlistId = item.playlistId;
+            return { ...item, playlistTitle: playlistTitles[playlistId] || 'Unknown' };
+        }
+        return item;
+    });
+}
+
+function formatResponse(items, lastEvaluatedKey) {
     return {
-        requests: {
-            playlists: result.Items.filter(item => item.SK.startsWith('requestPlaylist')),
-            users: result.Items.filter(item => item.SK.startsWith('requestUser'))
-        },
-        lastEvaluatedKey: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null
+        playlists: items.filter(item => item.requestId.startsWith('requestPlaylist')),
+        users: items.filter(item => item.requestId.startsWith('requestUser')),
+        lastEvaluatedKey: lastEvaluatedKey ? JSON.stringify(lastEvaluatedKey) : null
     };
 }
 
-function createResponse(statusCode, body) {
+function createSuccessResponse(statusCode, body) {
     return {
-        statusCode,
+        statusCode: statusCode,
         body: JSON.stringify(body)
     };
 }
 
-function createErrorResponse(err) {
+function createErrorResponse(error) {
+    console.error('Error: ', error);
+
     return {
-        statusCode: err.statusCode || 500,
-        body: JSON.stringify({ error: err.message })
+        statusCode: error.statusCode || 500,
+        body: JSON.stringify({
+            error: error.message || 'An unknown error occurred'
+        })
     };
 }

@@ -68,6 +68,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     Item: {
                         PK: collaboratorId,
                         SK: `requestPlaylist#${uuidv4()}`,
+                        playlistId: playlistId,
                         createdBy: cognitoUserId,
                         createdAt: timestamp
                     }
