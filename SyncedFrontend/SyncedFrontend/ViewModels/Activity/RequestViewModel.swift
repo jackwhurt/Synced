@@ -27,4 +27,13 @@ class RequestViewModel: ObservableObject {
             }
         }
     }
+    
+    func resolveRequest(requestId: String, result: Bool, spotifyPlaylist: Bool) async {
+        do {
+            try await activityService.resolveRequest(requestId: requestId, result: result, spotifyPlaylist: spotifyPlaylist)
+            print("Successfully resolved request: \(requestId)")
+        } catch {
+            self.errorMessage = "Failed to complete the request. Please try again later."
+        }
+    }
 }

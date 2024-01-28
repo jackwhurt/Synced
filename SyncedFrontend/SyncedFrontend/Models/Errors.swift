@@ -67,5 +67,6 @@ enum UserServiceError: Error {
 
 enum ActivityServiceError: Error {
     case failedToGetRequests
+    case failedToResolveRequests
 }
 

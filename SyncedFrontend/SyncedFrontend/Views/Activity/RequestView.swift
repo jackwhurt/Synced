@@ -21,7 +21,7 @@ struct RequestView: View {
             if selectedTab == .users {
                 UserRequestListView(userRequests: requestViewModel.userRequests)
             } else {
-                PlaylistRequestListView(playlistRequests: requestViewModel.playlistRequests)
+                PlaylistRequestListView(requestViewModel: requestViewModel, playlistRequests: requestViewModel.playlistRequests)
             }
         }
         .navigationBarTitle("Requests", displayMode: .inline)
@@ -55,19 +55,24 @@ struct UserRequestListView: View {
 }
 
 struct PlaylistRequestListView: View {
+    @StateObject var requestViewModel: RequestViewModel
     var playlistRequests: [PlaylistRequest]
-
+    
     var body: some View {
         RequestListView(
             requests: playlistRequests,
             requestText: { "\($0.createdByUsername) invited you to \($0.playlistTitle), will you join?" },
             onAccept: { request in
                 print("Accepted playlist invitation from \(request.createdByUsername)")
-                // Implement accept logic
+               
+//                requestViewModel.resolveRequest(requestId: request.requestId,result: true, spotifyPlaylist: true)
+                
             },
             onReject: { request in
                 print("Rejected playlist invitation from \(request.createdByUsername)")
-                // Implement reject logic
+                Task {
+                    await requestViewModel.resolveRequest(requestId: request.requestId,result: false, spotifyPlaylist: false)
+                }
             }
         )
         .navigationBarTitle("Playlists")

@@ -11,6 +11,11 @@ class APIService {
         let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
         return try await makeRequest(endpoint: urlWithParameters, httpMethod: "GET", model: model)
     }
+    
+    func makePutRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
+        let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
+        return try await makeRequest(endpoint: urlWithParameters, httpMethod: "PUT", model: model)
+    }
 
     func makePostRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B) async throws -> T {
         let bodyData = try JSONEncoder().encode(body)

@@ -79,3 +79,8 @@ struct GetRequestsResponse: Codable {
     let error: String?
 }
 
+struct ResolveRequestResponse: Codable {
+    let message: String?
+    let error: String?
+}
+
