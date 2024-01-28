@@ -45,14 +45,21 @@ class CollaborativePlaylistViewModel: ObservableObject {
         }
     }
     
-    func deleteSong(song: SongMetadata) {
-        songsToDelete.append(song)
-        
-        if let index = playlistSongs.firstIndex(of: song) {
-            playlistSongs.remove(at: index)
+    func deleteSong(from indexSet: IndexSet) {
+        // Ensure there's a valid index
+        guard let index = indexSet.first else { return }
+        let songToDelete = songsToDisplay[index]
+
+        // Check if the song is in songsToAdd
+        if let indexInToAdd = songsToAdd.firstIndex(where: { $0.spotifyUri == songToDelete.spotifyUri }) {
+            songsToAdd.remove(at: indexInToAdd)
+        } else if let indexInPlaylistSongs = playlistSongs.firstIndex(where: { $0.spotifyUri == songToDelete.spotifyUri }) {
+            // If not in songsToAdd, it must be in playlistSongs
+            songsToDelete.append(songToDelete)
+            playlistSongs.remove(at: indexInPlaylistSongs)
         }
     }
-    
+
     func setEditingTrue() {
         self.isEditing = true
         self.savedSongs = self.playlistSongs
@@ -66,6 +73,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 self?.playlistSongs.append(contentsOf: newSongs)
             }
+            await loadPlaylist()
         } catch {
             print("Failed to save changes for playlist \(playlistId): \(error)")
             DispatchQueue.main.async { [weak self] in
@@ -93,6 +101,8 @@ class CollaborativePlaylistViewModel: ObservableObject {
 
     func cancelChanges() {
         playlistSongs = savedSongs
+        songsToAdd = []
+        songsToDelete = []
         setEditingFalse()
     }
     

@@ -12,7 +12,11 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
     try {
         const { userPlaylists, metadataMap } = await getAllPlaylistsMetadata(userId, tableName);
 
-        const playlists = Object.values(metadataMap).map(playlist => {
+        // Filter out playlists with status 'pending'
+        const filteredMetadataMap = Object.values(metadataMap).filter(playlist => playlist.status !== 'pending');
+
+        // Map, transform, and sort the playlists
+        const playlists = filteredMetadataMap.map(playlist => {
             const { PK: id, ...rest } = playlist;
             return { id, ...rest };
         }).sort((a, b) => a.title.localeCompare(b.title));
@@ -29,3 +33,4 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
         };
     }
 };
+

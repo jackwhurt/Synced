@@ -50,6 +50,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     SK: `collaborator#${collaboratorId}`,
                     GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
+                    status: 'pending',
                     createdAt: timestamp,
                     updatedAt: timestamp
                 },
@@ -58,7 +59,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
         });
 
         if (collaboratorId != cognitoUserId) {
-            const username = usernames[collaboratorId] || 'Unknown';
+            const username = usernames[cognitoUserId] || 'Unknown';
             transactItems.push({
                 Put: {
                     TableName: activitiesTable,
