@@ -2,6 +2,7 @@ import axios from 'axios';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
+import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
@@ -64,6 +65,7 @@ export async function createSpotifyPlaylist(playlistDetails, spotifyUser, playli
 
     try {
         await updatePlaylistId(playlistDetails, spotifyPlaylistId, spotifyUser.userId, playlistsTable);
+        await updateCollaboratorSyncStatus(playlistDetails.playlistId, spotifyUser.userId, true, 'spotify', playlistsTable);
     } catch (error) {
         console.error('Error updating Spotify playlist ID: ', error);
         deleteSpotifyPlaylist(spotifyUser, spotifyPlaylistId);

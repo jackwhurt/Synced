@@ -43,6 +43,8 @@ Parameters:
     Type: String
   GetRequestsFunctionArn:
     Type: String
+  ResolvePlaylistRequestFunctionArn:
+    Type: String
   GetUsersFunctionArn:
     Type: String
   UserPoolId: 
@@ -675,6 +677,35 @@ Resources:
       FunctionName: !Ref GetRequestsFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/activities/requests"
+
+  # Activities / Requests / Playlist
+  PlaylistRequestResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref RequestsResource
+      PathPart: playlist
+      RestApiId: !Ref MyApi
+
+  ResolvePlaylistRequestMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: PUT
+      ResourceId: !Ref PlaylistRequestResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ResolvePlaylistRequestFunctionArn}/invocations"
+
+  ResolvePlaylistRequestLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref ResolvePlaylistRequestFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/PUT/activities/requests/playlist"
 
   # Users
   UsersResource:

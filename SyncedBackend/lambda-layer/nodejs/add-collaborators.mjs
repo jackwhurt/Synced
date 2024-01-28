@@ -50,7 +50,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     SK: `collaborator#${collaboratorId}`,
                     GSI1PK: `collaborator#${collaboratorId}`,
                     addedBy: cognitoUserId,
-                    status: 'pending',
+                    requestStatus: 'pending',
                     createdAt: timestamp,
                     updatedAt: timestamp
                 },

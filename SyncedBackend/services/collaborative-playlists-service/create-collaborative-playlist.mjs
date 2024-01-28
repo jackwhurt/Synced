@@ -5,7 +5,6 @@ import { createSpotifyPlaylist } from '/opt/nodejs/streaming-service/create-stre
 import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { addCollaborators } from '/opt/nodejs/add-collaborators.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
-import { updateCollaboratorSyncStatus } from '/opt/nodejs/update-collaborator-sync-status.mjs';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
@@ -110,7 +109,6 @@ async function handleSpotifyPlaylist(playlist, userId) {
     if (!failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ' + userId);
 
     const spotifyPlaylistId = await createSpotifyPlaylist(playlist, spotifyUsers[0], playlistsTable);
-    await updateCollaboratorSyncStatus(playlist.playlistId, userId, true, 'spotify', playlistsTable);
     return spotifyPlaylistId; // Indicate that Spotify playlist was successfully created
 }
 

@@ -27,7 +27,9 @@ async function getUserPlaylists(userId, playlistsTable) {
     };
 
     const queryResult = await ddbDocClient.send(new QueryCommand(queryParams));
-    return queryResult.Items;
+    
+    // Filter out playlists with 'requestStatus' of 'pending'
+    return queryResult.Items.filter(playlist => playlist.requestStatus !== 'pending');
 };
 
 async function getPlaylistsMetadata(playlists, playlistsTable) {
