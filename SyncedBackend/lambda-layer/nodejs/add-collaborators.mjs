@@ -9,12 +9,8 @@ const MAX_COLLABORATORS = 10;
 
 export async function addCollaborators(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable) {
     const timestamp = new Date().toISOString();
-
-    if (!await areValidCollaborators(collaboratorIds, usersTable)) {
-        throw new Error('Collaborator(s) not found');
-    }
-
-    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, timestamp);
+    const usernames = await getCollaboratorsUsername(collaboratorIds, usersTable);
+    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
@@ -24,7 +20,7 @@ export async function addCollaborators(playlistId, collaboratorIds, cognitoUserI
     }
 }
 
-function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, timestamp) {
+function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp) {
     const transactItems = [];
 
     // Increment the counter and add new collaborators atomically
@@ -61,7 +57,8 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
             }
         });
 
-        if(collaboratorId != cognitoUserId) {
+        if (collaboratorId != cognitoUserId) {
+            const username = usernames[collaboratorId] || 'Unknown';
             transactItems.push({
                 Put: {
                     TableName: activitiesTable,
@@ -69,6 +66,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                         PK: collaboratorId,
                         SK: `requestPlaylist#${uuidv4()}`,
                         playlistId: playlistId,
+                        createdByUsername: username,
                         createdBy: cognitoUserId,
                         createdAt: timestamp
                     }
@@ -80,7 +78,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
     return transactItems;
 }
 
-async function areValidCollaborators(collaboratorIds, usersTable) {
+async function getCollaboratorsUsername(collaboratorIds, usersTable) {
     const keysToGet = collaboratorIds.map(id => ({ userId: id }));
     const params = {
         RequestItems: {
@@ -92,12 +90,16 @@ async function areValidCollaborators(collaboratorIds, usersTable) {
 
     try {
         const { Responses } = await ddbDocClient.send(new BatchGetCommand(params));
-        const foundIds = Responses[usersTable].map(item => item.userId);
+        const usernames = Responses[usersTable].reduce((acc, item) => {
+            acc[item.userId] = item.attributeValue;
+            return acc;
+        }, {});
+        const isValid = collaboratorIds.every(id => usernames[id] !== undefined);
+        if (!isValid) throw new Error('Collaborator(s) not found');
 
-        return collaboratorIds.every(id => foundIds.includes(id));
+        return usernames;
     } catch (err) {
-        console.error('Error in BatchGetCommand:', err);
-
-        return false;
+        console.error('Error retrieving collaborators usernames:', err);
+        throw err;
     }
 }

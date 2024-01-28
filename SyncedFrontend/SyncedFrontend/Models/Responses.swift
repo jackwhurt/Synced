@@ -73,3 +73,9 @@ struct GetUsersResponse: Codable {
     let lastEvaluatedKey: Int?
 }
 
+struct GetRequestsResponse: Codable {
+    let requests: Requests?
+    let lastEvaluatedKey: String?
+    let error: String?
+}
+

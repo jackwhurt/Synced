@@ -13,6 +13,10 @@ class DIContainer {
         return APIService(keychainService: provideKeychainService())
     }
     
+    func provideActivityService() -> ActivityService {
+        return ActivityService(apiService: provideAPIService())
+    }
+    
     func provideUserService() -> UserService {
         return UserService(apiService: provideAPIService())
     }

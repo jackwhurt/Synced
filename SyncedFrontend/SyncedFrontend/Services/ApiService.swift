@@ -43,9 +43,14 @@ class APIService {
 
         print("Requesting \(httpMethod): \(request)")
         
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
 
         do {
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Status code: \(httpResponse.statusCode)")
+                print("Headers: \(httpResponse.allHeaderFields)")
+            }
+
             let decodedData = try JSONDecoder().decode(T.self, from: data)
             print("Received: \(decodedData)")
             return decodedData
@@ -53,6 +58,7 @@ class APIService {
             print("Failed to decode data: \(error)")
             throw APIServiceError.failedToDecodeResponse
         }
+
     }
 
     private func appendQueryParameters(to endpoint: String, parameters: [String: String]?) -> String {

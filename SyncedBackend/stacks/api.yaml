@@ -639,11 +639,19 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/songs/spotify/convert"
   
-  # Requests
-  RequestsResource:
+  # Activities
+  ActivitiesResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: activities
+      RestApiId: !Ref MyApi
+
+  # Activities / Requests
+  RequestsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ActivitiesResource
       PathPart: requests
       RestApiId: !Ref MyApi
 
@@ -666,7 +674,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref GetRequestsFunctionArn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/requests"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/activities/requests"
 
   # Users
   UsersResource:

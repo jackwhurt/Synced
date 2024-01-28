@@ -7,14 +7,18 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 const activitiesTable = process.env.ACTIVITIES_TABLE;
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 
+// TODO: Deal with old playlist ids that have been deleted
 export const getRequestsHandler = async (event) => {
     console.info('received:', event);
 
     try {
         const claims = event.requestContext.authorizer?.claims;
         const userId = claims['sub'];
-        const page = parseInt(event.queryStringParameters.page || "1", 10);
-        const lastEvaluatedKey = event.queryStringParameters.lastEvaluatedKey || null;
+
+        const queryStringParameters = event.queryStringParameters || {};
+        const page = parseInt(queryStringParameters.page || "1", 10);
+        const lastEvaluatedKey = queryStringParameters.lastEvaluatedKey || null;
+
         const result = await queryRequestsByUserId(userId, page, lastEvaluatedKey);
         console.info('Found: ', result)
 
@@ -61,7 +65,7 @@ function transformItems(items) {
 
 function extractUniquePlaylistIds(items) {
     return [...new Set(items.filter(item => item.requestId.startsWith('requestPlaylist'))
-        .map(item => item.playlistId))];
+                           .map(item => item.playlistId))];
 }
 
 async function fetchPlaylistTitles(playlistIds) {
@@ -87,8 +91,10 @@ function addPlaylistTitlesToItems(items, playlistTitles) {
 
 function formatResponse(items, lastEvaluatedKey) {
     return {
-        playlists: items.filter(item => item.requestId.startsWith('requestPlaylist')),
-        users: items.filter(item => item.requestId.startsWith('requestUser')),
+        requests: {
+            playlistRequests: items.filter(item => item.requestId.startsWith('requestPlaylist')),
+            userRequests: items.filter(item => item.requestId.startsWith('requestUser'))
+        },
         lastEvaluatedKey: lastEvaluatedKey ? JSON.stringify(lastEvaluatedKey) : null
     };
 }
@@ -102,7 +108,7 @@ function createSuccessResponse(statusCode, body) {
 
 function createErrorResponse(error) {
     console.error('Error: ', error);
-
+    
     return {
         statusCode: error.statusCode || 500,
         body: JSON.stringify({

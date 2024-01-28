@@ -65,3 +65,7 @@ enum UserServiceError: Error {
     case failedToRetrieveUsers
 }
 
+enum ActivityServiceError: Error {
+    case failedToGetRequests
+}
+
