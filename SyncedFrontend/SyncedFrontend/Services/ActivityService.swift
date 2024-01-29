@@ -20,16 +20,14 @@ class ActivityService {
     }
     
     // TODO: Apple music playlists
-    // TODO: Percent encoding with api
     func resolveRequest(requestId: String, result: Bool, spotifyPlaylist: Bool) async throws {
         do {
-            // Percent-encode the requestId to handle special characters like '#'
-            guard let encodedRequestId = requestId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-                throw ActivityServiceError.failedToResolveRequests
-            }
-
-            let endpoint = "/activities/requests/playlist?requestId=\(encodedRequestId)&result=\(result)&spotifyPlaylist=\(spotifyPlaylist)"
-            let response = try await apiService.makePutRequest(endpoint: endpoint, model: ResolveRequestResponse.self)
+            let parameters: [String: String] = [
+                "requestId": requestId,
+                "result": String(result),
+                "spotifyPlaylist": String(spotifyPlaylist)
+            ]
+            let response = try await apiService.makePutRequest(endpoint: "/activities/requests/playlist", model: ResolveRequestResponse.self, parameters: parameters)
             if response.error != nil {
                 throw ActivityServiceError.failedToResolveRequests
             }

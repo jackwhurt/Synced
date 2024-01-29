@@ -32,6 +32,7 @@ class RequestViewModel: ObservableObject {
         do {
             try await activityService.resolveRequest(requestId: requestId, result: result, spotifyPlaylist: spotifyPlaylist)
             print("Successfully resolved request: \(requestId)")
+            loadRequests()
         } catch {
             self.errorMessage = "Failed to complete the request. Please try again later."
         }

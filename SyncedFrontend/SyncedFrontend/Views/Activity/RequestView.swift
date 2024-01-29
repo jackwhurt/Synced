@@ -57,27 +57,62 @@ struct UserRequestListView: View {
 struct PlaylistRequestListView: View {
     @StateObject var requestViewModel: RequestViewModel
     var playlistRequests: [PlaylistRequest]
-    
+    @State private var showingPlaylistOptions = false
+    @State private var selectedRequest: PlaylistRequest?
+
     var body: some View {
         RequestListView(
             requests: playlistRequests,
             requestText: { "\($0.createdByUsername) invited you to \($0.playlistTitle), will you join?" },
             onAccept: { request in
-                print("Accepted playlist invitation from \(request.createdByUsername)")
-               
-//                requestViewModel.resolveRequest(requestId: request.requestId,result: true, spotifyPlaylist: true)
-                
+                selectedRequest = request
+                showingPlaylistOptions = true
             },
             onReject: { request in
                 print("Rejected playlist invitation from \(request.createdByUsername)")
                 Task {
-                    await requestViewModel.resolveRequest(requestId: request.requestId,result: false, spotifyPlaylist: false)
+                    await requestViewModel.resolveRequest(requestId: request.requestId, result: false, spotifyPlaylist: false)
                 }
             }
         )
         .navigationBarTitle("Playlists")
+        .sheet(isPresented: $showingPlaylistOptions) {
+            PlaylistOptionsView { spotifyPlaylist, appleMusicPlaylist in
+                guard let request = selectedRequest else { return }
+                print("Accepted playlist invitation from \(request.createdByUsername)")
+                showingPlaylistOptions = false
+            }
+            .presentationDetents([.fraction(0.3)])
+        }
     }
 }
+
+struct PlaylistOptionsView: View {
+    @State private var spotifyPlaylist = false
+    @State private var appleMusicPlaylist = false
+    var onOptionSelected: (Bool, Bool) -> Void
+
+    var body: some View {
+        VStack {
+            Text("Choose your playlist options")
+                .font(.headline)
+                .padding()
+
+            Toggle("Spotify Playlist", isOn: $spotifyPlaylist)
+                .padding()
+
+            Toggle("Apple Music Playlist", isOn: $appleMusicPlaylist)
+                .padding()
+
+            Button("Confirm") {
+                onOptionSelected(spotifyPlaylist, appleMusicPlaylist)
+            }
+            .padding()
+            .accentColor(.syncedBlue)
+        }
+    }
+}
+
 
 struct RequestListView<Request>: View where Request: Hashable {
     var requests: [Request]
