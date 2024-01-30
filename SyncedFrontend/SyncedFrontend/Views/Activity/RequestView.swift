@@ -7,7 +7,7 @@ struct RequestView: View {
     init() {
         let activityService = DIContainer.shared.provideActivityService()
         let appleMusicService = DIContainer.shared.provideAppleMusicService()
-        _requestViewModel = StateObject(wrappedValue: RequestViewModel(activityService: activityService, appleMusicService: appleMusicService))
+        _requestViewModel = StateObject(wrappedValue: RequestViewModel(activityService: activityService))
     }
     
     var body: some View {

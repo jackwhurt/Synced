@@ -7,7 +7,7 @@ const dynamoDbDocumentClient = DynamoDBDocumentClient.from(new DynamoDBClient({}
 const ssmClient = new SSMClient({});
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
-const redirectUri = 'https://www.google.com';
+const redirectUri = 'syncedapp://callback';
 
 export const spotifyTokenExchangeHandler = async (event) => {
 	try {
@@ -103,7 +103,7 @@ async function fetchSpotifyUserId(accessToken) {
     return response.data.id;
 }
 
-async function storeUserCredentials(cognitoId, spotifyUserId, usersTable) {
+async function storeUserCredentials(cognitoId, spotifyUserId) {
 	const updateParams = {
         TableName: usersTable,
         Key: {

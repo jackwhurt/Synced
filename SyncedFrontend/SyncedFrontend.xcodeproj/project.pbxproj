@@ -49,6 +49,8 @@
 		806485062B66B12800B62C93 /* RequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806485052B66B12800B62C93 /* RequestView.swift */; };
 		806485092B66B1B200B62C93 /* ActivityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806485082B66B1B200B62C93 /* ActivityViewModel.swift */; };
 		8064850B2B66B1BF00B62C93 /* RequestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850A2B66B1BF00B62C93 /* RequestViewModel.swift */; };
+		8064850D2B6923C900B62C93 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850C2B6923C900B62C93 /* ProfileView.swift */; };
+		8064850F2B69259F00B62C93 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850E2B69259F00B62C93 /* ProfileViewModel.swift */; };
 		80AD235C2B154B94003A8E20 /* TestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80AD235B2B154B94003A8E20 /* TestView.swift */; };
 		80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */; };
 		80B82BFF2B49DB5800277AEA /* AsyncImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B82BFE2B49DB5800277AEA /* AsyncImageLoader.swift */; };
@@ -60,6 +62,8 @@
 		80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
 		80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
 		80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB332B22775F00E99BF9 /* ApiService.swift */; };
+		80F9CF832B694455003EAB5F /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF822B694455003EAB5F /* AppSettings.swift */; };
+		80F9CF852B6945FA003EAB5F /* SpotifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF842B6945FA003EAB5F /* SpotifyService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -110,6 +114,8 @@
 		806485052B66B12800B62C93 /* RequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestView.swift; sourceTree = "<group>"; };
 		806485082B66B1B200B62C93 /* ActivityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityViewModel.swift; sourceTree = "<group>"; };
 		8064850A2B66B1BF00B62C93 /* RequestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestViewModel.swift; sourceTree = "<group>"; };
+		8064850C2B6923C900B62C93 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		8064850E2B69259F00B62C93 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		80AD235B2B154B94003A8E20 /* TestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestView.swift; sourceTree = "<group>"; };
 		80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistView.swift; sourceTree = "<group>"; };
 		80B82BFE2B49DB5800277AEA /* AsyncImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AsyncImageLoader.swift; sourceTree = "<group>"; };
@@ -124,6 +130,8 @@
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
 		80E2EB332B22775F00E99BF9 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
+		80F9CF822B694455003EAB5F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		80F9CF842B6945FA003EAB5F /* SpotifyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyService.swift; sourceTree = "<group>"; };
 		D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.debug.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -148,6 +156,7 @@
 				80550D3A2B17D18500678B11 /* ContentViewModel.swift */,
 				80550D3C2B17D3D400678B11 /* TestViewModel.swift */,
 				802184E72B4885F30096F702 /* HomeViewModel.swift */,
+				8064850E2B69259F00B62C93 /* ProfileViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -227,6 +236,7 @@
 				805D49462B0FDE120081B076 /* Assets.xcassets */,
 				805D49482B0FDE120081B076 /* Preview Content */,
 				8061CE092B29EC4400B0FFD6 /* DIContainer.swift */,
+				80F9CF822B694455003EAB5F /* AppSettings.swift */,
 			);
 			path = SyncedFrontend;
 			sourceTree = "<group>";
@@ -248,6 +258,7 @@
 				805D49442B0FDE100081B076 /* ContentView.swift */,
 				80AD235B2B154B94003A8E20 /* TestView.swift */,
 				802184E52B4885E90096F702 /* HomeView.swift */,
+				8064850C2B6923C900B62C93 /* ProfileView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -277,6 +288,7 @@
 				8023D1EE2B4B09E6000A1C57 /* SongService.swift */,
 				80D896E72B5B1BFA00543685 /* UserService.swift */,
 				806485022B66ACF600B62C93 /* ActivityService.swift */,
+				80F9CF842B6945FA003EAB5F /* SpotifyService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -486,16 +498,20 @@
 				8064850B2B66B1BF00B62C93 /* RequestViewModel.swift in Sources */,
 				802184F82B498C620096F702 /* Song.swift in Sources */,
 				80D896E82B5B1BFA00543685 /* UserService.swift in Sources */,
+				80F9CF852B6945FA003EAB5F /* SpotifyService.swift in Sources */,
 				8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */,
 				80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */,
 				80D896E52B5B1B8C00543685 /* User.swift in Sources */,
 				8061CE082B29DAAF00B0FFD6 /* Errors.swift in Sources */,
+				80F9CF832B694455003EAB5F /* AppSettings.swift in Sources */,
 				805D49592B0FF31D0081B076 /* RoundButton.swift in Sources */,
 				8023D1EF2B4B09E6000A1C57 /* SongService.swift in Sources */,
 				806485062B66B12800B62C93 /* RequestView.swift in Sources */,
 				80B82C032B4AC5F400277AEA /* AddSongsView.swift in Sources */,
+				8064850F2B69259F00B62C93 /* ProfileViewModel.swift in Sources */,
 				80550D392B17CB1A00678B11 /* KeychainService.swift in Sources */,
 				80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */,
+				8064850D2B6923C900B62C93 /* ProfileView.swift in Sources */,
 				801CC9522B167183006FB76D /* Logo.swift in Sources */,
 				805D49432B0FDE100081B076 /* SyncedFrontendApp.swift in Sources */,
 				8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */,

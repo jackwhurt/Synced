@@ -1,8 +1,10 @@
 class ActivityService {
     private let apiService: APIService
+    private let appleMusicService: AppleMusicService
     
-    init(apiService: APIService) {
+    init(apiService: APIService, appleMusicService: AppleMusicService) {
         self.apiService = apiService
+        self.appleMusicService = appleMusicService
     }
     
     func getRequests() async throws -> Requests {
@@ -19,11 +21,15 @@ class ActivityService {
         }
     }
     
-    // TODO: Apple music playlists
-    func resolveRequest(requestId: String, result: Bool, spotifyPlaylist: Bool) async throws {
+    // TODO: Rollback
+    func resolveRequest(request: PlaylistRequest, result: Bool, spotifyPlaylist: Bool, appleMusicPlaylist: Bool) async throws {
         do {
+            if appleMusicPlaylist {
+                let response = try await appleMusicService.createAppleMusicPlaylist(title: request.playlistTitle, description: request.playlistDescription, playlistId: request.playlistId)
+                print("Successfully created apple music playlist for request: \(request.requestId)")
+            }
             let parameters: [String: String] = [
-                "requestId": requestId,
+                "requestId": request.requestId,
                 "result": String(result),
                 "spotifyPlaylist": String(spotifyPlaylist)
             ]

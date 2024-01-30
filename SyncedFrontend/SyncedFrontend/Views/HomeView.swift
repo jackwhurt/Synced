@@ -33,12 +33,6 @@ struct HomeView: View {
     }
 }
 
-struct ProfileView: View {
-    var body: some View {
-        Text("Profile View")
-    }
-}
-
 struct PlaceholderView: View {
     var body: some View {
         Text("Placeholder View")

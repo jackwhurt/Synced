@@ -29,6 +29,10 @@ class AppleMusicService {
         }
     }
     
+    func checkCurrentAuthorizationStatus() -> Bool {
+        return (SKCloudServiceController.authorizationStatus() == .authorized)
+    }
+    
     func editPlaylist(appleMusicPlaylistId: String, playlistId: String, songs: [SongMetadata]) async throws {
         do {
             let appleMusicSongs = try convertToMusicKitSongs(from: songs)

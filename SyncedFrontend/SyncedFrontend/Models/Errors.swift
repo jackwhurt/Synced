@@ -70,3 +70,8 @@ enum ActivityServiceError: Error {
     case failedToResolveRequests
 }
 
+enum SpotifyServiceError: Error {
+    case failedToGetSpotifyAuthUrl
+    case failedToExchangeSpotifyToken
+}
+

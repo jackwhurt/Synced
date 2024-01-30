@@ -8,18 +8,20 @@ class APIService {
     }
 
     func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
-        let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
-        return try await makeRequest(endpoint: urlWithParameters, httpMethod: "GET", model: model)
+        return try await makeRequest(endpoint: endpoint, httpMethod: "GET", model: model, parameters: parameters)
     }
     
     func makePutRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
-        let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
-        return try await makeRequest(endpoint: urlWithParameters, httpMethod: "PUT", model: model)
+        return try await makeRequest(endpoint: endpoint, httpMethod: "PUT", model: model, parameters: parameters)
     }
 
-    func makePostRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B) async throws -> T {
+    func makePostRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B, parameters: [String: String]? = nil) async throws -> T {
         let bodyData = try JSONEncoder().encode(body)
-        return try await makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: bodyData)
+        return try await makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: bodyData, parameters: parameters)
+    }
+
+    func makePostRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
+        return try await makeRequest(endpoint: endpoint, httpMethod: "POST", model: model, body: nil, parameters: parameters)
     }
     
     func makeDeleteRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B) async throws -> T {
@@ -27,13 +29,13 @@ class APIService {
         return try await makeRequest(endpoint: endpoint, httpMethod: "DELETE", model: model, body: bodyData)
     }
 
-    // TODO: Error if status code 5xx
-    private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil) async throws -> T {
+    private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil, parameters: [String: String]? = nil) async throws -> T {
         guard let idToken = getIdToken() else {
             throw APIServiceError.tokenRetrievalFailed
         }
-
-        guard let url = getAPIURL(for: endpoint) else {
+        
+        let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
+        guard let url = getAPIURL(for: urlWithParameters) else {
             throw APIServiceError.invalidURL
         }
 
@@ -83,9 +85,9 @@ class APIService {
     }
 
     private func getAPIURL(for endpoint: String) -> URL? {
-        guard let urlString = ProcessInfo.processInfo.environment["API_URL"], let url = URL(string: urlString + endpoint) else {
-            return nil
+        if let url = Bundle.main.object(forInfoDictionaryKey: "API_URL") as? String {
+            return URL(string: url + endpoint)
         }
-        return url
+        return nil
     }
 }

@@ -1,5 +1,7 @@
 import SwiftUI
 
+// TODO: Confirmation alert
+// TODO: No same usernames
 struct SignUpView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var presentationMode
