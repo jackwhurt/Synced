@@ -75,3 +75,7 @@ enum SpotifyServiceError: Error {
     case failedToExchangeSpotifyToken
 }
 
+enum CollaborativePlaylistViewModelError: Error {
+    case noAppleMusicPlaylistIdSet
+}
+

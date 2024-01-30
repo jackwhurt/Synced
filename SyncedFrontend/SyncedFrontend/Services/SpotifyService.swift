@@ -44,7 +44,7 @@ class SpotifyService {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         guard let code = components?.queryItems?.first(where: { $0.name == "code" })?.value,
               let state = components?.queryItems?.first(where: { $0.name == "state" })?.value else {
-            // TODO: Handle the case where code or state is missing
+            print("Code or state not set: failed to handle auth callback")
             return false
         }
 

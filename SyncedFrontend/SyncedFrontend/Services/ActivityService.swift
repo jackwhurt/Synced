@@ -25,7 +25,7 @@ class ActivityService {
     func resolveRequest(request: PlaylistRequest, result: Bool, spotifyPlaylist: Bool, appleMusicPlaylist: Bool) async throws {
         do {
             if appleMusicPlaylist {
-                let response = try await appleMusicService.createAppleMusicPlaylist(title: request.playlistTitle, description: request.playlistDescription, playlistId: request.playlistId)
+                let _ = try await appleMusicService.createAppleMusicPlaylist(title: request.playlistTitle, description: request.playlistDescription, playlistId: request.playlistId)
                 print("Successfully created apple music playlist for request: \(request.requestId)")
             }
             let parameters: [String: String] = [

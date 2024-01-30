@@ -1,14 +1,19 @@
 import Foundation
+import SwiftUI
 
 class ProfileViewModel: ObservableObject {
+    @Binding var isLoggedIn: Bool
     var isAppleMusicConnected = false
     
     private let appleMusicService: AppleMusicService
     private let spotifyService: SpotifyService
+    private let authenticationService: AuthenticationServiceProtocol
     
-    init(appleMusicService: AppleMusicService, spotifyService: SpotifyService) {
+    init(isLoggedIn: Binding<Bool>, appleMusicService: AppleMusicService, spotifyService: SpotifyService, authenticationService: AuthenticationServiceProtocol) {
+        _isLoggedIn = isLoggedIn
         self.appleMusicService = appleMusicService
         self.spotifyService = spotifyService
+        self.authenticationService = authenticationService
         self.isAppleMusicConnected = appleMusicService.checkCurrentAuthorizationStatus()
     }
     
@@ -39,5 +44,18 @@ class ProfileViewModel: ObservableObject {
         }
         
         return nil
+    }
+    
+    func logout() {
+        authenticationService.logoutUser { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self?.isLoggedIn = false
+                case .failure(let error):
+                    print("Logout error: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
