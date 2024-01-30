@@ -7,6 +7,8 @@ class SignUpViewModel: ObservableObject {
     @Published var confirmPassword: String = ""
     @Published var showingSignUpError = false
     @Published var signUpErrorMessage: String = ""
+    @Published var showingSignUpSuccess = false
+    @Published var signUpSuccessMessage: String = ""
     @Published var passwordValidationMessage: String = ""
     @Published var isLoggedIn: Binding<Bool>
     
@@ -27,7 +29,8 @@ class SignUpViewModel: ObservableObject {
                 switch result {
                 case .success:
                     print("Sign up successful")
-
+                    self?.signUpSuccessMessage = "Successfully signed up. Please log in"
+                    self?.showingSignUpSuccess = true
                 case .failure(let error):
                     print("Sign up error: \(error.localizedDescription)")
                     self?.signUpErrorMessage = "Failed to sign up. Please try again later"

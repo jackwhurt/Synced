@@ -69,7 +69,9 @@ struct PlaylistCreationToggles: View {
             Toggle("Spotify Playlist", isOn: Binding(
                 get: { self.createPlaylistViewModel.createSpotifyPlaylist },
                 set: { self.createPlaylistViewModel.createSpotifyPlaylist = $0 }
-            )).disabled(!appSettings.isSpotifyConnected)
+            ))
+//            TODO: Enables when it works
+//            .disabled(!appSettings.isSpotifyConnected)
             
             Toggle("Apple Music Playlist", isOn: Binding(
                 get: { self.createPlaylistViewModel.createAppleMusicPlaylist },
