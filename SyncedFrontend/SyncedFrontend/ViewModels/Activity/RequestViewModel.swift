@@ -6,11 +6,9 @@ class RequestViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
 
     private let activityService: ActivityService
-    private let appleMusicService: AppleMusicService
 
-    init(activityService: ActivityService, appleMusicService: AppleMusicService) {
+    init(activityService: ActivityService) {
         self.activityService = activityService
-        self.appleMusicService = appleMusicService
         loadRequests()
     }
 
@@ -30,14 +28,9 @@ class RequestViewModel: ObservableObject {
         }
     }
     
-    // TODO: Rollback
     func resolveRequest(request: PlaylistRequest, result: Bool, spotifyPlaylist: Bool, appleMusicPlaylist: Bool) async {
         do {
-            if appleMusicPlaylist {
-                let response = try await appleMusicService.createAppleMusicPlaylist(title: request.playlistTitle, description: request.playlistDescription, playlistId: request.playlistId)
-                print("Successfully created apple music playlist for request: \(request.requestId)")
-            }
-            try await activityService.resolveRequest(requestId: request.requestId, result: result, spotifyPlaylist: spotifyPlaylist)
+            try await activityService.resolveRequest(request: request, result: result, spotifyPlaylist: spotifyPlaylist, appleMusicPlaylist: appleMusicPlaylist)
             print("Successfully resolved request: \(request.requestId)")
             loadRequests()
         } catch {

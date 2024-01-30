@@ -1,5 +1,6 @@
 import SwiftUI
 
+// TODO: No same usernames
 struct SignUpView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var presentationMode
@@ -14,16 +15,23 @@ struct SignUpView: View {
                 VStack(spacing: 30) {
                     Logo()
                         .padding(.top, geometry.size.height * 0.04)
-                    
                     SignUpInputFields(signUpViewModel: signUpViewModel)
                     SignUpButton(action: signUpViewModel.signUpUser)
-                    
                     Spacer(minLength: geometry.size.height * 0.1)
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
                 .alert(isPresented: $signUpViewModel.showingSignUpError) {
                     Alert(title: Text("Sign Up Error"), message: Text(signUpViewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
+                }
+                .alert(isPresented: $signUpViewModel.showingSignUpSuccess) {
+                    Alert(
+                        title: Text("Sign Up Success"),
+                        message: Text(signUpViewModel.signUpSuccessMessage),
+                        dismissButton: .default(Text("OK"), action: {
+                            presentationMode.wrappedValue.dismiss()
+                        })
+                    )
                 }
             }
             .background(Color("SyncedBackground"))

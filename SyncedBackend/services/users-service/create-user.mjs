@@ -17,8 +17,11 @@ export const createUserHandler = async (event) => {
     try {
         await addUserToDynamoDB(cognitoUserId, username, email, timestamp);
         console.info('Success - user added:', cognitoUserId);
+        // Auto-confirm the user
+        event.response.autoConfirmUser = true;
     } catch (err) {
         console.error('Error adding user to DynamoDB', err);
+        return;
     }
 
     return event;
@@ -30,7 +33,7 @@ async function addUserToDynamoDB(userId, username, email, timestamp) {
         Item: {
             userId: userId,
             userAttribute: 'username',
-            value: username,
+            attributeValue: username,
             email: email,
             createdAt: timestamp,
             updatedAt: timestamp,

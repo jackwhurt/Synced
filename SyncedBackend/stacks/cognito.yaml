@@ -11,8 +11,7 @@ Resources:
       UserPoolName: SyncedUserPool
       UsernameAttributes:
         - email
-      AutoVerifiedAttributes:
-        - email
+      AutoVerifiedAttributes: []
       Policies:
         PasswordPolicy:
           MinimumLength: 8
@@ -24,11 +23,11 @@ Resources:
         - Name: email
           Required: true
           Mutable: false
-      # DELETE
         - Name: custom:username
           AttributeDataType: String
           Mutable: true
           Required: false
+      # TODO: DELETE username - requires creating a new pool...
         - Name: username
           AttributeDataType: String
           Mutable: true

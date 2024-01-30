@@ -2,8 +2,10 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var homeViewModel: HomeViewModel
+    @Binding var isLoggedIn: Bool
     
     init(isLoggedIn: Binding<Bool>) {
+        _isLoggedIn = isLoggedIn
         _homeViewModel = StateObject(wrappedValue: HomeViewModel(isLoggedIn: isLoggedIn))
     }
     
@@ -13,29 +15,17 @@ struct HomeView: View {
                 .tabItem {
                     Label("", systemImage: "music.note.list")
                 }
-
-            // TODO: Remove
-            TestView(isLoggedIn: .constant(true))
-                .tabItem {
-                    Label("", systemImage: "ellipsis.circle.fill")
-                }
             
             ActivityView()
                 .tabItem {
                     Label("", systemImage: "person.3")
                 }
             
-            ProfileView()
+            ProfileView(isLoggedIn: $isLoggedIn)
                 .tabItem {
                     Label("", systemImage: "person")
                 }
         }.accentColor(Color("SyncedBlue"))
-    }
-}
-
-struct ProfileView: View {
-    var body: some View {
-        Text("Profile View")
     }
 }
 

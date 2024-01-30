@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 const ssmClient = new SSMClient({});
 const dynamoDbClient = new DynamoDBClient({});
 const tokensTable = process.env.TOKENS_TABLE;
-const redirectUrl = 'https://www.google.com';
+const redirectUrl = 'syncedapp://callback';
 
 export const spotifyAuthUrlHandler = async (event) => {
 	try {
@@ -18,10 +18,7 @@ export const spotifyAuthUrlHandler = async (event) => {
 
 		const authoriseURL = buildSpotifyAuthUrl(clientId, stateUuid);
 
-		return {
-			statusCode: 302,
-			headers: { Location: authoriseURL }
-		};
+		return { statusCode: 302, body: JSON.stringify({ Location: authoriseURL }) };
 	} catch (error) {
 		console.error('Error in spotifyAuthUrlHandler:', error);
 

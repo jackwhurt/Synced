@@ -85,7 +85,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     func deletePlaylist() async {
         do {
-            let deletedPlaylistId = try await collaborativePlaylistService.deletePlaylist(playlistId: playlistId)
+            let deletedPlaylistId = try await collaborativePlaylistService.deletePlaylist(playlistId: playlistId, appleMusicPlaylistId: appleMusicPlaylistId)
             print("Successfully deleted playlist \(deletedPlaylistId)")
             DispatchQueue.main.async { [weak self] in
                 self?.dismissAction?()

@@ -2,8 +2,9 @@ import SwiftUI
 
 struct CreatePlaylistView: View {
     @Environment(\.dismiss) var dismiss
-    @StateObject private var createPlaylistViewModel: CreatePlaylistViewModel
+    @EnvironmentObject var appSettings: AppSettings
     @State private var showErrorAlert = false
+    @StateObject private var createPlaylistViewModel: CreatePlaylistViewModel
     
     init(collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel) {
         _createPlaylistViewModel = StateObject(wrappedValue: CreatePlaylistViewModel(collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(), userService: DIContainer.shared.provideUserService(), collaborativePlaylistViewModel: collaborativePlaylistViewModel))
@@ -14,8 +15,7 @@ struct CreatePlaylistView: View {
             Form {
                 TitleSection(title: $createPlaylistViewModel.title)
                 DescriptionSection(description: $createPlaylistViewModel.description)
-                PlaylistCreationToggles(createSpotifyPlaylist: $createPlaylistViewModel.createSpotifyPlaylist,
-                    createAppleMusicPlaylist: $createPlaylistViewModel.createAppleMusicPlaylist)
+                PlaylistCreationToggles(createPlaylistViewModel: createPlaylistViewModel)
                 CollaboratorsSection(collaborators: $createPlaylistViewModel.collaborators,
                     usernameQuery: $createPlaylistViewModel.usernameQuery,
                     deleteCollaborator: createPlaylistViewModel.deleteCollaborator,
@@ -61,13 +61,28 @@ struct DescriptionSection: View {
 }
 
 struct PlaylistCreationToggles: View {
-    @Binding var createSpotifyPlaylist: Bool
-    @Binding var createAppleMusicPlaylist: Bool
+    @StateObject var createPlaylistViewModel: CreatePlaylistViewModel
+    @EnvironmentObject var appSettings: AppSettings
 
     var body: some View {
         Section(header: Text("Streaming Service Playlists")) {
-            Toggle("Spotify Playlist", isOn: $createSpotifyPlaylist)
-            Toggle("Apple Music Playlist", isOn: $createAppleMusicPlaylist)
+            Toggle("Spotify Playlist", isOn: Binding(
+                get: { self.createPlaylistViewModel.createSpotifyPlaylist },
+                set: { self.createPlaylistViewModel.createSpotifyPlaylist = $0 }
+            ))
+//            TODO: Enables when it works
+//            .disabled(!appSettings.isSpotifyConnected)
+            
+            Toggle("Apple Music Playlist", isOn: Binding(
+                get: { self.createPlaylistViewModel.createAppleMusicPlaylist },
+                set: { self.createPlaylistViewModel.createAppleMusicPlaylist = $0 }
+            )).disabled(!appSettings.isAppleMusicConnected)
+            
+            if !appSettings.isSpotifyConnected || !appSettings.isAppleMusicConnected {
+                Text(createPlaylistViewModel.getWarningMessage(spotify: appSettings.isSpotifyConnected, appleMusic: appSettings.isAppleMusicConnected))
+                    .foregroundColor(.red)
+                    .font(.caption)
+            }
         }
     }
 }

@@ -50,9 +50,13 @@ class CollaborativePlaylistService {
         }
     }
     
-    // TODO: Delete apple music playlist
-    func deletePlaylist(playlistId: String) async throws -> String {
+    func deletePlaylist(playlistId: String, appleMusicPlaylistId: String?) async throws -> String {
         do {
+            if let id = appleMusicPlaylistId {
+                let playlist = try await musicKitService.getPlaylist(id: id)
+                try await self.musicKitService.softDeletePlaylist(playlist: playlist)
+                print("Successfully soft deleted apple music playlist, id: \(id)")
+            }
             let deletedPlaylistId = try await deleteBackendPlaylist(playlistId: playlistId)
             print("Successfully deleted backend playlist, id: \(deletedPlaylistId)")
             return deletedPlaylistId

@@ -64,4 +64,17 @@ class CreatePlaylistViewModel: ObservableObject {
             return []
         }
     }
+    
+    func getWarningMessage(spotify: Bool, appleMusic: Bool) -> String {
+        switch (spotify, appleMusic) {
+        case (false, false):
+            return "Neither Spotify nor Apple Music is connected."
+        case (false, true):
+            return "Spotify is not connected."
+        case (true, false):
+            return "Apple Music is not connected."
+        default:
+            return ""
+        }
+    }
 }
