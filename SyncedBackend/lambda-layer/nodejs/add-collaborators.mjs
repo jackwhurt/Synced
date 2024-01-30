@@ -42,22 +42,6 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
     });
 
     for (let collaboratorId of collaboratorIds) {
-        transactItems.push({
-            Put: {
-                TableName: playlistsTable,
-                Item: {
-                    PK: `cp#${playlistId}`,
-                    SK: `collaborator#${collaboratorId}`,
-                    GSI1PK: `collaborator#${collaboratorId}`,
-                    addedBy: cognitoUserId,
-                    requestStatus: 'pending',
-                    createdAt: timestamp,
-                    updatedAt: timestamp
-                },
-                ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
-            }
-        });
-
         if (collaboratorId != cognitoUserId) {
             const username = usernames[cognitoUserId] || 'Unknown';
             transactItems.push({
@@ -71,6 +55,37 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                         createdBy: cognitoUserId,
                         createdAt: timestamp
                     }
+                }
+            });
+            transactItems.push({
+                Put: {
+                    TableName: playlistsTable,
+                    Item: {
+                        PK: `cp#${playlistId}`,
+                        SK: `collaborator#${collaboratorId}`,
+                        GSI1PK: `collaborator#${collaboratorId}`,
+                        addedBy: cognitoUserId,
+                        requestStatus: 'pending',
+                        createdAt: timestamp,
+                        updatedAt: timestamp
+                    },
+                    ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+                }
+            });
+        } else {
+            transactItems.push({
+                Put: {
+                    TableName: playlistsTable,
+                    Item: {
+                        PK: `cp#${playlistId}`,
+                        SK: `collaborator#${collaboratorId}`,
+                        GSI1PK: `collaborator#${collaboratorId}`,
+                        addedBy: cognitoUserId,
+                        requestStatus: 'accepted',
+                        createdAt: timestamp,
+                        updatedAt: timestamp
+                    },
+                    ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
                 }
             });
         }

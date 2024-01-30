@@ -1,6 +1,7 @@
 struct PlaylistRequest: Codable, Hashable {
     let playlistId: String
     let playlistTitle: String
+    let playlistDescription: String
     let userId: String
     let requestId: String
     let createdBy: String

@@ -50,6 +50,7 @@ class CollaborativePlaylistService {
         }
     }
     
+    // TODO: Delete apple music playlist
     func deletePlaylist(playlistId: String) async throws -> String {
         do {
             let deletedPlaylistId = try await deleteBackendPlaylist(playlistId: playlistId)
@@ -190,8 +191,12 @@ class CollaborativePlaylistService {
                     deleteFlagsToDelete.append(playlistUpdate.playlistId)
                 }
             } catch {
-                print("Failed to update playlist for apple music id: \(playlistUpdate.appleMusicPlaylistId): \(error)")
-                throw AppleMusicServiceError.playlistUpdateFailed
+                if case MusicKitError.playlistNotInLibrary = error {
+                    deleteFlagsToDelete.append(playlistUpdate.playlistId)
+                } else {
+                    print("Failed to update playlist for apple music id: \(playlistUpdate.appleMusicPlaylistId): \(error)")
+                    throw AppleMusicServiceError.playlistUpdateFailed
+                }
             }
         }
         return deleteFlagsToDelete

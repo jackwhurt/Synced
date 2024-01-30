@@ -35,8 +35,8 @@ async function queryRequestsByUserId(userId, page, lastEvaluatedKey) {
 
     const playlistIds = extractUniquePlaylistIds(items);
     if (playlistIds.length > 0) {
-        const playlistTitles = await fetchPlaylistTitles(playlistIds);
-        items = addPlaylistTitlesToItems(items, playlistTitles);
+        const playlistMetadata = await fetchPlaylistMetadata(playlistIds);
+        items = addPlaylistMetadataToItems(items, playlistMetadata);
     }
 
     console.info(`Page ${page} of requests found for userId: ${userId}`);
@@ -68,22 +68,23 @@ function extractUniquePlaylistIds(items) {
                            .map(item => item.playlistId))];
 }
 
-async function fetchPlaylistTitles(playlistIds) {
+async function fetchPlaylistMetadata(playlistIds) {
     const keysToGet = playlistIds.map(id => ({ PK: `cp#${id}`, SK: 'metadata' }));
     const batchParams = { RequestItems: { [playlistsTable]: { Keys: keysToGet } } };
     const batchResult = await ddbDocClient.send(new BatchGetCommand(batchParams));
 
     return batchResult.Responses[playlistsTable].reduce((acc, item) => {
-        acc[item.PK.split('#')[1]] = item.title;
+        acc[item.PK.split('#')[1]] = { title: item.title, description: item.description };
         return acc;
     }, {});
 }
 
-function addPlaylistTitlesToItems(items, playlistTitles) {
+function addPlaylistMetadataToItems(items, playlistMetadata) {
     return items.map(item => {
         if (item.requestId.startsWith('requestPlaylist')) {
             const playlistId = item.playlistId;
-            return { ...item, playlistTitle: playlistTitles[playlistId] || 'Unknown' };
+            const metadata = playlistMetadata[playlistId] || {};
+            return { ...item, playlistTitle: metadata.title || 'Unknown', playlistDescription: metadata.description || 'No description' };
         }
         return item;
     });
