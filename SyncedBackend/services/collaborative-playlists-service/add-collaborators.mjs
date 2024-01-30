@@ -4,6 +4,7 @@ import { isCollaboratorInPlaylist } from '/opt/nodejs/playlist-validator.mjs';
 
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const activitiesTable = process.env.ACTIVITIES_TABLE
 
 export const addCollaboratorsHandler = async (event) => {
     console.info('received:', event);
@@ -14,7 +15,7 @@ export const addCollaboratorsHandler = async (event) => {
     if (validationResponse) return validationResponse;
 
     try {
-        await addCollaborators(playlistId, collaboratorIds, claims['sub'], playlistsTable, usersTable);
+        await addCollaborators(playlistId, collaboratorIds, claims['sub'], playlistsTable, activitiesTable, usersTable);
 
         return {
             statusCode: 200,

@@ -53,7 +53,7 @@ async function processPlaylistItems(items, userId) {
 	let collaborators = [], playlistMetadata = null, songs = [], appleMusicPlaylistId = '';
 	const userIds = items
 		.filter(item => item.SK.startsWith('collaborator#'))
-		.map(item => ({ cognito_user_id: item.GSI1PK.split('#')[1] }));
+		.map(item => ({ userId: item.GSI1PK.split('#')[1] }));
 
 	const userItem = items.find(item => item.SK === `collaborator#${userId}`);
 	if (userItem && userItem.appleMusicPlaylistId) {

@@ -3,24 +3,29 @@ import Foundation
 class CreatePlaylistViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var description: String = ""
-    @Published var collaborators: [String] = []
-    @Published var newCollaborator: String = ""
+    @Published var collaborators: [UserMetadata] = []
+    @Published var newCollaborator: UserMetadata?
+    @Published var usernameQuery: String = ""
     @Published var errorMessage: String?
     @Published var createSpotifyPlaylist: Bool = false
     @Published var createAppleMusicPlaylist: Bool = false
     private let collaborativePlaylistService: CollaborativePlaylistService
+    private let userService: UserService
     private let collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel
 
-    init(collaborativePlaylistService: CollaborativePlaylistService, collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel) {
+    // TODO: Refactor viewmodel out
+    init(collaborativePlaylistService: CollaborativePlaylistService, userService: UserService, collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel) {
         self.collaborativePlaylistService = collaborativePlaylistService
+        self.userService = userService
         self.collaborativePlaylistViewModel = collaborativePlaylistViewModel
     }
     
     func addNewCollaborator() {
-        if !newCollaborator.isEmpty {
-            collaborators.append(newCollaborator)
-            newCollaborator = ""
+        guard let collaborator = newCollaborator else {
+            return
         }
+        collaborators.append(collaborator)
+        newCollaborator = nil
     }
 
     func deleteCollaborator(at offsets: IndexSet) {
@@ -29,7 +34,10 @@ class CreatePlaylistViewModel: ObservableObject {
 
     func save() async {
         let playlist = CollaborativePlaylist(title: title, description: description, songs: [])
-        let request = CreateCollaborativePlaylistRequest(playlist: playlist, collaborators: collaborators, spotifyPlaylist: createSpotifyPlaylist, appleMusicPlaylist: createAppleMusicPlaylist)
+        let request = CreateCollaborativePlaylistRequest(playlist: playlist,
+            collaborators: collaborators.map { $0.userId },
+            spotifyPlaylist: createSpotifyPlaylist,
+            appleMusicPlaylist: createAppleMusicPlaylist)
         
         do {
             let backendPlaylistId = try await collaborativePlaylistService.createPlaylist(request: request)
@@ -43,5 +51,17 @@ class CreatePlaylistViewModel: ObservableObject {
         
         await collaborativePlaylistViewModel.loadPlaylists()
     }
-
+    
+    func searchUsers(usernameQuery: String, page: Int) async -> [UserMetadata] {
+        do {
+            let response = try await userService.getUsers(usernameQuery: usernameQuery, page: page)
+            return response.users
+        } catch {
+            print("Failed to retrieve users")
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Failed to retrieve users, please try again later"
+            }
+            return []
+        }
+    }
 }

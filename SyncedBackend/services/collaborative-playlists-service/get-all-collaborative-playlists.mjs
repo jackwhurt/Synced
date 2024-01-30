@@ -11,8 +11,10 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
 
     try {
         const { userPlaylists, metadataMap } = await getAllPlaylistsMetadata(userId, tableName);
+        const map = Object.values(metadataMap);
 
-        const playlists = Object.values(metadataMap).map(playlist => {
+        // Map, transform, and sort the playlists
+        const playlists = map.map(playlist => {
             const { PK: id, ...rest } = playlist;
             return { id, ...rest };
         }).sort((a, b) => a.title.localeCompare(b.title));
@@ -29,3 +31,4 @@ export const getAllCollaborativePlaylistsHandler = async (event) => {
         };
     }
 };
+

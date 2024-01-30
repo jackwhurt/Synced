@@ -6,7 +6,7 @@ struct CreatePlaylistView: View {
     @State private var showErrorAlert = false
     
     init(collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel) {
-        _createPlaylistViewModel = StateObject(wrappedValue: CreatePlaylistViewModel(collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(), collaborativePlaylistViewModel: collaborativePlaylistViewModel))
+        _createPlaylistViewModel = StateObject(wrappedValue: CreatePlaylistViewModel(collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(), userService: DIContainer.shared.provideUserService(), collaborativePlaylistViewModel: collaborativePlaylistViewModel))
     }
 
     var body: some View {
@@ -16,7 +16,10 @@ struct CreatePlaylistView: View {
                 DescriptionSection(description: $createPlaylistViewModel.description)
                 PlaylistCreationToggles(createSpotifyPlaylist: $createPlaylistViewModel.createSpotifyPlaylist,
                     createAppleMusicPlaylist: $createPlaylistViewModel.createAppleMusicPlaylist)
-                CollaboratorsSection(collaborators: $createPlaylistViewModel.collaborators, newCollaborator: $createPlaylistViewModel.newCollaborator, addCollaborator: createPlaylistViewModel.addNewCollaborator, deleteCollaborator: createPlaylistViewModel.deleteCollaborator)
+                CollaboratorsSection(collaborators: $createPlaylistViewModel.collaborators,
+                    usernameQuery: $createPlaylistViewModel.usernameQuery,
+                    deleteCollaborator: createPlaylistViewModel.deleteCollaborator,
+                    searchCollaborators: createPlaylistViewModel.searchUsers)
             }
             .navigationBarTitle("New Playlist", displayMode: .inline)
             .navigationBarItems(leading: Button("Cancel", action: { dismiss() }), trailing: Button("Save", action: {
@@ -70,19 +73,54 @@ struct PlaylistCreationToggles: View {
 }
 
 struct CollaboratorsSection: View {
-    @Binding var collaborators: [String]
-    @Binding var newCollaborator: String
-    var addCollaborator: () -> Void
+    @Binding var collaborators: [UserMetadata]
+    @Binding var usernameQuery: String
     var deleteCollaborator: (IndexSet) -> Void
+    var searchCollaborators: (String, Int) async -> [UserMetadata]
+
+    @State private var searchResults = [UserMetadata]()
+    @State private var isSearching = false
 
     var body: some View {
         Section(header: Text("Collaborators")) {
+            // Displaying selected collaborators
             ForEach(collaborators, id: \.self) { collaborator in
-                Text(collaborator)
+                Text(collaborator.username)
+                    .foregroundColor(.syncedBlue)
+                    .padding(.vertical, 4)
             }
             .onDelete(perform: deleteCollaborator)
-            TextField("New Collaborator", text: $newCollaborator)
-            Button("Add Collaborator", action: addCollaborator)
+
+            TextField("Search users", text: $usernameQuery)
+                .onChange(of: usernameQuery) {
+                    if usernameQuery.isEmpty {
+                        searchResults = []
+                        isSearching = false
+                    } else {
+                        Task {
+                            let results = await searchCollaborators(usernameQuery, 1)
+                            searchResults = results.filter { !collaborators.contains($0) }
+                            isSearching = true
+                        }
+                    }
+                }
+
+            // Displaying search results or a message if no results are found
+            if isSearching {
+                if searchResults.isEmpty {
+                    Text("No users found")
+                        .foregroundColor(.syncedErrorRed)
+                } else {
+                    ForEach(searchResults, id: \.self) { result in
+                        Text(result.username)
+                            .onTapGesture {
+                                collaborators.append(result)
+                                usernameQuery = ""
+                                isSearching = false
+                            }
+                    }
+                }
+            }
         }
     }
 }

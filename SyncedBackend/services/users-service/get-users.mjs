@@ -6,14 +6,17 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const usersTable = process.env.USERS_TABLE;
 
-export const queryUserByUsernameHandler = async (event) => {
+export const getUsersHandler = async (event) => {
     console.info('received:', event);
 
     try {
+        const claims = event.requestContext.authorizer?.claims;
+        const userId = claims['sub'];
         const username = event.queryStringParameters.username;
         const page = parseInt(event.queryStringParameters.page || "1", 10);
         const lastEvaluatedKey = event.queryStringParameters.lastEvaluatedKey || null;
-        const result = await queryUserByUsername(username, page, lastEvaluatedKey);
+        const result = await queryUserByUsername(username, userId, page, lastEvaluatedKey);
+        console.info('Found: ', result)
 
         return createResponse(200, result);
     } catch (err) {
@@ -22,12 +25,13 @@ export const queryUserByUsernameHandler = async (event) => {
     }
 }
 
-async function queryUserByUsername(username, page, lastEvaluatedKey) {
+async function queryUserByUsername(username, userId, page, lastEvaluatedKey) {
     const params = {
         TableName: usersTable,
-        IndexName: 'UsernameIndex',
-        KeyConditionExpression: 'username = :username',
+        IndexName: 'SearchIndex',
+        KeyConditionExpression: 'userAttribute = :userAttribute AND begins_with(attributeValue, :username)',
         ExpressionAttributeValues: {
+            ':userAttribute': 'username',
             ':username': username
         },
         Limit: 10,
@@ -39,13 +43,19 @@ async function queryUserByUsername(username, page, lastEvaluatedKey) {
 
     const result = await ddbDocClient.send(new QueryCommand(params));
 
-    if (!result.Items || result.Items.length === 0) {
-        throw new Error('No matching user found in the database.');
-    }
+    const users = result.Items
+        .filter(item => item.userId !== userId)
+        .map(item => {
+            const { attributeValue, ...rest } = item;
+            return {
+                ...rest,
+                username: attributeValue
+            };
+        });
 
     console.info(`Page ${page} of users found with username: ${username}`);
     return {
-        items: result.Items,
+        users: users,
         lastEvaluatedKey: result.LastEvaluatedKey ? JSON.stringify(result.LastEvaluatedKey) : null
     };
 }

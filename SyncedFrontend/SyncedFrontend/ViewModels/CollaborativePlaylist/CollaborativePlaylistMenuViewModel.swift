@@ -8,6 +8,7 @@ class CollaborativePlaylistMenuViewModel: ObservableObject {
         self.collaborativePlaylistService = collaborativePlaylistService
     }
 
+    // TODO: Call loadplaylists everytime you go back. Then can refactor viewmodel out of create playlist viewmodel
     func loadPlaylists() async {
         do {
             let loadedPlaylists = try await collaborativePlaylistService.getPlaylists()
@@ -21,9 +22,5 @@ class CollaborativePlaylistMenuViewModel: ObservableObject {
                 print("Failed to load playlists: \(error)")
             }
         }
-    }
-    
-    func createPlaylist() async {
-        
     }
 }

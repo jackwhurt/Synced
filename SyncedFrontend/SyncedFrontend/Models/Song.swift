@@ -1,4 +1,4 @@
-struct SongMetadata: Codable, Hashable {
+struct SongMetadata: Codable, Hashable, Equatable {
     let songId: String?
     let title: String
     let album: String?

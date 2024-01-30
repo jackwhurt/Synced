@@ -8,9 +8,9 @@ struct AddSongsView: View {
     @FocusState private var isTextFieldFocused: Bool
     @Environment(\.presentationMode) var presentationMode
     
-    init(showSheet: Binding<Bool>, songsToAdd: Binding<[SongMetadata]>) {
+    init(showSheet: Binding<Bool>, songsToAdd: Binding<[SongMetadata]>, playlistSongs: [SongMetadata]) {
         _showSheet = showSheet
-        _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService(), songsToAdd: songsToAdd))
+        _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService(), playlistSongs: playlistSongs, songsToAdd: songsToAdd))
     }
     
     var body: some View {
@@ -93,7 +93,7 @@ struct SongRowToAdd: View {
             Button(action: {
                 addSongsViewModel.toggleSongSelection(song: song)
             }) {
-                Image(systemName: addSongsViewModel.selectedSongs.contains(song) ? "checkmark" : "plus")
+                Image(systemName: addSongsViewModel.containsSong(song: song) ? "checkmark" : "plus")
             }
         }
     }
@@ -103,7 +103,7 @@ struct AddSongsView_Previews: PreviewProvider {
     @State static var dummySongsToAdd: [SongMetadata] = []
     
     static var previews: some View {
-        AddSongsView(showSheet: .constant(true), songsToAdd: $dummySongsToAdd)
+        AddSongsView(showSheet: .constant(true), songsToAdd: $dummySongsToAdd, playlistSongs: [])
     }
 }
 

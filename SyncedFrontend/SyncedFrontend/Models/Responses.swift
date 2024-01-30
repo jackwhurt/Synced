@@ -55,14 +55,32 @@ struct DeleteCollaborativePlaylistResponse: Codable {
 }
 
 struct DeleteSongsResponse: Codable {
-    let message: String
+    let message: String?
+    let error: String?
 }
 
 struct AddSongsResponse: Codable {
-    let message: String
+    let message: String?
+    let error: String?
 }
 
 struct DeleteAppleMusicDeleteFlagsResponse: Codable {
     let message: String
+}
+
+struct GetUsersResponse: Codable {
+    let users: [UserMetadata]
+    let lastEvaluatedKey: Int?
+}
+
+struct GetRequestsResponse: Codable {
+    let requests: Requests?
+    let lastEvaluatedKey: String?
+    let error: String?
+}
+
+struct ResolveRequestResponse: Codable {
+    let message: String?
+    let error: String?
 }
 

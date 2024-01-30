@@ -1,5 +1,6 @@
 import SwiftUI
 
+// TODO: Show collaborators
 struct CollaborativePlaylistView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var collaborativePlaylistViewModel: CollaborativePlaylistViewModel
@@ -28,10 +29,8 @@ struct CollaborativePlaylistView: View {
                             showingAddSongsSheet = true
                          },
                          onDelete: { indexSet in
-                            guard let index = indexSet.first else { return }
-                            let songToDelete = collaborativePlaylistViewModel.songsToDisplay[index]
-                            collaborativePlaylistViewModel.deleteSong(song: songToDelete)
-                        })
+                            collaborativePlaylistViewModel.deleteSong(from: indexSet)
+                         })
 
                 if collaborativePlaylistViewModel.songsToDisplay.isEmpty {
                     Text("Playlist is empty")
@@ -48,7 +47,7 @@ struct CollaborativePlaylistView: View {
         .navigationBarBackButtonHidden(collaborativePlaylistViewModel.isEditing)
         .toolbar { navigationBarMenu() }
         .sheet(isPresented: $showingAddSongsSheet) {
-            AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: $collaborativePlaylistViewModel.songsToAdd)
+            AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: $collaborativePlaylistViewModel.songsToAdd, playlistSongs: collaborativePlaylistViewModel.playlistSongs)
         }
         .onAppear {
             collaborativePlaylistViewModel.dismissAction = {

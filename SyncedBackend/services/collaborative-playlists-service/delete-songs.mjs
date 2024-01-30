@@ -24,11 +24,16 @@ export const deleteSongsHandler = async (event) => {
 
     try {
         ({ collaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaborators(playlistId));
+    } catch (err) {
+        console.error('Error in collaborator preparation:', err);
+        return buildErrorResponse(err);
+    }
 
+    try {
         transactItems = buildTransactItems(playlistId, songs);
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
     } catch (err) {
-        console.error('Error in collaborator preparation:', err);
+        console.error('Error writing to the DB:', err);
         return buildErrorResponse(err);
     }
 
@@ -95,7 +100,7 @@ function buildTransactItems(playlistId, songs) {
             },
             ExpressionAttributeValues: {
                 ':decr': -songs.length,
-                ':updatedAt': new Date().toISOString() 
+                ':updatedAt': new Date().toISOString()
             }
         }
     });
@@ -189,11 +194,11 @@ export function buildErrorResponse(err) {
     if (err.name === 'TransactionCanceledException') {
         return {
             statusCode: 400,
-            body: JSON.stringify({ message: `Failed to delete songs, contained invalid ID(s).` })
+            body: JSON.stringify({ error: `Failed to delete songs, contained invalid ID(s).` })
         };
     }
     return {
         statusCode: 500,
-        body: JSON.stringify({ message: 'Error deleting songs from Collaborative Playlist' })
+        body: JSON.stringify({ error: 'Error deleting songs from Collaborative Playlist' })
     };
 }

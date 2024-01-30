@@ -50,6 +50,7 @@ class CollaborativePlaylistService {
         }
     }
     
+    // TODO: Delete apple music playlist
     func deletePlaylist(playlistId: String) async throws -> String {
         do {
             let deletedPlaylistId = try await deleteBackendPlaylist(playlistId: playlistId)
@@ -61,24 +62,17 @@ class CollaborativePlaylistService {
         }
     }
     
-    func editSongs(appleMusicPlaylistId: String?, playlistId: String, songsToDelete: [SongMetadata], songsToAdd: [SongMetadata], newSongs: [SongMetadata]) async throws {
-        do {
-            if !songsToAdd.isEmpty {
-                _ = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd))
-                print("Successfully added songs to backend")
-            }
-            if !songsToDelete.isEmpty {
-                _ = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
-                print("Successfully deleted songs from backend")
-            }
-            if !songsToAdd.isEmpty || !songsToDelete.isEmpty, let appleMusicPlaylistId = appleMusicPlaylistId {
-                try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: newSongs)
-                print("Successfully edited apple music playlist songs")
-            }
-        } catch {
-            print("Failed to edit songs")
-            throw CollaborativePlaylistServiceError.failedToEditSongs
+    func editSongs(appleMusicPlaylistId: String?, playlistId: String, songsToDelete: [SongMetadata], songsToAdd: [SongMetadata], oldSongs: [SongMetadata]) async throws {
+        try await addSongsToBackendIfNeeded(playlistId: playlistId, songsToAdd: songsToAdd)
+        try await deleteSongsFromBackendIfNeeded(playlistId: playlistId, songsToDelete: songsToDelete)
+
+        guard (!songsToAdd.isEmpty || !songsToDelete.isEmpty), let appleMusicPlaylistId = appleMusicPlaylistId else {
+            return
         }
+
+        let newPlaylistSongs = updatePlaylistSongs(oldSongs: oldSongs, songsToAdd: songsToAdd, songsToDelete: songsToDelete)
+        try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: newPlaylistSongs)
+        print("Successfully edited apple music playlist songs: \(newPlaylistSongs)")
     }
     
     func updatePlaylists() async throws {
@@ -142,6 +136,35 @@ class CollaborativePlaylistService {
             throw AppleMusicServiceError.songUpdatesRetrievalFailed
         }
     }
+    
+    private func addSongsToBackendIfNeeded(playlistId: String, songsToAdd: [SongMetadata]) async throws {
+        guard !songsToAdd.isEmpty else { return }
+
+        let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd))
+        guard response.error == nil else {
+            print("Failed to add songs on the backend")
+            throw CollaborativePlaylistServiceError.failedToAddSongs
+        }
+
+        print("Successfully added songs to backend: \(songsToAdd)")
+    }
+
+    private func deleteSongsFromBackendIfNeeded(playlistId: String, songsToDelete: [SongMetadata]) async throws {
+        guard !songsToDelete.isEmpty else { return }
+
+        let response = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/songs", model: DeleteSongsResponse.self, body: DeleteSongsRequest(playlistId: playlistId, songs: songsToDelete))
+        guard response.error == nil else {
+            print("Failed to delete songs on the backend")
+            throw CollaborativePlaylistServiceError.failedToDeleteSongs
+        }
+
+        print("Successfully deleted songs from backend: \(songsToDelete)")
+    }
+
+    private func updatePlaylistSongs(oldSongs: [SongMetadata], songsToAdd: [SongMetadata], songsToDelete: [SongMetadata]) -> [SongMetadata] {
+        let addedSongs = oldSongs + songsToAdd
+        return addedSongs.filter { !songsToDelete.contains($0) }
+    }
 
     private func processSongUpdates(_ songUpdates: [SongUpdate]) async throws -> Bool {
         var allUpdatesSuccessful = true
@@ -168,8 +191,12 @@ class CollaborativePlaylistService {
                     deleteFlagsToDelete.append(playlistUpdate.playlistId)
                 }
             } catch {
-                print("Failed to update playlist for apple music id: \(playlistUpdate.appleMusicPlaylistId): \(error)")
-                throw AppleMusicServiceError.playlistUpdateFailed
+                if case MusicKitError.playlistNotInLibrary = error {
+                    deleteFlagsToDelete.append(playlistUpdate.playlistId)
+                } else {
+                    print("Failed to update playlist for apple music id: \(playlistUpdate.appleMusicPlaylistId): \(error)")
+                    throw AppleMusicServiceError.playlistUpdateFailed
+                }
             }
         }
         return deleteFlagsToDelete

@@ -20,7 +20,7 @@ struct HomeView: View {
                     Label("", systemImage: "ellipsis.circle.fill")
                 }
             
-            ActivitiesView()
+            ActivityView()
                 .tabItem {
                     Label("", systemImage: "person.3")
                 }
@@ -36,12 +36,6 @@ struct HomeView: View {
 struct ProfileView: View {
     var body: some View {
         Text("Profile View")
-    }
-}
-
-struct ActivitiesView: View {
-    var body: some View {
-        Text("Activities View")
     }
 }
 

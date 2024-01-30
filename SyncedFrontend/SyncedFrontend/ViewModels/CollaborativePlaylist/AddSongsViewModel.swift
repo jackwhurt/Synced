@@ -3,16 +3,19 @@ import SwiftUI
 
 class AddSongsViewModel: ObservableObject {
     @Published var spotifySongs: [SongMetadata] = []
-    @Published var selectedSongs = Set<SongMetadata>()
+    @Published var selectedSongs: Set<SongMetadata>
     @Published var errorMessage: String?
     @Binding var songsToAdd: [SongMetadata]
     var dismissAction: () -> Void = {}
+    let playlistSongs: Set<String>
     
     private let songService: SongService
     
-    init(songService: SongService, songsToAdd: Binding<[SongMetadata]>) {
+    init(songService: SongService, playlistSongs: [SongMetadata], songsToAdd: Binding<[SongMetadata]>) {
         self.songService = songService
         self._songsToAdd = songsToAdd
+        self.selectedSongs = Set<SongMetadata>()
+        self.playlistSongs = Set(playlistSongs.compactMap({ $0.spotifyUri }))
     }
     
     func searchSpotifyApi(query: String, page: Int) async {
@@ -30,6 +33,10 @@ class AddSongsViewModel: ObservableObject {
     }
     
     func toggleSongSelection(song: SongMetadata) {
+        if playlistSongs.contains(song.spotifyUri ?? "DEFAULT") {
+            return
+        }
+        
         if selectedSongs.contains(song) {
             self.selectedSongs.remove(song)
         } else {
@@ -44,7 +51,6 @@ class AddSongsViewModel: ObservableObject {
             print("Successfully converted songs to: \(convertedSongs)")
             DispatchQueue.main.async { [weak self] in
                 self?.songsToAdd.append(contentsOf: convertedSongs)
-                self?.selectedSongs = Set<SongMetadata>()
                 self?.dismissAction()
             }
         } catch {
@@ -53,5 +59,9 @@ class AddSongsViewModel: ObservableObject {
                 self?.errorMessage = "Failed to convert songs from Spotify to Apple Music. Please try again later"
             }
         }
+    }
+    
+    func containsSong(song: SongMetadata) -> Bool {
+        return selectedSongs.contains(song) || playlistSongs.contains(song.spotifyUri ?? "DEFAULT")
     }
 }

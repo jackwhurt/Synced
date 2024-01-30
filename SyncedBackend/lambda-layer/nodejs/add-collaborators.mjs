@@ -1,19 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const MAX_COLLABORATORS = 10;
 
-export async function addCollaborators(playlistId, collaboratorIds, cognitoUserId, playlistsTable, usersTable) {
+export async function addCollaborators(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable) {
     const timestamp = new Date().toISOString();
-
-    if (!await areValidCollaborators(collaboratorIds, usersTable)) {
-        throw new Error('Collaborator(s) not found');
-    }
-
-    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, timestamp);
+    const usernames = await getCollaboratorsUsername(collaboratorIds, usersTable);
+    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
@@ -23,7 +20,7 @@ export async function addCollaborators(playlistId, collaboratorIds, cognitoUserI
     }
 }
 
-function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, timestamp) {
+function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp) {
     const transactItems = [];
 
     // Increment the counter and add new collaborators atomically
@@ -45,27 +42,60 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
     });
 
     for (let collaboratorId of collaboratorIds) {
-        transactItems.push({
-            Put: {
-                TableName: playlistsTable,
-                Item: {
-                    PK: `cp#${playlistId}`,
-                    SK: `collaborator#${collaboratorId}`,
-                    GSI1PK: `collaborator#${collaboratorId}`,
-                    addedBy: cognitoUserId,
-                    createdAt: timestamp,
-                    updatedAt: timestamp
-                },
-                ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
-            }
-        });
+        if (collaboratorId != cognitoUserId) {
+            const username = usernames[cognitoUserId] || 'Unknown';
+            transactItems.push({
+                Put: {
+                    TableName: activitiesTable,
+                    Item: {
+                        PK: collaboratorId,
+                        SK: `requestPlaylist#${uuidv4()}`,
+                        playlistId: playlistId,
+                        createdByUsername: username,
+                        createdBy: cognitoUserId,
+                        createdAt: timestamp
+                    }
+                }
+            });
+            transactItems.push({
+                Put: {
+                    TableName: playlistsTable,
+                    Item: {
+                        PK: `cp#${playlistId}`,
+                        SK: `collaborator#${collaboratorId}`,
+                        GSI1PK: `collaborator#${collaboratorId}`,
+                        addedBy: cognitoUserId,
+                        requestStatus: 'pending',
+                        createdAt: timestamp,
+                        updatedAt: timestamp
+                    },
+                    ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+                }
+            });
+        } else {
+            transactItems.push({
+                Put: {
+                    TableName: playlistsTable,
+                    Item: {
+                        PK: `cp#${playlistId}`,
+                        SK: `collaborator#${collaboratorId}`,
+                        GSI1PK: `collaborator#${collaboratorId}`,
+                        addedBy: cognitoUserId,
+                        requestStatus: 'accepted',
+                        createdAt: timestamp,
+                        updatedAt: timestamp
+                    },
+                    ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
+                }
+            });
+        }
     }
 
     return transactItems;
 }
 
-async function areValidCollaborators(collaboratorIds, usersTable) {
-    const keysToGet = collaboratorIds.map(id => ({ cognito_user_id: id }));
+async function getCollaboratorsUsername(collaboratorIds, usersTable) {
+    const keysToGet = collaboratorIds.map(id => ({ userId: id }));
     const params = {
         RequestItems: {
             [usersTable]: {
@@ -76,12 +106,16 @@ async function areValidCollaborators(collaboratorIds, usersTable) {
 
     try {
         const { Responses } = await ddbDocClient.send(new BatchGetCommand(params));
-        const foundIds = Responses[usersTable].map(item => item.cognito_user_id);
+        const usernames = Responses[usersTable].reduce((acc, item) => {
+            acc[item.userId] = item.attributeValue;
+            return acc;
+        }, {});
+        const isValid = collaboratorIds.every(id => usernames[id] !== undefined);
+        if (!isValid) throw new Error('Collaborator(s) not found');
 
-        return collaboratorIds.every(id => foundIds.includes(id));
+        return usernames;
     } catch (err) {
-        console.error('Error in BatchGetCommand:', err);
-
-        return false;
+        console.error('Error retrieving collaborators usernames:', err);
+        throw err;
     }
 }

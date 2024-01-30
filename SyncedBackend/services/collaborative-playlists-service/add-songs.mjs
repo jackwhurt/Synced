@@ -28,13 +28,18 @@ export const addSongsHandler = async (event) => {
 
     try {
         ({ collaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaboratorData(playlistId));
+    } catch (err) {
+        console.error('Error in collaborator preparation:', err);
+        return buildErrorResponse(err);
+    }
 
+    try {
         transactItems = buildTransactItems(playlistId, songs, timestamp);
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
 
         console.info("Successfully added songs to db");
     } catch (err) {
-        console.error('Error in collaborator preparation:', err);
+        console.error('Error writing to the DB:', err);
         return buildErrorResponse(err);
     }
 
@@ -263,12 +268,12 @@ export function buildErrorResponse(err) {
     if (err.name === 'TransactionCanceledException') {
         response = {
             statusCode: 400,
-            body: JSON.stringify({ message: `Failed to add songs, reached maximum limit of ${MAX_SONGS}.` })
+            body: JSON.stringify({ error: `Failed to add songs, reached maximum limit of ${MAX_SONGS}.` })
         };
     } else {
         response = {
             statusCode: 500,
-            body: JSON.stringify({ message: 'Error adding songs to Collaborative Playlist' })
+            body: JSON.stringify({ error: 'Error adding songs to Collaborative Playlist' })
         };
     }
 

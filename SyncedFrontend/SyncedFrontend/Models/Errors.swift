@@ -52,11 +52,21 @@ enum CollaborativePlaylistServiceError: Error {
     case backendPlaylistCreationFailed
     case failedToDeleteSongs
     case failedToEditSongs
+    case failedToAddSongs
     case backendPlaylistDeletionFailed
 }
 
 enum SongServiceError: Error {
     case spotifySearchFailed
     case songConversionFailed
+}
+
+enum UserServiceError: Error {
+    case failedToRetrieveUsers
+}
+
+enum ActivityServiceError: Error {
+    case failedToGetRequests
+    case failedToResolveRequests
 }
 

@@ -24,6 +24,15 @@ Resources:
         - Name: email
           Required: true
           Mutable: false
+      # DELETE
+        - Name: custom:username
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: username
+          AttributeDataType: String
+          Mutable: true
+          Required: false
       LambdaConfig:
         PreSignUp: !Ref CognitoTriggerFunctionArn
 

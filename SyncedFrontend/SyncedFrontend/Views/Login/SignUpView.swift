@@ -19,11 +19,6 @@ struct SignUpView: View {
                     SignUpButton(action: signUpViewModel.signUpUser)
                     
                     Spacer(minLength: geometry.size.height * 0.1)
-                    
-                    if signUpViewModel.isSignedUp {
-                        // Placeholder, will be get info screen
-                        NavigationLink("", destination: TestView(isLoggedIn: signUpViewModel.isLoggedIn))
-                    }
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
@@ -50,6 +45,7 @@ struct SignUpInputFields: View {
     var body: some View {
         VStack {
             LongInputField(placeholder: "Email", text: $signUpViewModel.email)
+            LongInputField(placeholder: "Username", text: $signUpViewModel.username)
             LongSecureInputField(placeholder: "Password", text: $signUpViewModel.password)
                 .onChange(of: signUpViewModel.password) {
                     _ = signUpViewModel.validatePasswordCriteria()

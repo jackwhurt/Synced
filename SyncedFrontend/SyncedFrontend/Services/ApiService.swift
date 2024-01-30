@@ -11,6 +11,11 @@ class APIService {
         let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
         return try await makeRequest(endpoint: urlWithParameters, httpMethod: "GET", model: model)
     }
+    
+    func makePutRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
+        let urlWithParameters = appendQueryParameters(to: endpoint, parameters: parameters)
+        return try await makeRequest(endpoint: urlWithParameters, httpMethod: "PUT", model: model)
+    }
 
     func makePostRequest<T: Decodable, B: Encodable>(endpoint: String, model: T.Type, body: B) async throws -> T {
         let bodyData = try JSONEncoder().encode(body)
@@ -43,9 +48,14 @@ class APIService {
 
         print("Requesting \(httpMethod): \(request)")
         
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
 
         do {
+            if let httpResponse = response as? HTTPURLResponse {
+                print("Status code: \(httpResponse.statusCode)")
+                print("Headers: \(httpResponse.allHeaderFields)")
+            }
+
             let decodedData = try JSONDecoder().decode(T.self, from: data)
             print("Received: \(decodedData)")
             return decodedData
@@ -53,6 +63,7 @@ class APIService {
             print("Failed to decode data: \(error)")
             throw APIServiceError.failedToDecodeResponse
         }
+
     }
 
     private func appendQueryParameters(to endpoint: String, parameters: [String: String]?) -> String {
