@@ -56,6 +56,7 @@ function buildNotificationTransactItems(userIds, notificationMessageWithUsername
     const timestamp = new Date().toISOString();
 
     for (let userId of userIds) {
+        if (userId === createdBy) continue;
         transactItems.push({
             Put: {
                 TableName: activitiesTable,

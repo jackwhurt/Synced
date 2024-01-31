@@ -65,6 +65,7 @@ Resources:
         UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
         GetRequestsFunctionArn: !GetAtt LambdaStack.Outputs.GetRequestsFunctionArn
         ResolvePlaylistRequestFunctionArn: !GetAtt LambdaStack.Outputs.ResolvePlaylistRequestFunctionArn
+        GetNotificationsFunctionArn: !GetAtt LambdaStack.Outputs.GetNotificationsFunctionArn
         GetUsersFunctionArn: !GetAtt LambdaStack.Outputs.GetUsersFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 

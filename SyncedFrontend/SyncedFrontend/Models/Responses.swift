@@ -106,3 +106,9 @@ struct ExchangeSpotifyTokenResponse: Decodable {
     }
 }
 
+struct GetNotificationsResponse: Codable {
+    let notifications: [NotificationMetadata]
+    let lastEvaluatedKey: String?
+    let error: String?
+}
+

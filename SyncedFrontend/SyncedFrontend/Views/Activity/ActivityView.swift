@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct ActivityView: View {
-    let notifications = ["New follow request", "New comment on your post"]
-
+    @StateObject private var activityViewModel: ActivityViewModel
+    
+    init() {
+        _activityViewModel = StateObject(wrappedValue: ActivityViewModel(activityService: DIContainer.shared.provideActivityService()))
+    }
+    
     var body: some View {
         NavigationView {
             List {
@@ -11,12 +15,20 @@ struct ActivityView: View {
                 }
 
                 Section(header: Text("Notifications")) {
-                    ForEach(notifications, id: \.self) { notification in
-                        Text(notification)
+                    ForEach(activityViewModel.notifications, id: \.self) { notification in
+                        Text(notification.message)
                     }
                 }
             }
             .navigationBarTitle("Activities")
+            .alert("Error", isPresented: Binding<Bool>(
+                 get: { self.activityViewModel.errorMessage != nil },
+                 set: { _ in self.activityViewModel.errorMessage = nil }
+             ), presenting: activityViewModel.errorMessage) { errorMessage in
+                 Button("OK", role: .cancel) { }
+             } message: { errorMessage in
+                 Text(errorMessage)
+             }
         }
     }
 }

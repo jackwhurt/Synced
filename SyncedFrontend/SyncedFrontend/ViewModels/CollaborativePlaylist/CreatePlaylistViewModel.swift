@@ -9,6 +9,7 @@ class CreatePlaylistViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var createSpotifyPlaylist: Bool = false
     @Published var createAppleMusicPlaylist: Bool = false
+    
     private let collaborativePlaylistService: CollaborativePlaylistService
     private let userService: UserService
     private let collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel

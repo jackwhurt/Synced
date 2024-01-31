@@ -45,6 +45,8 @@ Parameters:
     Type: String
   ResolvePlaylistRequestFunctionArn:
     Type: String
+  GetNotificationsFunctionArn:
+    Type: String
   GetUsersFunctionArn:
     Type: String
   UserPoolId: 
@@ -706,6 +708,35 @@ Resources:
       FunctionName: !Ref ResolvePlaylistRequestFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/PUT/activities/requests/playlist"
+  
+  # Activities / Notifications
+  NotificationsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref ActivitiesResource
+      PathPart: notifications
+      RestApiId: !Ref MyApi
+
+  GetNotificationsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref NotificationsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetNotificationsFunctionArn}/invocations"
+
+  GetNotificationsLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetNotificationsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/activities/notifications"
 
   # Users
   UsersResource:

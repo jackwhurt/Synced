@@ -645,6 +645,26 @@ Resources:
           USERS_TABLE: !Ref UsersTableName
           ACTIVITIES_TABLE: !Ref ActivitiesTableName
 
+  # Actvities - Notifications
+  GetNotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/activities-service/   
+      Handler: get-notifications.getNotificationsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get paginated Notifications.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
+      Environment:
+        Variables:
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
+
   # Users
   GetUsersFunction:
     Type: AWS::Serverless::Function
@@ -734,6 +754,8 @@ Outputs:
     Value: !GetAtt GetRequestsFunction.Arn
   ResolvePlaylistRequestFunctionArn:
     Value: !GetAtt ResolvePlaylistRequestFunction.Arn
+  GetNotificationsFunctionArn:
+    Value: !GetAtt GetNotificationsFunction.Arn
   GetUsersFunctionArn:
     Value: !GetAtt GetUsersFunction.Arn
   CognitoTriggerFunctionArn:
