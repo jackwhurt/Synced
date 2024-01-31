@@ -447,6 +447,8 @@ Resources:
             TableName: !Ref UsersTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
         - Statement:
             - Effect: "Allow"
               Action:
@@ -458,6 +460,7 @@ Resources:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
           TOKENS_TABLE: !Ref TokensTableName 
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
 
   DeleteSongsFunction:
     Type: AWS::Serverless::Function
@@ -480,6 +483,8 @@ Resources:
             TableName: !Ref UsersTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
         - Statement:
             - Effect: "Allow"
               Action:
@@ -491,6 +496,7 @@ Resources:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
           TOKENS_TABLE: !Ref TokensTableName  
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
 
   # Collaborative Playlists - Songs - Apple Music
   GetSongsForAppleMusicFunction:

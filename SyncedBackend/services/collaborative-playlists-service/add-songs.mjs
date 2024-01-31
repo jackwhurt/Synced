@@ -5,6 +5,7 @@ import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
 import { isCollaboratorInPlaylist } from '/opt/nodejs/playlist-validator.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
 import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
+import { createNotifications } from '/opt/nodejs/create-notifications.mjs';
 import { addSongsToSpotifyPlaylist } from '/opt/nodejs/streaming-service/add-songs.mjs';
 import { syncPlaylists } from '/opt/nodejs/streaming-service/sync-collaborative-playlists.mjs';
 
@@ -12,6 +13,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const activitiesTable = process.env.ACTIVITIES_TABLE;
 const MAX_SONGS = 50;
 
 // TODO: Add rest of songs just not duplicate ones
@@ -48,6 +50,8 @@ export const addSongsHandler = async (event) => {
         unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap));
         console.info("Successfully added songs to spotify");
 
+        await createNotifications(collaboratorsData.map(collaborator => collaborator.userId), '{user} added songs to {playlist}', userId, playlistId, activitiesTable, usersTable, playlistsTable);
+        
         return buildSuccessResponse(unsuccessfulUpdateUserIds);
     } catch (err) {
         console.error('Error in adding songs to streaming service playlists:', err);
@@ -143,7 +147,6 @@ async function prepareCollaboratorData(playlistId) {
     return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
-// TODO: Add updatedAt
 function buildTransactItems(playlistId, songs, timestamp) {
     let transactItems = [];
 
@@ -257,7 +260,7 @@ function buildSuccessResponse(unsuccessfulUpdateUserIds) {
         statusCode: 200,
         body: JSON.stringify({ message })
     };
-    console.error('returned: ', response);
+    console.info('returned: ', response);
 
     return response;
 }

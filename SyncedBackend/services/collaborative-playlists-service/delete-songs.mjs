@@ -3,6 +3,7 @@ import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynam
 import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
 import { isCollaboratorInPlaylist } from '/opt/nodejs/playlist-validator.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
+import { createNotifications } from '/opt/nodejs/create-notifications.mjs';
 import { deleteSongsFromSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-songs.mjs';
 import { syncPlaylists } from '/opt/nodejs/streaming-service/sync-collaborative-playlists.mjs';
 import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
@@ -11,6 +12,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const activitiesTable = process.env.ACTIVITIES_TABLE;
 
 export const deleteSongsHandler = async (event) => {
     console.info('Received:', event);
@@ -40,6 +42,9 @@ export const deleteSongsHandler = async (event) => {
     try {
         let unsuccessfulUpdateUserIds = failedSpotifyUsers.map(user => user.userId);
         unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await deleteSongsFromSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap));
+        console.info("Successfully deleted songs from spotify");
+
+        await createNotifications(collaboratorsData.map(collaborator => collaborator.userId), '{user} deleted songs from {playlist}', userId, playlistId, activitiesTable, usersTable, playlistsTable);
 
         return buildSuccessResponse(unsuccessfulUpdateUserIds);
     } catch (err) {

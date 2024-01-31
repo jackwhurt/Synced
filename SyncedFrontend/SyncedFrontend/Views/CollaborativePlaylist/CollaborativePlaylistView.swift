@@ -1,13 +1,19 @@
 import SwiftUI
 
 // TODO: Show collaborators
+enum AlertType: Identifiable {
+    case error
+    case deleteConfirmation
+
+    var id: Self { self }
+}
+
 struct CollaborativePlaylistView: View {
     @Environment(\.presentationMode) var presentationMode
     @StateObject private var collaborativePlaylistViewModel: CollaborativePlaylistViewModel
-    @State private var showErrorAlert = false
+    @State private var showAlert: AlertType? = nil
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
-    @State private var showingDeleteConfirmation = false
 
     init(playlistId: String) {
         let viewModel = CollaborativePlaylistViewModel(
@@ -55,9 +61,14 @@ struct CollaborativePlaylistView: View {
             }
             loadPlaylist()
         }
-        .alert(isPresented: $showErrorAlert, content: errorAlert)
-        .alert(isPresented: $showingDeleteConfirmation, content: deletePlaylistConfirmationAlert)
-
+        .alert(item: $showAlert) { alert in
+            switch alert {
+            case .error:
+                return errorAlert()
+            case .deleteConfirmation:
+                return deletePlaylistConfirmationAlert()
+            }
+        }
     }
     
     private func dismissView() {
@@ -89,7 +100,9 @@ struct CollaborativePlaylistView: View {
                     Button("Save") {
                         Task{
                             await collaborativePlaylistViewModel.saveChanges()
-                            showErrorAlert = collaborativePlaylistViewModel.errorMessage != nil
+                            if collaborativePlaylistViewModel.errorMessage != nil {
+                                showAlert = .error
+                            }
                         }
                     }
                 } else {
@@ -100,7 +113,7 @@ struct CollaborativePlaylistView: View {
 
                         if collaborativePlaylistViewModel.playlistOwner {
                             Button("Delete Playlist") {
-                                showingDeleteConfirmation = true
+                                showAlert = .deleteConfirmation
                             }
                         }
                     } label: {
@@ -114,7 +127,9 @@ struct CollaborativePlaylistView: View {
     private func loadPlaylist() {
         Task {
             await collaborativePlaylistViewModel.loadPlaylist()
-            showErrorAlert = collaborativePlaylistViewModel.errorMessage != nil
+            if collaborativePlaylistViewModel.errorMessage != nil {
+                showAlert = .error
+            }
         }
     }
     

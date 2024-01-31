@@ -7,94 +7,95 @@ const playlistsTableName = process.env.PLAYLISTS_TABLE;
 const usersTableName = process.env.USERS_TABLE;
 
 export const getCollaborativePlaylistByIdHandler = async (event) => {
-	console.info('received:', event);
+    console.info('received:', event);
+    const playlistUuid = event.pathParameters?.id;
 
-	const playlistUuid = event.pathParameters?.id;
-	if (!playlistUuid) {
-		return { statusCode: 400, body: JSON.stringify('No playlist ID provided') };
-	}
-	const playlistId = 'cp#' + playlistUuid;
-	const claims = event.requestContext.authorizer?.claims;
-	const userId = claims['sub'];
+    if (!playlistUuid) {
+        return handleError('No playlist ID provided', null, 400);
+    }
 
-	try {
-		const playlistItemsData = await queryPlaylistItems(playlistId);
-		const { appleMusicPlaylistId, collaborators, playlistMetadata, songs } = await processPlaylistItems(playlistItemsData.Items, userId);
+    const userId = event.requestContext.authorizer?.claims['sub'];
+    const playlistId = `cp#${playlistUuid}`;
 
-		if (!playlistMetadata && collaborators.length === 0 && songs.length === 0) {
-			return { statusCode: 404, body: JSON.stringify('Playlist not found') };
-		}
+    try {
+        const playlist = await getPlaylistData(playlistId, userId);
+        if (!playlist) {
+            return handleError('Playlist not found', null, 404);
+        }
 
-		const response = { playlistId: playlistUuid, metadata: playlistMetadata, collaborators: collaborators, songs: songs }
-		if (appleMusicPlaylistId) response.appleMusicPlaylistId = appleMusicPlaylistId;
+		console.info(`returned: ${JSON.stringify(playlist)}`);
 
-		return {
-			statusCode: 200,
-			body: JSON.stringify(response)
-		};
-	} catch (err) {
-		console.error('Error', err);
-
-		return { statusCode: 500, body: JSON.stringify('Error retrieving playlist items') };
-	}
+        return {
+            statusCode: 200,
+            body: JSON.stringify(playlist)
+        };
+    } catch (err) {
+        return handleError('Error retrieving playlist', err, 500);
+    }
 };
 
-async function queryPlaylistItems(playlistId) {
-	const playlistItemsParams = {
-		TableName: playlistsTableName,
-		KeyConditionExpression: 'PK = :pk',
-		ExpressionAttributeValues: { ':pk': playlistId }
-	};
+async function getPlaylistData(playlistId, userId) {
+    const playlistItemsData = await queryPlaylistItems(playlistId);
+    if (playlistItemsData.Items.length === 0) {
+        return null;
+    }
+    return await processPlaylistItems(playlistItemsData.Items, userId);
+}
 
-	return ddbDocClient.send(new QueryCommand(playlistItemsParams));
+async function queryPlaylistItems(playlistId) {
+    const params = {
+        TableName: playlistsTableName,
+        KeyConditionExpression: 'PK = :pk',
+        ExpressionAttributeValues: { ':pk': playlistId }
+    };
+
+    try {
+        return await ddbDocClient.send(new QueryCommand(params));
+    } catch (err) {
+        throw new Error('Failed to query playlist items');
+    }
 }
 
 async function processPlaylistItems(items, userId) {
-	let collaborators = [], playlistMetadata = null, songs = [], appleMusicPlaylistId = '';
-	const userIds = items
-		.filter(item => item.SK.startsWith('collaborator#'))
-		.map(item => ({ userId: item.GSI1PK.split('#')[1] }));
+    const collaboratorsIds = items.filter(item => item.SK.startsWith('collaborator#')).map(item => ({ userId: item.GSI1PK.split('#')[1] }));
+    const collaborators = collaboratorsIds.length > 0 ? await fetchUsersData(collaboratorsIds) : [];
+    const playlistMetadata = items.find(item => item.SK === 'metadata') || null;
+    const songs = items.filter(item => item.SK.startsWith('song#')).map(item => ({ ...item, songId: item.SK.substring(5) }));
+    const userItem = items.find(item => item.SK === `collaborator#${userId}`);
+    const appleMusicPlaylistId = userItem ? userItem.appleMusicPlaylistId : '';
 
-	const userItem = items.find(item => item.SK === `collaborator#${userId}`);
-	if (userItem && userItem.appleMusicPlaylistId) {
-		appleMusicPlaylistId = userItem.appleMusicPlaylistId;
-	}
-
-	collaborators = await fetchUsersData(userIds);
-
-	for (const item of items) {
-		if (item.SK === 'metadata') {
-			playlistMetadata = item;
-		} else if (item.SK.startsWith('song#')) {
-			item.songId = item.SK.substring(5);
-			delete item.SK;
-			songs.push(item);
-		}
-	}
-
-	return { appleMusicPlaylistId, collaborators, playlistMetadata, songs };
+    return {
+        playlistId: playlistMetadata ? playlistMetadata.PK.substring(3) : 'Unknown',
+        metadata: playlistMetadata,
+        collaborators,
+        songs,
+        appleMusicPlaylistId
+    };
 }
 
 async function fetchUsersData(userIds) {
-	if (userIds.length === 0) {
-		return [];
-	}
+    if (userIds.length === 0) return [];
 
-	const batchGetParams = {
-		RequestItems: {
-			[usersTableName]: {
-				Keys: userIds
-			}
-		}
-	};
+    const params = {
+        RequestItems: {
+            [usersTableName]: {
+                Keys: userIds
+            }
+        }
+    };
 
-	try {
-		const usersData = await ddbDocClient.send(new BatchGetCommand(batchGetParams));
+    try {
+        const usersData = await ddbDocClient.send(new BatchGetCommand(params));
+        return usersData.Responses[usersTableName] || [];
+    } catch (err) {
+        throw new Error('Failed to fetch user data');
+    }
+}
 
-		return usersData.Responses[usersTableName] || [];
-	} catch (err) {
-		console.error('Error in batch get users:', err);
-
-		return [];
-	}
+function handleError(message, err, statusCode) {
+    console.error(message, err);
+    return {
+        statusCode: statusCode || 500,
+        body: JSON.stringify({ error: message })
+    };
 }
