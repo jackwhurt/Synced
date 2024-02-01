@@ -35,6 +35,7 @@ struct ActivityView: View {
                 }
             }
             .navigationBarTitle("Activities")
+            .onAppear(perform: activityViewModel.loadActivities)
             .alert("Error", isPresented: Binding<Bool>(
                  get: { self.activityViewModel.errorMessage != nil },
                  set: { _ in self.activityViewModel.errorMessage = nil }

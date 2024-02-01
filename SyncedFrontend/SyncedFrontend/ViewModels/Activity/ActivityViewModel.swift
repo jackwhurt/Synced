@@ -10,36 +10,12 @@ class ActivityViewModel: ObservableObject {
 
     init(activityService: ActivityService) {
         self.activityService = activityService
+    }
+    
+    func loadActivities() {
         Task {
-            await loadNotifications()
             await loadRequests()
-        }
-    }
-    
-    func loadRequests() async {
-        do {
-            let requests = try await activityService.getRequests()
-            DispatchQueue.main.async {
-                self.userRequests = requests.userRequests
-                self.playlistRequests = requests.playlistRequests
-            }
-        } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = "Failed to load requests. Please try again later."
-            }
-        }
-    }
-    
-    func loadNotifications() async {
-        do {
-            let response = try await activityService.getNotifications()
-            DispatchQueue.main.async {
-                self.notifications = response
-            }
-        } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = "Failed to load notifications. Please try again later."
-            }
+            await loadNotifications()
         }
     }
 
@@ -70,5 +46,31 @@ class ActivityViewModel: ObservableObject {
         
         return timeSinceDate
     }
-
+    
+    private func loadRequests() async {
+        do {
+            let requests = try await activityService.getRequests()
+            DispatchQueue.main.async {
+                self.userRequests = requests.userRequests
+                self.playlistRequests = requests.playlistRequests
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to load requests. Please try again later."
+            }
+        }
+    }
+    
+    private func loadNotifications() async {
+        do {
+            let response = try await activityService.getNotifications()
+            DispatchQueue.main.async {
+                self.notifications = response
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to load notifications. Please try again later."
+            }
+        }
+    }
 }

@@ -25,6 +25,7 @@ struct RequestView: View {
             }
         }
         .navigationBarTitle("Requests", displayMode: .inline)
+        .onAppear(perform: requestViewModel.loadRequests)
         .alert(isPresented: Binding<Bool>(
             get: { requestViewModel.errorMessage != nil },
             set: { _ in requestViewModel.errorMessage = nil }

@@ -11,7 +11,6 @@ class RequestViewModel: ObservableObject {
         self.activityService = activityService
         self.playlistRequests = playlistRequests
         self.userRequests = userRequests
-        loadRequests()
     }
 
     func loadRequests() {
@@ -36,7 +35,9 @@ class RequestViewModel: ObservableObject {
             print("Successfully resolved request: \(request.requestId)")
             loadRequests()
         } catch {
-            self.errorMessage = "Failed to complete the request. Please try again later."
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to complete the request. Please try again later."
+            }
         }
     }
 }

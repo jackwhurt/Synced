@@ -6,18 +6,24 @@ import { v4 as uuidv4 } from 'uuid';
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
-export async function createNotifications(userIds, notificationMessage, createdByUserId, playlistId, activitiesTable, usersTable, playlistsTable, isDevEnvironment) {
-    const createdByUsername = await getUsername(createdByUserId, usersTable);
-    const playlistTitle = await getPlaylistTitle(playlistId, playlistsTable);
-    const notificationMessageWithUsernameAndTitle = notificationMessage.replace('{playlist}', playlistTitle).replace('{user}', createdByUsername);
-    const transactItems = buildNotificationTransactItems(userIds, notificationMessageWithUsernameAndTitle, createdByUserId, playlistId, activitiesTable);
+export async function createNotifications(userIdsToSendNotifs, notificationMessage, userId,
+    playlistId, activitiesTable, usersTable, playlistsTable, isDevEnvironment) {
+    if (notificationMessage.includes('{user}')) {
+        const createdByUsername = await getUsername(userId, usersTable);
+        notificationMessage = notificationMessage.replace('{user}', createdByUsername);
+    }
+    if (notificationMessage.includes('{playlist}')) {
+        const playlistTitle = await getPlaylistTitle(playlistId, playlistsTable);
+        notificationMessage = notificationMessage.replace('{playlist}', playlistTitle)
+    }
+    const transactItems = buildNotificationTransactItems(userIdsToSendNotifs, notificationMessage, userId, playlistId, activitiesTable);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
-        await sendApnsNotifications(userIds, notificationMessageWithUsernameAndTitle, usersTable, isDevEnvironment);
-        console.info('Successfully added notifications for: ', userIds);
+        await sendApnsNotifications(userIdsToSendNotifs, notificationMessage, usersTable, isDevEnvironment);
+        console.info('Successfully added notifications for: ', userIdsToSendNotifs);
     } catch (err) {
-        console.error('Error sending notifications: ', err);
+        console.error('Error creating notifications: ', err);
     }
 }
 
@@ -53,7 +59,7 @@ async function getPlaylistTitle(playlistId, playlistsTable) {
     }
 }
 
-function buildNotificationTransactItems(userIds, notificationMessageWithUsernameAndTitle, createdBy, playlistId, activitiesTable) {
+function buildNotificationTransactItems(userIds, notificationMessage, createdBy, playlistId, activitiesTable) {
     const transactItems = [];
     const timestamp = new Date().toISOString();
 
@@ -65,7 +71,7 @@ function buildNotificationTransactItems(userIds, notificationMessageWithUsername
                 Item: {
                     PK: userId,
                     SK: `notification#${uuidv4()}`,
-                    message: notificationMessageWithUsernameAndTitle,
+                    message: notificationMessage,
                     createdBy: createdBy,
                     createdAt: timestamp,
                     playlistId: playlistId

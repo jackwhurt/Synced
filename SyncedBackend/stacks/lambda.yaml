@@ -666,6 +666,12 @@ Resources:
               Action:
                 - "ssm:GetParameter"
               Resource: "*"
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
@@ -673,6 +679,7 @@ Resources:
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
           ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
 
   # Actvities - Notifications
   GetNotificationsFunction:
@@ -740,7 +747,6 @@ Resources:
       Environment:
         Variables:
           USERS_TABLE: !Ref UsersTableName
-          # Change for prod
           APNS_PLATFORM_ARN: !Ref ApnsPlatformArn
           DEV_ENVIRONMENT: !Ref DevEnvironment
 
