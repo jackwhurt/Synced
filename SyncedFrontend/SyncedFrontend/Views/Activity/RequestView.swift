@@ -97,7 +97,7 @@ struct PlaylistRequestListView: View {
                         await requestViewModel.resolveRequest(request: request, result: true, spotifyPlaylist: spotifyPlaylist, appleMusicPlaylist: appleMusicPlaylist)
                     }
                 }
-                .presentationDetents([.fraction(0.3)])
+                .presentationDetents([.fraction(0.375)])
             }
         }
     }
@@ -134,6 +134,7 @@ struct RequestListView<Request>: View where Request: Hashable {
 
 
 struct PlaylistOptionsView: View {
+    @EnvironmentObject var appSettings: AppSettings
     @State private var spotifyPlaylist = false
     @State private var appleMusicPlaylist = false
     var onOptionSelected: (Bool, Bool) -> Void
@@ -143,13 +144,10 @@ struct PlaylistOptionsView: View {
             Text("Choose your playlist options")
                 .font(.headline)
                 .padding()
-
-            Toggle("Spotify Playlist", isOn: $spotifyPlaylist)
+            
+            StreamingServiceToggles(isOnAppleMusic: $spotifyPlaylist, isOnSpotify:  $appleMusicPlaylist)
                 .padding()
-
-            Toggle("Apple Music Playlist", isOn: $appleMusicPlaylist)
-                .padding()
-
+                
             Button("Confirm") {
                 onOptionSelected(spotifyPlaylist, appleMusicPlaylist)
             }
