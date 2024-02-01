@@ -1,15 +1,16 @@
 import Foundation
 
 class RequestViewModel: ObservableObject {
-    @Published var userRequests: [UserRequest] = []
-    @Published var playlistRequests: [PlaylistRequest] = []
+    @Published var userRequests: [UserRequest]
+    @Published var playlistRequests: [PlaylistRequest]
     @Published var errorMessage: String? = nil
 
     private let activityService: ActivityService
 
-    init(activityService: ActivityService) {
+    init(activityService: ActivityService, userRequests: [UserRequest], playlistRequests: [PlaylistRequest]) {
         self.activityService = activityService
-        loadRequests()
+        self.playlistRequests = playlistRequests
+        self.userRequests = userRequests
     }
 
     func loadRequests() {
@@ -34,7 +35,9 @@ class RequestViewModel: ObservableObject {
             print("Successfully resolved request: \(request.requestId)")
             loadRequests()
         } catch {
-            self.errorMessage = "Failed to complete the request. Please try again later."
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to complete the request. Please try again later."
+            }
         }
     }
 }

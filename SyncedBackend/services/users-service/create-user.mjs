@@ -17,10 +17,11 @@ export const createUserHandler = async (event) => {
     try {
         await addUserToDynamoDB(cognitoUserId, username, email, timestamp);
         console.info('Success - user added:', cognitoUserId);
+
         // Auto-confirm the user
         event.response.autoConfirmUser = true;
     } catch (err) {
-        console.error('Error adding user to DynamoDB', err);
+        console.error('Error performing sign-up actions', err);
         return;
     }
 

@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 @main
 struct SyncedFrontendApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     let appSettings = AppSettings(appleMusicService: DIContainer.shared.provideAppleMusicService())
     
     var body: some Scene {
@@ -23,6 +25,26 @@ struct SyncedFrontendApp: App {
                         }
                     }
                 }
+        }
+    }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            if granted {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            }
+        }
+        return true
+    }
+
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        Task {
+            await DIContainer.shared.provideUserService().registerUserForApns(deviceToken: tokenString)
         }
     }
 }

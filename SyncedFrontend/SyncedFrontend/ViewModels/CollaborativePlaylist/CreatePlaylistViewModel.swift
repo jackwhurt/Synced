@@ -9,6 +9,7 @@ class CreatePlaylistViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var createSpotifyPlaylist: Bool = false
     @Published var createAppleMusicPlaylist: Bool = false
+    
     private let collaborativePlaylistService: CollaborativePlaylistService
     private let userService: UserService
     private let collaborativePlaylistViewModel: CollaborativePlaylistMenuViewModel
@@ -62,19 +63,6 @@ class CreatePlaylistViewModel: ObservableObject {
                 self?.errorMessage = "Failed to retrieve users, please try again later"
             }
             return []
-        }
-    }
-    
-    func getWarningMessage(spotify: Bool, appleMusic: Bool) -> String {
-        switch (spotify, appleMusic) {
-        case (false, false):
-            return "Neither Spotify nor Apple Music is connected."
-        case (false, true):
-            return "Spotify is not connected."
-        case (true, false):
-            return "Apple Music is not connected."
-        default:
-            return ""
         }
     }
 }

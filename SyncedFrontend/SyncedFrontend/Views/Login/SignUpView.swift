@@ -1,6 +1,6 @@
 import SwiftUI
 
-// TODO: No same usernames
+// TODO: No same usernames & case lowercase only
 struct SignUpView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var presentationMode

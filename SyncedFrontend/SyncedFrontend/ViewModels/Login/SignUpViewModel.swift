@@ -23,7 +23,7 @@ class SignUpViewModel: ObservableObject {
         if !validatePasswordCriteria() {
             return
         }
-            
+
         authenticationService.signUpUser(email: email, password: password, username: username) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {

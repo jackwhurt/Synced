@@ -3,6 +3,8 @@ import { DynamoDBDocumentClient, TransactWriteCommand, QueryCommand } from '@aws
 import { createSpotifyPlaylist } from '/opt/nodejs/streaming-service/create-streaming-service-playlist.mjs';
 import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
+import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
+import { createNotifications } from '/opt/nodejs/create-notifications.mjs';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
@@ -11,26 +13,34 @@ const activitiesTable = process.env.ACTIVITIES_TABLE;
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const isDevEnvironment = process.env.DEV_ENVIRONMENT === 'true';
 
 export const resolvePlaylistRequestHandler = async (event) => {
     console.info('Received:', event);
 
-    try {
-        const claims = event.requestContext.authorizer?.claims;
-        const userId = claims['sub'];
-        const requestId = event.queryStringParameters.requestId;
-        const result = event.queryStringParameters.result === 'true';
-        const spotifyPlaylist = event.queryStringParameters.spotifyPlaylist === 'true';
-        const playlistId = await getPlaylistId(userId, requestId);
+    const claims = event.requestContext.authorizer?.claims;
+    const cognitoUserId = claims['sub'];
+    const requestId = event.queryStringParameters.requestId;
+    const result = event.queryStringParameters.result === 'true';
+    const spotifyPlaylist = event.queryStringParameters.spotifyPlaylist === 'true';
 
-        await resolveRequest(userId, requestId, playlistId, result, spotifyPlaylist);
+    let playlist;
+
+    try {
+        const playlistId = await getPlaylistId(cognitoUserId, requestId);
+        playlist = await getPlaylistMetadata(playlistId);
+        if (!playlist) await performTransactions([], requestId, null, [], cognitoUserId);
+        else await performTransactionsAndResolve(cognitoUserId, requestId, playlist, result, spotifyPlaylist);
 
         console.info(`Request with ID ${requestId} resolved successfully`);
-        return createSuccessResponse(200, { message: 'Request resolved successfully' });
     } catch (err) {
         console.error('Error resolving request:', err);
         return createErrorResponse(err);
     }
+
+    if (playlist) await sendNotifications(playlist, cognitoUserId);
+
+    return createSuccessResponse(200, { message: 'Request resolved successfully' });
 };
 
 async function getPlaylistId(userId, requestId) {
@@ -48,7 +58,7 @@ async function getPlaylistId(userId, requestId) {
         if (data.Items.length > 0) {
             return data.Items[0].playlistId;
         } else {
-            throw new Error('Playlist request not found');
+            return null;
         }
     } catch (error) {
         console.error('Error fetching playlist request:', error);
@@ -74,8 +84,6 @@ async function getPlaylistMetadata(playlistId) {
                 description: data.Items[0].description,
                 title: data.Items[0].title,
             };
-        } else {
-            throw new Error('Playlist metadata not found');
         }
     } catch (error) {
         console.error('Error fetching playlist metadata:', error);
@@ -83,22 +91,7 @@ async function getPlaylistMetadata(playlistId) {
     }
 }
 
-async function resolveRequest(userId, requestId, playlistId, result, spotifyPlaylist) {
-    const transactItems = [];
-    let spotifyPlaylistId;
-    let spotifyUsers, failedSpotifyUsers;
-
-    if (result && spotifyPlaylist) {
-        ({ spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([userId], usersTable, tokensTable));
-        if (!failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ' + userId);
-
-        spotifyPlaylistId = await handleSpotifyPlaylistCreation(spotifyUsers, playlistId);
-
-        transactItems.push(updateCollaboratorStatus(userId, playlistId));
-    } else {
-        transactItems.push(deleteCollaborator(userId, playlistId));
-    }
-
+async function performTransactions(transactItems, requestId, spotifyPlaylistId, spotifyUsers, userId) {
     transactItems.push(deleteRequest(userId, requestId));
 
     try {
@@ -106,18 +99,46 @@ async function resolveRequest(userId, requestId, playlistId, result, spotifyPlay
     } catch (error) {
         console.error('Failed to update db for resolve playlist request');
 
-        console.info('Rollback started');
-        await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUsers[0]);
-        console.info('Rollback successful');
+        if (spotifyPlaylistId && spotifyUsers) {
+            console.info('Rollback started');
+            await deleteSpotifyPlaylist(spotifyPlaylistId, spotifyUsers[0]);
+            console.info('Rollback successful');
+        }
 
         throw error;
     }
 }
 
-async function handleSpotifyPlaylistCreation(spotifyUsers, playlistId) {
-    const playlist = await getPlaylistMetadata(playlistId);
-    const spotifyPlaylistId = await createSpotifyPlaylist(playlist, spotifyUsers[0], playlistsTable);
-    return spotifyPlaylistId;
+async function performTransactionsAndResolve(userId, requestId, playlist, result, spotifyPlaylist) {
+    const transactItems = [];
+    let spotifyPlaylistId;
+    let spotifyUsers, failedSpotifyUsers;
+
+    if (result) {
+        transactItems.push(updateCollaboratorStatus(userId, playlist.playlistId));
+        if (spotifyPlaylist) {
+            ({ spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([userId], usersTable, tokensTable));
+            if (failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ' + userId);
+
+            spotifyPlaylistId = await createSpotifyPlaylist(playlist, spotifyUsers[0], playlistsTable);
+        }
+    } else {
+        transactItems.push(deleteCollaborator(userId, playlist.playlistId));
+    }
+
+    await performTransactions(transactItems, requestId, spotifyPlaylistId, spotifyUsers, userId);
+}
+
+async function sendNotifications(playlist, cognitoUserId) {
+    const message = `@{user} has joined ${playlist.title}!`;
+
+    try {
+        const collaborators = await getCollaboratorsByPlaylistId(playlist.playlistId, playlistsTable);
+        await createNotifications(collaborators.map(collaborator => collaborator.userId), message, cognitoUserId,
+            playlist.playlistId, activitiesTable, usersTable, playlistsTable, isDevEnvironment);
+    } catch (error) {
+        console.error('Notification unsuccessful', error);
+    }
 }
 
 function updateCollaboratorStatus(userId, playlistId) {

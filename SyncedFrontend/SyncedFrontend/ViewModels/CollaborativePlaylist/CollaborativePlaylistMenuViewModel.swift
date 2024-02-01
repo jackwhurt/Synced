@@ -1,8 +1,9 @@
 import Foundation
 
 class CollaborativePlaylistMenuViewModel: ObservableObject {
-    private let collaborativePlaylistService: CollaborativePlaylistService
     @Published var playlists: [GetCollaborativePlaylistResponse] = []
+    
+    private let collaborativePlaylistService: CollaborativePlaylistService
 
     init(collaborativePlaylistService: CollaborativePlaylistService) {
         self.collaborativePlaylistService = collaborativePlaylistService

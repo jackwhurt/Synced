@@ -3,6 +3,7 @@ import { DynamoDBDocumentClient, TransactWriteCommand } from '@aws-sdk/lib-dynam
 import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
 import { isCollaboratorInPlaylist } from '/opt/nodejs/playlist-validator.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
+import { createNotifications } from '/opt/nodejs/create-notifications.mjs';
 import { deleteSongsFromSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-songs.mjs';
 import { syncPlaylists } from '/opt/nodejs/streaming-service/sync-collaborative-playlists.mjs';
 import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
@@ -11,6 +12,8 @@ const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const activitiesTable = process.env.ACTIVITIES_TABLE;
+const isDevEnvironment = process.env.DEV_ENVIRONMENT === 'true';
 
 export const deleteSongsHandler = async (event) => {
     console.info('Received:', event);
@@ -20,10 +23,11 @@ export const deleteSongsHandler = async (event) => {
     const validationResponse = await validateEvent(playlistId, userId, songs);
     if (validationResponse) return validationResponse;
 
-    let collaboratorsData, failedSpotifyUsers, spotifyUsersMap, transactItems;
+    let spotifyCollaboratorsData, failedSpotifyUsers, spotifyUsersMap, transactItems;
+    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId, playlistsTable);
 
     try {
-        ({ collaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaborators(playlistId));
+        ({ spotifyCollaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaborators(playlistId, collaboratorsData));
     } catch (err) {
         console.error('Error in collaborator preparation:', err);
         return buildErrorResponse(err);
@@ -39,7 +43,12 @@ export const deleteSongsHandler = async (event) => {
 
     try {
         let unsuccessfulUpdateUserIds = failedSpotifyUsers.map(user => user.userId);
-        unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await deleteSongsFromSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap));
+        unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await deleteSongsFromSpotifyPlaylists(songs, spotifyCollaboratorsData, spotifyUsersMap));
+        console.info("Successfully deleted songs from spotify");
+        const message = `@{user} deleted ${songs.length} song${songs.length > 1 ? 's' : ''} from {playlist}`
+
+        await createNotifications(collaboratorsData.map(collaborator => collaborator.userId), message, 
+         userId, playlistId, activitiesTable, usersTable, playlistsTable, isDevEnvironment);
 
         return buildSuccessResponse(unsuccessfulUpdateUserIds);
     } catch (err) {
@@ -65,16 +74,17 @@ async function validateEvent(playlistId, userId, songs) {
     return null;
 }
 
-async function prepareCollaborators(playlistId) {
-    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId, playlistsTable);
-    const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
+async function prepareCollaborators(playlistId, collaboratorsData) {
+    const spotifyCollaboratorsData = collaboratorsData.filter(collaborator => collaborator.spotifyPlaylistId);
+    const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(spotifyCollaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-    const { updatedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
+    const { updatedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, spotifyCollaboratorsData, playlistsTable);
     // Update collaborator data (streaming service playlist id) if users have been resynced
     if (updatedUsers) {
+        const updatedCollaborators = await getCollaboratorsByPlaylistId(playlistId, playlistsTable)
         return {
-            collaboratorsData: await getCollaboratorsByPlaylistId(playlistId, playlistsTable),
+            collaboratorsData: updatedCollaborators.filter(collaborator => collaborator.spotifyPlaylistId),
             failedSpotifyUsers,
             spotifyUsersMap
         };

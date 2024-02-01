@@ -15,9 +15,7 @@ export async function getCollaboratorsByPlaylistId(playlistId, playlistsTable) {
 
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
-        const collaboratorsData = data.Items
-            .filter(collaborator => collaborator.spotifyPlaylistId)
-            .map(collaborator => ({
+        const collaboratorsData = data.Items.map(collaborator => ({
                 userId: collaborator.SK.replace('collaborator#', ''),
                 spotifyPlaylistId: collaborator.spotifyPlaylistId,
                 spotifyInSync: collaborator.spotifyInSync

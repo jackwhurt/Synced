@@ -63,11 +63,13 @@ enum SongServiceError: Error {
 
 enum UserServiceError: Error {
     case failedToRetrieveUsers
+    case failedToRegisterForApns
 }
 
 enum ActivityServiceError: Error {
     case failedToGetRequests
     case failedToResolveRequests
+    case failedToGetNotifications
 }
 
 enum SpotifyServiceError: Error {

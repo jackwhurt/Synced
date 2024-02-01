@@ -5,6 +5,7 @@ import { isPlaylistValid } from '/opt/nodejs/playlist-validator.mjs';
 import { isCollaboratorInPlaylist } from '/opt/nodejs/playlist-validator.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
 import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
+import { createNotifications } from '/opt/nodejs/create-notifications.mjs';
 import { addSongsToSpotifyPlaylist } from '/opt/nodejs/streaming-service/add-songs.mjs';
 import { syncPlaylists } from '/opt/nodejs/streaming-service/sync-collaborative-playlists.mjs';
 
@@ -12,9 +13,10 @@ const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const activitiesTable = process.env.ACTIVITIES_TABLE;
+const isDevEnvironment = process.env.DEV_ENVIRONMENT === 'true';
 const MAX_SONGS = 50;
 
-// TODO: Add rest of songs just not duplicate ones
 export const addSongsHandler = async (event) => {
     console.info('Received:', event);
     const { playlistId, songs } = JSON.parse(event.body);
@@ -24,10 +26,12 @@ export const addSongsHandler = async (event) => {
     if (validationResponse) return validationResponse;
 
     const timestamp = new Date().toISOString();
-    let collaboratorsData, failedSpotifyUsers, spotifyUsersMap, transactItems;
+    
+    let spotifyCollaboratorsData, failedSpotifyUsers, spotifyUsersMap, transactItems;
+    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId, playlistsTable);
 
     try {
-        ({ collaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaboratorData(playlistId));
+        ({ spotifyCollaboratorsData, failedSpotifyUsers, spotifyUsersMap } = await prepareCollaboratorData(playlistId, collaboratorsData));
     } catch (err) {
         console.error('Error in collaborator preparation:', err);
         return buildErrorResponse(err);
@@ -45,9 +49,14 @@ export const addSongsHandler = async (event) => {
 
     try {
         let unsuccessfulUpdateUserIds = failedSpotifyUsers.map(user => user.userId);
-        unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await addSongsToSpotifyPlaylists(songs, collaboratorsData, spotifyUsersMap));
+        unsuccessfulUpdateUserIds = unsuccessfulUpdateUserIds.concat(await addSongsToSpotifyPlaylists(songs, spotifyCollaboratorsData, spotifyUsersMap));
         console.info("Successfully added songs to spotify");
+        const userIds = collaboratorsData.map(collaborator => collaborator.userId);
+        const message = `@{user} added ${songs.length} song${songs.length > 1 ? 's' : ''} to {playlist}`
 
+        await createNotifications(userIds, message, userId,
+         playlistId, activitiesTable, usersTable, playlistsTable, isDevEnvironment);
+        
         return buildSuccessResponse(unsuccessfulUpdateUserIds);
     } catch (err) {
         console.error('Error in adding songs to streaming service playlists:', err);
@@ -125,16 +134,17 @@ async function getExistingUrisForPlaylist(playlistId) {
 }
 
 
-async function prepareCollaboratorData(playlistId) {
-    const collaboratorsData = await getCollaboratorsByPlaylistId(playlistId, playlistsTable);
-    const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(collaboratorsData.map(c => c.userId), usersTable, tokensTable);
+async function prepareCollaboratorData(playlistId, collaboratorsData) {
+    const spotifyCollaboratorsData = collaboratorsData.filter(collaborator => collaborator.spotifyPlaylistId);
+    const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts(spotifyCollaboratorsData.map(c => c.userId), usersTable, tokensTable);
     const spotifyUsersMap = new Map(spotifyUsers.map(user => [user.userId, user]));
 
-    const { updatedUsers, failedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, collaboratorsData, playlistsTable);
+    const { updatedUsers, failedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, spotifyCollaboratorsData, playlistsTable);
     // Update collaborator data (streaming service playlist id) if users have been resynced
     if (updatedUsers) {
+        const updatedCollaborators = await getCollaboratorsByPlaylistId(playlistId, playlistsTable)
         return {
-            collaboratorsData: await getCollaboratorsByPlaylistId(playlistId, playlistsTable),
+            collaboratorsData: updatedCollaborators.filter(collaborator => collaborator.spotifyPlaylistId),
             failedSpotifyUsers,
             spotifyUsersMap
         };
@@ -143,7 +153,6 @@ async function prepareCollaboratorData(playlistId) {
     return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
-// TODO: Add updatedAt
 function buildTransactItems(playlistId, songs, timestamp) {
     let transactItems = [];
 
@@ -257,7 +266,7 @@ function buildSuccessResponse(unsuccessfulUpdateUserIds) {
         statusCode: 200,
         body: JSON.stringify({ message })
     };
-    console.error('returned: ', response);
+    console.info('returned: ', response);
 
     return response;
 }

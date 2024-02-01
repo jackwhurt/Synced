@@ -1,3 +1,6 @@
+import UserNotifications
+import SwiftUI
+
 class ActivityService {
     private let apiService: APIService
     private let appleMusicService: AppleMusicService
@@ -41,6 +44,20 @@ class ActivityService {
         } catch {
             print("Failed to resolve requests")
             throw ActivityServiceError.failedToResolveRequests
+        }
+    }
+    
+    func getNotifications() async throws -> [NotificationMetadata] {
+        do {
+            let response = try await apiService.makeGetRequest(endpoint: "/activities/notifications", model: GetNotificationsResponse.self)
+            if response.error != nil {
+                throw ActivityServiceError.failedToGetNotifications
+            }
+            print("Successfully received requests: \(response)")
+            return response.notifications
+        } catch {
+            print("Failed to retrieve requests")
+            throw ActivityServiceError.failedToGetNotifications
         }
     }
 }

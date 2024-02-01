@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: SNS Stack for Synced
+Description: SNS Stack for Synced with iOS Push Notifications
 
 Resources:
   LambdaFailureTopic:
@@ -10,7 +10,7 @@ Resources:
     Type: "AWS::SNS::Subscription"
     Properties:
       TopicArn: !Ref LambdaFailureTopic
-      Protocol: "email" 
+      Protocol: "email"
       Endpoint: '{{resolve:ssm:emailAddress:1}}'
 
 Outputs:

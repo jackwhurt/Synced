@@ -14,4 +14,16 @@ class UserService {
             throw UserServiceError.failedToRetrieveUsers
         }
     }
+    
+    func registerUserForApns(deviceToken: String) async {
+        do {
+            let parameters: [String: String] = ["deviceToken": deviceToken]
+            let response = try await apiService.makePostRequest(endpoint: "/users/apns", model: RegisterUserForApnsResponse.self, parameters: parameters)
+            if response.error != nil {
+                throw UserServiceError.failedToRegisterForApns
+            }
+        } catch {
+            print("Failed to register for APNS: \(error)")
+        }
+    }
 }

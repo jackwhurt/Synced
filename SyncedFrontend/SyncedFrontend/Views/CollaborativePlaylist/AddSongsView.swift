@@ -67,9 +67,14 @@ struct AddSongsView: View {
     
     
     private func errorAlert() -> Alert {
-        Alert(title: Text("Error"),
-              message: Text(addSongsViewModel.errorMessage ?? "Unknown error"),
-              dismissButton: .default(Text("OK")))
+        Alert(
+            title: Text("Error"),
+            message: Text(addSongsViewModel.errorMessage ?? "Unknown error"),
+            dismissButton: .default(Text("OK"), action: {
+                // Clear the error message here
+                addSongsViewModel.errorMessage = nil
+            })
+        )
     }
 }
 

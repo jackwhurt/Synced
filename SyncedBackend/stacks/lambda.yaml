@@ -12,7 +12,14 @@ Parameters:
     Type: String
   LambdaFailureTopicName:
     Type: String
-
+  ApnsPlatformArn:
+    Type: String
+  DevEnvironment:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
 Resources:
   CommonLayer:
     Type: AWS::Serverless::LayerVersion
@@ -242,13 +249,23 @@ Resources:
               Action:
                 - "ssm:GetParameter"
               Resource: "*"
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
+          USERS_TABLE: !Ref UsersTableName
+          APNS_PLATFORM_ARN: !Ref ApnsPlatformArn
+      Environment:
+        Variables:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
           ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
 
   DeleteCollaborativePlaylistFunction:
     Type: AWS::Serverless::Function
@@ -365,12 +382,18 @@ Resources:
             TableName: !Ref UsersTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref ActivitiesTableName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
           ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
 
   DeleteCollaboratorsFunction:
     Type: AWS::Serverless::Function
@@ -389,7 +412,6 @@ Resources:
             TableName: !Ref PlaylistsTableName
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
 
   SyncCollaboratorsFunction:
@@ -420,7 +442,6 @@ Resources:
               Resource: "*"
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
           TOKENS_TABLE: !Ref TokensTableName 
@@ -447,17 +468,21 @@ Resources:
             TableName: !Ref UsersTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref TokensTableName
-        - Statement:
-            - Effect: "Allow"
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
               Action:
-                - "ssm:GetParameter"
-              Resource: "*"
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
           TOKENS_TABLE: !Ref TokensTableName 
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
 
   DeleteSongsFunction:
     Type: AWS::Serverless::Function
@@ -480,6 +505,14 @@ Resources:
             TableName: !Ref UsersTableName
         - DynamoDBCrudPolicy:
             TableName: !Ref TokensTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
         - Statement:
             - Effect: "Allow"
               Action:
@@ -491,6 +524,8 @@ Resources:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
           TOKENS_TABLE: !Ref TokensTableName  
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
 
   # Collaborative Playlists - Songs - Apple Music
   GetSongsForAppleMusicFunction:
@@ -631,12 +666,39 @@ Resources:
               Action:
                 - "ssm:GetParameter"
               Resource: "*"
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
+
+  # Actvities - Notifications
+  GetNotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/activities-service/   
+      Handler: get-notifications.getNotificationsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get paginated Notifications.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
+      Environment:
+        Variables:
           ACTIVITIES_TABLE: !Ref ActivitiesTableName
 
   # Users
@@ -658,6 +720,35 @@ Resources:
       Environment:
         Variables:
           USERS_TABLE: !Ref UsersTableName
+
+  # Users / APNS
+  RegisterUserForAPNSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/users-service/   
+      Handler: register-user-for-apns.registerUserForApnsHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get paginated Users.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:CreatePlatformEndpoint'
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTableName
+          APNS_PLATFORM_ARN: !Ref ApnsPlatformArn
+          DEV_ENVIRONMENT: !Ref DevEnvironment
 
   # Create User Trigger
   CognitoTriggerFunction:
@@ -728,7 +819,11 @@ Outputs:
     Value: !GetAtt GetRequestsFunction.Arn
   ResolvePlaylistRequestFunctionArn:
     Value: !GetAtt ResolvePlaylistRequestFunction.Arn
+  GetNotificationsFunctionArn:
+    Value: !GetAtt GetNotificationsFunction.Arn
   GetUsersFunctionArn:
     Value: !GetAtt GetUsersFunction.Arn
+  RegisterUserForAPNSFunctionArn:
+    Value: !GetAtt RegisterUserForAPNSFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn

@@ -2,14 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleIconName</key>
-	<string>Synced</string>
 	<key>API_URL</key>
 	<string>https://r5qnrn9c94.execute-api.eu-west-2.amazonaws.com/dev</string>
-	<key>COGNITO_CLIENT_ID</key>
-	<string>7skq3igbvdh4p15cfg81k19pla</string>
-	<key>COGNITO_POOL_ID</key>
-	<string>eu-west-2_LJ3d7GUKZ</string>
+	<key>CFBundleIconName</key>
+	<string>Synced</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -18,6 +14,16 @@
 				<string>syncedapp</string>
 			</array>
 		</dict>
+	</array>
+	<key>COGNITO_CLIENT_ID</key>
+	<string>7skq3igbvdh4p15cfg81k19pla</string>
+	<key>COGNITO_POOL_ID</key>
+	<string>eu-west-2_LJ3d7GUKZ</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+		<string>remote-notification</string>
 	</array>
 </dict>
 </plist>

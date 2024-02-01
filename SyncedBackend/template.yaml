@@ -1,6 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Main Stack for SyncedBackend
 
+Parameters:
+  EnvironmentTypeParameter:
+    Type: String
+    Description: Specify the environment type (e.g., 'development' or 'production').
+    Default: 'development'
+    AllowedValues:
+      - 'development'
+      - 'production'
+
+Conditions:
+  IsDevEnvironment:
+    Fn::Equals:
+      - !Ref EnvironmentTypeParameter
+      - 'development'
+
 Resources:
   DatabaseStack:
     Type: AWS::CloudFormation::Stack
@@ -22,6 +37,16 @@ Resources:
         TokensTableName: !GetAtt DatabaseStack.Outputs.TokensTableName
         ActivitiesTableName: !GetAtt DatabaseStack.Outputs.ActivitiesTableName
         LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
+        ApnsPlatformArn: 
+          Fn::If:
+            - IsDevEnvironment
+            - '{{resolve:ssm:apnsPlatformArnDev:1}}'
+            - '{{resolve:ssm:apnsPlatformArn:1}}'
+        DevEnvironment:
+          Fn::If:
+            - IsDevEnvironment
+            - 'true'
+            - 'false'
 
   CognitoStack:
     Type: AWS::CloudFormation::Stack
@@ -65,7 +90,9 @@ Resources:
         UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
         GetRequestsFunctionArn: !GetAtt LambdaStack.Outputs.GetRequestsFunctionArn
         ResolvePlaylistRequestFunctionArn: !GetAtt LambdaStack.Outputs.ResolvePlaylistRequestFunctionArn
+        GetNotificationsFunctionArn: !GetAtt LambdaStack.Outputs.GetNotificationsFunctionArn
         GetUsersFunctionArn: !GetAtt LambdaStack.Outputs.GetUsersFunctionArn
+        RegisterUserForAPNSFunctionArn: !GetAtt LambdaStack.Outputs.RegisterUserForAPNSFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
 
       

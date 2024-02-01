@@ -33,7 +33,14 @@ struct CreatePlaylistView: View {
                 }
             }))
             .alert(isPresented: $showErrorAlert) {
-                Alert(title: Text("Error"), message: Text(createPlaylistViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+                Alert(
+                    title: Text("Error"),
+                    message: Text(createPlaylistViewModel.errorMessage ?? "Unknown error"),
+                    dismissButton: .default(Text("OK"), action: {
+                        // Clear the error message here
+                        createPlaylistViewModel.errorMessage = nil
+                    })
+                )
             }
         }
         .accentColor(Color("SyncedBlue"))
@@ -66,23 +73,13 @@ struct PlaylistCreationToggles: View {
 
     var body: some View {
         Section(header: Text("Streaming Service Playlists")) {
-            Toggle("Spotify Playlist", isOn: Binding(
+            StreamingServiceToggles(isOnAppleMusic: Binding(
+                get: { self.createPlaylistViewModel.createSpotifyPlaylist },
+                set: { self.createPlaylistViewModel.createSpotifyPlaylist = $0 }
+            ), isOnSpotify:  Binding(
                 get: { self.createPlaylistViewModel.createSpotifyPlaylist },
                 set: { self.createPlaylistViewModel.createSpotifyPlaylist = $0 }
             ))
-//            TODO: Enables when it works
-//            .disabled(!appSettings.isSpotifyConnected)
-            
-            Toggle("Apple Music Playlist", isOn: Binding(
-                get: { self.createPlaylistViewModel.createAppleMusicPlaylist },
-                set: { self.createPlaylistViewModel.createAppleMusicPlaylist = $0 }
-            )).disabled(!appSettings.isAppleMusicConnected)
-            
-            if !appSettings.isSpotifyConnected || !appSettings.isAppleMusicConnected {
-                Text(createPlaylistViewModel.getWarningMessage(spotify: appSettings.isSpotifyConnected, appleMusic: appSettings.isAppleMusicConnected))
-                    .foregroundColor(.red)
-                    .font(.caption)
-            }
         }
     }
 }
