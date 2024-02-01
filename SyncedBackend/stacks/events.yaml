@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudWatch Events Stack for Synced
+Parameters:
+  UpdateSpotifyDevTokenFunctionArn:
+    Type: String
+  UpdateAppleMusicDevTokenFunctionArn:
+    Type: String
+
+Resources:
+  SpotifyTokenRefreshRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "rate(55 minutes)"
+      Targets:
+        - Arn: !Ref UpdateSpotifyDevTokenFunctionArn
+          Id: "UpdateSpotifyDevTokenTarget"
+
+  SpotifyTokenRefreshInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref UpdateSpotifyDevTokenFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt SpotifyTokenRefreshRule.Arn
+
+  AppleMusicTokenRefreshRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "cron(0 0 1 * ? *)"
+      Targets:
+        - Arn: !Ref UpdateAppleMusicDevTokenFunctionArn
+          Id: "UpdateAppleMusicDevTokenTarget"
+
+  AppleMusicTokenRefreshInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref UpdateAppleMusicDevTokenFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt AppleMusicTokenRefreshRule.Arn
