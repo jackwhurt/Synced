@@ -7,7 +7,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 const activitiesTable = process.env.ACTIVITIES_TABLE;
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 
-// TODO: Deal with old playlist ids that have been deleted
+// TODO: Deal with old playlist ids that have been deleted. just delete the requests.
 export const getRequestsHandler = async (event) => {
     console.info('received:', event);
 

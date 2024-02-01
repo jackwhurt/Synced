@@ -4,9 +4,9 @@ struct RequestView: View {
     @State private var selectedTab: Tab = .users
     @StateObject private var requestViewModel: RequestViewModel
     
-    init() {
+    init(userRequests: [UserRequest], playlistRequests: [PlaylistRequest]) {
         let activityService = DIContainer.shared.provideActivityService()
-        _requestViewModel = StateObject(wrappedValue: RequestViewModel(activityService: activityService))
+        _requestViewModel = StateObject(wrappedValue: RequestViewModel(activityService: activityService, userRequests: userRequests, playlistRequests: playlistRequests))
     }
     
     var body: some View {
@@ -165,6 +165,6 @@ enum Tab {
 
 struct RequestView_Previews: PreviewProvider {
     static var previews: some View {
-        RequestView()
+        RequestView(userRequests: [], playlistRequests: [])
     }
 }

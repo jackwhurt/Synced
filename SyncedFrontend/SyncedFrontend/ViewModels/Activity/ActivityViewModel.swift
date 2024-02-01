@@ -2,6 +2,8 @@ import Foundation
 
 class ActivityViewModel: ObservableObject {
     @Published var notifications: [NotificationMetadata] = []
+    @Published var userRequests: [UserRequest] = []
+    @Published var playlistRequests: [PlaylistRequest] = []
     @Published var errorMessage: String? = nil
     
     private let activityService: ActivityService
@@ -10,6 +12,21 @@ class ActivityViewModel: ObservableObject {
         self.activityService = activityService
         Task {
             await loadNotifications()
+            await loadRequests()
+        }
+    }
+    
+    func loadRequests() async {
+        do {
+            let requests = try await activityService.getRequests()
+            DispatchQueue.main.async {
+                self.userRequests = requests.userRequests
+                self.playlistRequests = requests.playlistRequests
+            }
+        } catch {
+            DispatchQueue.main.async {
+                self.errorMessage = "Failed to load requests. Please try again later."
+            }
         }
     }
     
@@ -21,7 +38,7 @@ class ActivityViewModel: ObservableObject {
             }
         } catch {
             DispatchQueue.main.async {
-                self.errorMessage = "Failed to load requests. Please try again later."
+                self.errorMessage = "Failed to load notifications. Please try again later."
             }
         }
     }

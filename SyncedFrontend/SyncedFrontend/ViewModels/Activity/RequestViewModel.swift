@@ -1,14 +1,16 @@
 import Foundation
 
 class RequestViewModel: ObservableObject {
-    @Published var userRequests: [UserRequest] = []
-    @Published var playlistRequests: [PlaylistRequest] = []
+    @Published var userRequests: [UserRequest]
+    @Published var playlistRequests: [PlaylistRequest]
     @Published var errorMessage: String? = nil
 
     private let activityService: ActivityService
 
-    init(activityService: ActivityService) {
+    init(activityService: ActivityService, userRequests: [UserRequest], playlistRequests: [PlaylistRequest]) {
         self.activityService = activityService
+        self.playlistRequests = playlistRequests
+        self.userRequests = userRequests
         loadRequests()
     }
 

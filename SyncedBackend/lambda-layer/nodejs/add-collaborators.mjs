@@ -1,5 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+import { sendApnsNotifications } from '/opt/nodejs/send-apns-notifications.mjs';
 import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({});
@@ -7,13 +8,16 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const MAX_COLLABORATORS = 10;
 
-export async function addCollaborators(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable) {
+export async function addCollaborators(playlistId, playlistTitle, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable, isDevEnvironment) {
     const timestamp = new Date().toISOString();
     const usernames = await getCollaboratorsUsername(collaboratorIds, usersTable);
     const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp);
+    const message = `@${usernames[cognitoUserId]} has requested you to join ${playlistTitle}!` 
+    const userIdsWithoutCreator = collaboratorIds.filter(id => id != cognitoUserId);
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
+        await sendApnsNotifications(userIdsWithoutCreator, message, usersTable, isDevEnvironment);
     } catch (err) {
         console.error('Error in transaction:', err);
         throw new err;

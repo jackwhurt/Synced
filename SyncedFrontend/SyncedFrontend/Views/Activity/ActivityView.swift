@@ -11,7 +11,15 @@ struct ActivityView: View {
         NavigationView {
             List {
                 Section {
-                    TextLink(title: "View Requests", destination: RequestView())
+                    HStack {
+                        TextLink(title: "View Requests", destination: RequestView(userRequests: activityViewModel.userRequests, playlistRequests: activityViewModel.playlistRequests))
+                        let requestCount = activityViewModel.playlistRequests.count + activityViewModel.userRequests.count
+                        if requestCount > 0 {
+                            Text("(\(requestCount))")
+                                .foregroundColor(.syncedBlue)
+                            Spacer()
+                        }
+                    }
                 }
 
                 Section(header: Text("Notifications")) {

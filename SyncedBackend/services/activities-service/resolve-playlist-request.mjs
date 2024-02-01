@@ -12,6 +12,7 @@ const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 
+// TODO: Accept notif
 export const resolvePlaylistRequestHandler = async (event) => {
     console.info('Received:', event);
 

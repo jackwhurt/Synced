@@ -33,7 +33,14 @@ struct CreatePlaylistView: View {
                 }
             }))
             .alert(isPresented: $showErrorAlert) {
-                Alert(title: Text("Error"), message: Text(createPlaylistViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+                Alert(
+                    title: Text("Error"),
+                    message: Text(createPlaylistViewModel.errorMessage ?? "Unknown error"),
+                    dismissButton: .default(Text("OK"), action: {
+                        // Clear the error message here
+                        createPlaylistViewModel.errorMessage = nil
+                    })
+                )
             }
         }
         .accentColor(Color("SyncedBlue"))
