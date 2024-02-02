@@ -33,10 +33,15 @@ struct CollaborativePlaylistMenuView: View {
     
     private var playlistsSection: some View {
         Section {
-            ForEach(collaborativePlaylistMenuViewModel.playlists) { playlist in
-                NavigationLink(destination: CollaborativePlaylistView(
-                    playlistId: String(playlist.id.dropFirst(3)))) {
-                    PlaylistView(playlist: playlist)
+            if collaborativePlaylistMenuViewModel.playlists.isEmpty {
+                Text("No playlists available")
+                    .foregroundColor(.gray)
+            } else {
+                ForEach(collaborativePlaylistMenuViewModel.playlists) { playlist in
+                    NavigationLink(destination: CollaborativePlaylistView(
+                        playlistId: String(playlist.id.dropFirst(3)))) {
+                            PlaylistView(playlist: playlist)
+                    }
                 }
             }
         }

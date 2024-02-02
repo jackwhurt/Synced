@@ -26,6 +26,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'stacks/sns.yaml'
+  
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/s3.yaml'
 
   LambdaStack:
     Type: AWS::CloudFormation::Stack

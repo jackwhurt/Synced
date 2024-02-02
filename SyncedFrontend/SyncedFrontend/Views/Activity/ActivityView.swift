@@ -32,13 +32,18 @@ struct ActivityView: View {
                 }
                 
                 Section(header: Text("Notifications")) {
-                    ForEach(activityViewModel.notifications, id: \.self) { notification in
-                        HStack {
-                            Text(notification.message)
-                                .padding(.vertical, 0.5)
-                            Spacer()
-                            Text(activityViewModel.convertTimestamp(notification.createdAt))
-                                .foregroundColor(.syncedDarkGrey)
+                    if activityViewModel.notifications.isEmpty {
+                        Text("No notifications found")
+                            .foregroundColor(.syncedDarkGrey)
+                    } else {
+                        ForEach(activityViewModel.notifications, id: \.self) { notification in
+                            HStack {
+                                Text(notification.message)
+                                    .padding(.vertical, 0.5)
+                                Spacer()
+                                Text(activityViewModel.convertTimestamp(notification.createdAt))
+                                    .foregroundColor(.gray)
+                            }
                         }
                     }
                 }
