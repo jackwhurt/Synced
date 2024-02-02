@@ -1,16 +1,17 @@
 import Foundation
+import SwiftUI
 
 class RequestViewModel: ObservableObject {
-    @Published var userRequests: [UserRequest]
-    @Published var playlistRequests: [PlaylistRequest]
+    @Binding var userRequests: [UserRequest]
+    @Binding var playlistRequests: [PlaylistRequest]
     @Published var errorMessage: String? = nil
 
     private let activityService: ActivityService
 
-    init(activityService: ActivityService, userRequests: [UserRequest], playlistRequests: [PlaylistRequest]) {
+    init(activityService: ActivityService, userRequests: Binding<[UserRequest]>, playlistRequests: Binding<[PlaylistRequest]>) {
         self.activityService = activityService
-        self.playlistRequests = playlistRequests
-        self.userRequests = userRequests
+        self._playlistRequests = playlistRequests
+        self._userRequests = userRequests
     }
 
     func loadRequests() {

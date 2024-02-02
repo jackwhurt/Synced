@@ -19,14 +19,15 @@ class CollaborativePlaylistViewModel: ObservableObject {
     private let authenticationService: AuthenticationServiceProtocol
     private var savedSongs: [SongMetadata] = []
     private var songsToDelete: [SongMetadata] = []
-
+    
     init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService, authenticationService: AuthenticationServiceProtocol, dismissAction: (() -> Void)? = nil) {
         self.playlistId = playlistId
         self.collaborativePlaylistService = collaborativePlaylistService
         self.authenticationService = authenticationService
         self.dismissAction = dismissAction
+        loadCachedPlaylist()
     }
-
+    
     func loadPlaylist() async {
         do {
             let fetchedPlaylist = try await collaborativePlaylistService.getPlaylistById(playlistId: playlistId)
@@ -35,6 +36,8 @@ class CollaborativePlaylistViewModel: ObservableObject {
                 self?.playlistSongs = fetchedPlaylist.songs
                 self?.appleMusicPlaylistId = fetchedPlaylist.appleMusicPlaylistId
             }
+            CachingService.shared.save(fetchedPlaylist.metadata, forKey: "playlistMetadata_\(playlistId)")
+            CachingService.shared.save(fetchedPlaylist.songs, forKey: "playlistSongs_\(playlistId)")
             setPlaylistOwner()
         } catch {
             print("Failed to load playlist: \(playlistId)")
@@ -49,7 +52,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
         // Ensure there's a valid index
         guard let index = indexSet.first else { return }
         let songToDelete = songsToDisplay[index]
-
+        
         // Check if the song is in songsToAdd
         if let indexInToAdd = songsToAdd.firstIndex(where: { $0.spotifyUri == songToDelete.spotifyUri }) {
             songsToAdd.remove(at: indexInToAdd)
@@ -59,7 +62,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
             playlistSongs.remove(at: indexInPlaylistSongs)
         }
     }
-
+    
     func setEditingTrue() {
         self.isEditing = true
         self.savedSongs = self.playlistSongs
@@ -98,12 +101,27 @@ class CollaborativePlaylistViewModel: ObservableObject {
             }
         }
     }
-
+    
     func cancelChanges() {
         playlistSongs = savedSongs
         songsToAdd = []
         songsToDelete = []
         setEditingFalse()
+    }
+    
+    private func loadCachedPlaylist() {
+        if let cachedMetadata: PlaylistMetadata = CachingService.shared.load(forKey: "playlistMetadata_\(playlistId)", type: PlaylistMetadata.self),
+           let cachedSongs: [SongMetadata] = CachingService.shared.load(forKey: "playlistSongs_\(playlistId)", type: [SongMetadata].self) {
+            DispatchQueue.main.async { [weak self] in
+                self?.playlistMetadata = cachedMetadata
+                self?.playlistSongs = cachedSongs
+            }
+            setPlaylistOwner()
+        } else {
+            Task {
+                await loadPlaylist()
+            }
+        }
     }
     
     private func setEditingFalse() {

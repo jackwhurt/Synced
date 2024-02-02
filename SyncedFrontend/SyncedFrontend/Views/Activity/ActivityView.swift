@@ -12,7 +12,16 @@ struct ActivityView: View {
             List {
                 Section {
                     HStack {
-                        TextLink(title: "View Requests", destination: RequestView(userRequests: activityViewModel.userRequests, playlistRequests: activityViewModel.playlistRequests))
+                        TextLink(title: "View Requests", destination: RequestView(userRequests:
+                        Binding(get: {
+                            self.activityViewModel.userRequests
+                        }, set: {
+                            self.activityViewModel.userRequests = $0
+                        }), playlistRequests: Binding(get: {
+                            self.activityViewModel.playlistRequests
+                        }, set: {
+                            self.activityViewModel.playlistRequests = $0
+                        })))
                         let requestCount = activityViewModel.playlistRequests.count + activityViewModel.userRequests.count
                         if requestCount > 0 {
                             Text("(\(requestCount))")
@@ -21,7 +30,7 @@ struct ActivityView: View {
                         }
                     }
                 }
-
+                
                 Section(header: Text("Notifications")) {
                     ForEach(activityViewModel.notifications, id: \.self) { notification in
                         HStack {
@@ -37,13 +46,13 @@ struct ActivityView: View {
             .navigationBarTitle("Activities")
             .onAppear(perform: activityViewModel.loadActivities)
             .alert("Error", isPresented: Binding<Bool>(
-                 get: { self.activityViewModel.errorMessage != nil },
-                 set: { _ in self.activityViewModel.errorMessage = nil }
-             ), presenting: activityViewModel.errorMessage) { errorMessage in
-                 Button("OK", role: .cancel) { }
-             } message: { errorMessage in
-                 Text(errorMessage)
-             }
+                get: { self.activityViewModel.errorMessage != nil },
+                set: { _ in self.activityViewModel.errorMessage = nil }
+            ), presenting: activityViewModel.errorMessage) { errorMessage in
+                Button("OK", role: .cancel) { }
+            } message: { errorMessage in
+                Text(errorMessage)
+            }
         }
     }
 }

@@ -13,12 +13,6 @@ class CollaborativePlaylistMenuViewModel: ObservableObject {
         self.collaborativePlaylistService = collaborativePlaylistService
         loadPlaylistsFromCache()
     }
-
-    private func loadPlaylistsFromCache() {
-        if let cachedPlaylists: [GetCollaborativePlaylistResponse] = CachingService.shared.load(forKey: "collaborativePlaylists", type: [GetCollaborativePlaylistResponse].self) {
-            self.playlists = cachedPlaylists
-        }
-    }
     
     func loadPlaylists() async {
         do {
@@ -32,6 +26,12 @@ class CollaborativePlaylistMenuViewModel: ObservableObject {
                 // TODO: Error msg
                 print("Failed to load playlists: \(error)")
             }
+        }
+    }
+    
+    private func loadPlaylistsFromCache() {
+        if let cachedPlaylists: [GetCollaborativePlaylistResponse] = CachingService.shared.load(forKey: "collaborativePlaylists", type: [GetCollaborativePlaylistResponse].self) {
+            self.playlists = cachedPlaylists
         }
     }
 }
