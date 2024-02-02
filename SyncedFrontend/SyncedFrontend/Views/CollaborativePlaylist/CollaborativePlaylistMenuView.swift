@@ -54,7 +54,6 @@ struct PlaylistView: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            // Custom AsyncImageLoader to load and display the cover image
             AsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
             
             // Title of the playlist

@@ -1,4 +1,5 @@
 import SwiftUI
+import CachedAsyncImage
 
 struct AsyncImageLoader: View {
     let urlString: String?
@@ -7,7 +8,7 @@ struct AsyncImageLoader: View {
 
     var body: some View {
         if let urlString = urlString, let url = URL(string: urlString) {
-            AsyncImage(url: url) { image in
+            CachedAsyncImage(url: url) { image in
                 image.resizable()
             } placeholder: {
                 ProgressView()

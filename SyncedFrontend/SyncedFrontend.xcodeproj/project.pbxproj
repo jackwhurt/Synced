@@ -14,6 +14,8 @@
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
 		801CC95A2B16736B006FB76D /* SignUpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9592B16736B006FB76D /* SignUpViewModel.swift */; };
+		8020A8B02B6D52A9004C9568 /* CachingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8020A8AF2B6D52A9004C9568 /* CachingService.swift */; };
+		8020A8B32B6D5852004C9568 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 8020A8B22B6D5852004C9568 /* CachedAsyncImage */; };
 		802184E42B482F0F0096F702 /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184E32B482F0F0096F702 /* Requests.swift */; };
 		802184E62B4885E90096F702 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184E52B4885E90096F702 /* HomeView.swift */; };
 		802184E82B4885F30096F702 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184E72B4885F30096F702 /* HomeViewModel.swift */; };
@@ -77,6 +79,7 @@
 		801CC9512B167183006FB76D /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		801CC9572B167326006FB76D /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
 		801CC9592B16736B006FB76D /* SignUpViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpViewModel.swift; sourceTree = "<group>"; };
+		8020A8AF2B6D52A9004C9568 /* CachingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingService.swift; sourceTree = "<group>"; };
 		802184E32B482F0F0096F702 /* Requests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Requests.swift; sourceTree = "<group>"; };
 		802184E52B4885E90096F702 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		802184E72B4885F30096F702 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
@@ -142,6 +145,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */,
+				8020A8B32B6D5852004C9568 /* CachedAsyncImage in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +294,7 @@
 				80D896E72B5B1BFA00543685 /* UserService.swift */,
 				806485022B66ACF600B62C93 /* ActivityService.swift */,
 				80F9CF842B6945FA003EAB5F /* SpotifyService.swift */,
+				8020A8AF2B6D52A9004C9568 /* CachingService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -383,6 +388,9 @@
 			dependencies = (
 			);
 			name = Synced;
+			packageProductDependencies = (
+				8020A8B22B6D5852004C9568 /* CachedAsyncImage */,
+			);
 			productName = SyncedFrontend;
 			productReference = 805D493F2B0FDE100081B076 /* Synced.app */;
 			productType = "com.apple.product-type.application";
@@ -411,6 +419,9 @@
 				Base,
 			);
 			mainGroup = 805D49362B0FDE100081B076;
+			packageReferences = (
+				8020A8B12B6D5852004C9568 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
+			);
 			productRefGroup = 805D49402B0FDE100081B076 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -493,6 +504,7 @@
 				806485092B66B1B200B62C93 /* ActivityViewModel.swift in Sources */,
 				8002EBE02B658EB70017C01A /* Activity.swift in Sources */,
 				802184F02B497F570096F702 /* CreatePlaylistView.swift in Sources */,
+				8020A8B02B6D52A9004C9568 /* CachingService.swift in Sources */,
 				805D495C2B0FF8350081B076 /* LongInput.swift in Sources */,
 				802184F42B4986FA0096F702 /* CreatePlaylistViewModel.swift in Sources */,
 				805D49452B0FDE100081B076 /* ContentView.swift in Sources */,
@@ -758,6 +770,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8020A8B12B6D5852004C9568 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lorenzofiamingo/swiftui-cached-async-image";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8020A8B22B6D5852004C9568 /* CachedAsyncImage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8020A8B12B6D5852004C9568 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
+			productName = CachedAsyncImage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 805D49372B0FDE100081B076 /* Project object */;
 }
