@@ -62,7 +62,8 @@ async function getPlaylistTitle(playlistId, playlistsTable) {
 function buildNotificationTransactItems(userIds, notificationMessage, createdBy, playlistId, activitiesTable) {
     const transactItems = [];
     const timestamp = new Date().toISOString();
-
+    const sortableTimestamp = timestamp.replace(/[-:]/g, '').split('.')[0];
+    
     for (let userId of userIds) {
         if (userId === createdBy) continue;
         transactItems.push({
@@ -70,7 +71,7 @@ function buildNotificationTransactItems(userIds, notificationMessage, createdBy,
                 TableName: activitiesTable,
                 Item: {
                     PK: userId,
-                    SK: `notification#${uuidv4()}`,
+                    SK: `notification#${sortableTimestamp}#${uuidv4()}`,
                     message: notificationMessage,
                     createdBy: createdBy,
                     createdAt: timestamp,

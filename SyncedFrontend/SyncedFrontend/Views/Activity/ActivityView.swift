@@ -12,16 +12,7 @@ struct ActivityView: View {
             List {
                 Section {
                     HStack {
-                        TextLink(title: "View Requests", destination: RequestView(userRequests:
-                        Binding(get: {
-                            self.activityViewModel.userRequests
-                        }, set: {
-                            self.activityViewModel.userRequests = $0
-                        }), playlistRequests: Binding(get: {
-                            self.activityViewModel.playlistRequests
-                        }, set: {
-                            self.activityViewModel.playlistRequests = $0
-                        })))
+                        TextLink(title: "View Requests", destination: RequestView(userRequests: self.activityViewModel.userRequests, playlistRequests: self.activityViewModel.playlistRequests))
                         let requestCount = activityViewModel.playlistRequests.count + activityViewModel.userRequests.count
                         if requestCount > 0 {
                             Text("(\(requestCount))")

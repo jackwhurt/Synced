@@ -11,11 +11,12 @@ export async function sendApnsNotifications(userIds, notificationMessage, usersT
   for (const arn of endpointArns) {
     try {
       await sendApnsMessage(arn, notificationMessage, isDevEnvironment);
-      console.info('Successfully send notifications to ', userIds);
     } catch (err) {
       console.error(`Error sending APNS message to device token ${arn}:`, err);
     }
   }
+
+  console.info('Successfully sent notifications to ', userIds);
 }
 
 async function getEndpointArns(userIds, usersTable, isDevEnvironment) {
