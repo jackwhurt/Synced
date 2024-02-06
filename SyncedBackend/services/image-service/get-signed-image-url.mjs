@@ -63,7 +63,6 @@ async function checkIfExists(tableName, key) {
 }
 
 function generateObjectKey(userId, playlistId, fileExtension) {
-    const uuid = uuidv4();
     if (userId) return `images/user/${userId}.${fileExtension}`;
     if (playlistId) return `images/playlist/${playlistId}.${fileExtension}`;
 }
