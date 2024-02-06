@@ -16,7 +16,13 @@ Resources:
             AllowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD']
             AllowedOrigins: ['*']
             MaxAge: 3000
-
+    Properties:
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
+          
 Outputs:
+  BucketName:
+    Value: !Ref ImageUploadBucket
   BucketArn:
     Value: !GetAtt ImageUploadBucket.Arn

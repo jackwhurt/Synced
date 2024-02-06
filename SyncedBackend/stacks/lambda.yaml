@@ -14,6 +14,8 @@ Parameters:
     Type: String
   ApnsPlatformArn:
     Type: String
+  BucketName:
+    Type: String
   DevEnvironment:
     Type: String
     AllowedValues:
@@ -770,6 +772,62 @@ Resources:
         Variables:
           USERS_TABLE: !Ref UsersTableName
 
+  # Image
+  GetSignedImageUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/image-service/
+      Handler: get-signed-image-url.getSignedImageUrlHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get a signed url used to upload an image to an S3 bucket.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - "s3:GetObject"
+                - "s3:PutObject"
+              Resource: 
+                - !Sub "arn:aws:s3:::${BucketName}/*"
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref BucketName        
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          
+  UpdateImageUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/image-service/
+      Handler: update-image-url.updateImageUrlHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to update the url to an image.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+
 Outputs:
   UpdateSpotifyDevTokenFunctionArn:
     Value: !GetAtt UpdateSpotifyDevTokenFunction.Arn
@@ -827,3 +885,7 @@ Outputs:
     Value: !GetAtt RegisterUserForAPNSFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
+  GetSignedImageUrlFunctionArn:
+    Value: !GetAtt GetSignedImageUrlFunction.Arn
+  UpdateImageUrlFunctionArn:
+    Value: !GetAtt UpdateImageUrlFunction.Arn

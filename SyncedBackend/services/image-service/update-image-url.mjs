@@ -7,7 +7,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const usersTable = process.env.USERS_TABLE;
 
-export const s3TriggeredUpdateHandler = async (event) => {
+export const updateImageUrlHandler = async (event) => {
     console.info('Received S3 event:', event);
 
     try {
@@ -24,17 +24,16 @@ export const s3TriggeredUpdateHandler = async (event) => {
 };
 
 function extractInfoFromEvent(event) {
-    const record = event.Records[0].s3;
-    const objectKey = decodeURIComponent(record.object.key.replace(/\+/g, ' '));
-    const bucketName = record.bucket.name;
+    const bucketName = event.detail.bucket.name;
+    const objectKey = decodeURIComponent(event.detail.object.key.replace(/\+/g, ' '));
     const photoURL = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
-
     const keyParts = objectKey.split('/');
     const entityType = keyParts[1]; // 'user' or 'playlist'
     const entityId = keyParts[2];
 
     return { entityId, entityType, photoURL };
 }
+
 
 async function updateDatabase(entityId, entityType, photoURL) {
     let params;
@@ -66,7 +65,7 @@ async function updateDatabase(entityId, entityType, photoURL) {
     }
 
     await ddbDocClient.send(new UpdateCommand(params));
-    
+
     return { entityId, entityType, photoURL };
 }
 

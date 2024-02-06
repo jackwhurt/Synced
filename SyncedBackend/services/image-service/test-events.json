@@ -1,0 +1,8 @@
+{
+    "get-url-user": {
+        "body": "{\"userId\": \"70f23806-2368-4be9-a1a1-f078d9660b1d\", \"fileType\": \"jpg\"}"
+    },
+    "get-url-playlist": {
+        "body": "{\"playlistId\": \"playlist456\", \"fileType\": \"jpg\"}"
+    }
+}
