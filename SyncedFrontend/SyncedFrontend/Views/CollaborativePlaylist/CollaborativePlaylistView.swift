@@ -1,6 +1,5 @@
 import SwiftUI
 
-// TODO: Show collaborators
 enum AlertType: Identifiable {
     case error
     case deleteConfirmation
@@ -10,6 +9,7 @@ enum AlertType: Identifiable {
 
 struct CollaborativePlaylistView: View {
     @Environment(\.presentationMode) var presentationMode
+    
     @StateObject private var collaborativePlaylistViewModel: CollaborativePlaylistViewModel
     @State private var showAlert: AlertType? = nil
     @State private var selectedOption: String? = nil
@@ -18,7 +18,9 @@ struct CollaborativePlaylistView: View {
     init(playlistId: String) {
         let viewModel = CollaborativePlaylistViewModel(
             playlistId: playlistId,
-            collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(), authenticationService: DIContainer.shared.provideAuthenticationService()
+            collaborativePlaylistService: DIContainer.shared.provideCollaborativePlaylistService(),
+            imageService: DIContainer.shared.provideImageService(),
+            authenticationService: DIContainer.shared.provideAuthenticationService()
         )
         _collaborativePlaylistViewModel = StateObject(wrappedValue: viewModel)
     }
@@ -26,7 +28,7 @@ struct CollaborativePlaylistView: View {
     var body: some View {
         List {
             if let playlistMetadata = collaborativePlaylistViewModel.playlistMetadata {
-                PlaylistHeaderView(metadata: playlistMetadata)
+                PlaylistHeaderView(metadata: playlistMetadata, collaborativePlaylistViewModel: collaborativePlaylistViewModel)
                     .listRowSeparator(.hidden)
                 
                 SongList(songs: collaborativePlaylistViewModel.songsToDisplay,
@@ -162,10 +164,28 @@ struct CollaborativePlaylistView: View {
 
 struct PlaylistHeaderView: View {
     var metadata: PlaylistMetadata
+    @StateObject var collaborativePlaylistViewModel: CollaborativePlaylistViewModel
     
     var body: some View {
         VStack {
-            AsyncImageLoader(urlString: metadata.coverImageUrl, width: 300, height: 300)
+            ZStack(alignment: .center) {
+                if let imagePreview = collaborativePlaylistViewModel.imagePreview {
+                    Image(uiImage: imagePreview)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 300, height: 300)
+                        .cornerRadius(5)
+                        .clipped()
+                } else {
+                    AsyncImageLoader(urlString: metadata.coverImageUrl, width: 300, height: 300)
+                }
+                
+                if collaborativePlaylistViewModel.isEditing {
+                    SelectImage(onImageSelected: { selectedImage in
+                        collaborativePlaylistViewModel.imagePreview = selectedImage
+                    })
+                }
+            }
             Text(metadata.title)
                 .font(.headline)
                 .bold()

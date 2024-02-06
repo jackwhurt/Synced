@@ -17,6 +17,10 @@ class DIContainer {
         return UserService(apiService: provideAPIService())
     }
     
+    func provideImageService() -> ImageService {
+        return ImageService(apiService: provideAPIService())
+    }
+    
     func provideSongsService() -> SongService {
         return SongService(apiService: provideAPIService())
     }

@@ -116,3 +116,12 @@ struct RegisterUserForApnsResponse: Codable {
     let message: String?
     let error: String?
 }
+
+struct GetImageUrlResponse: Codable {
+    let uploadUrl: String?
+    let error: String?
+}
+
+struct UploadImageResponse: Codable {
+    let error: String?
+}

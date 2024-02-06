@@ -12,7 +12,6 @@ class CachingService {
             let filePath = getFilePath(forKey: key)
             let data = try JSONEncoder().encode(object)
             try data.write(to: filePath, options: [.atomicWrite, .completeFileProtection])
-            print("Object successfully saved to \(filePath)")
         } catch {
             print("Could not save object: \(error)")
         }

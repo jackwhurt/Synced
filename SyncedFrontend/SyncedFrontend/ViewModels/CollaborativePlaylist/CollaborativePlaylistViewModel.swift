@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 class CollaborativePlaylistViewModel: ObservableObject {
     @Published var playlistSongs: [SongMetadata] = []
@@ -7,6 +8,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
     @Published var isEditing = false
     @Published var songsToAdd: [SongMetadata] = []
     @Published var playlistOwner = false
+    @Published var imagePreview: UIImage?
     var autoDismiss = false
     var appleMusicPlaylistId: String? = nil
     var dismissAction: (() -> Void)?
@@ -16,13 +18,16 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     private let playlistId: String
     private let collaborativePlaylistService: CollaborativePlaylistService
+    private let imageService: ImageService
     private let authenticationService: AuthenticationServiceProtocol
     private var savedSongs: [SongMetadata] = []
     private var songsToDelete: [SongMetadata] = []
     
-    init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService, authenticationService: AuthenticationServiceProtocol, dismissAction: (() -> Void)? = nil) {
+    init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService, imageService: ImageService,
+         authenticationService: AuthenticationServiceProtocol, dismissAction: (() -> Void)? = nil) {
         self.playlistId = playlistId
         self.collaborativePlaylistService = collaborativePlaylistService
+        self.imageService = imageService
         self.authenticationService = authenticationService
         self.dismissAction = dismissAction
         loadCachedPlaylist()
@@ -70,6 +75,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
     
     func saveChanges() async {
         do {
+            try await saveImage()
             try await collaborativePlaylistService.editSongs(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songsToDelete: songsToDelete, songsToAdd: songsToAdd, oldSongs: playlistSongs )
             let newSongs = self.songsToAdd
             setEditingFalse()
@@ -107,6 +113,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
         songsToAdd = []
         songsToDelete = []
         setEditingFalse()
+        imagePreview = nil
     }
     
     private func loadCachedPlaylist() {
@@ -121,6 +128,22 @@ class CollaborativePlaylistViewModel: ObservableObject {
             Task {
                 await loadPlaylist()
             }
+        }
+    }
+    
+    private func saveImage() async throws {
+        guard let image = imagePreview else {
+            return
+        }
+        
+        do {
+            let url = try await imageService.getImageUploadUrl(playlistId: playlistId, userIdBool: "false")
+            print("Successfully received url: \(url)")
+            try await imageService.uploadImage(uploadUrl: url, image: image)
+            print("Successfully saved image")
+        } catch {
+            print("Failed to save image: \(error)")
+            throw CollaborativePlaylistViewModelError.failedToSaveImage
         }
     }
     

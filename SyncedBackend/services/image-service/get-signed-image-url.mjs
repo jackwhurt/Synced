@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const s3Client = new S3Client({});
 const ddbClient = new DynamoDBClient({});
+
 const bucketName = process.env.BUCKET_NAME;
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const usersTable = process.env.USERS_TABLE;
@@ -12,28 +13,44 @@ const usersTable = process.env.USERS_TABLE;
 export const getSignedImageUrlHandler = async (event) => {
     console.info('received:', event);
 
-    const { userId, playlistId, fileType } = JSON.parse(event.body);
-    if (!fileType) return createErrorResponse({ statusCode: 400, message: 'Missing required fileType' });
+    const queryParams = event.queryStringParameters || {};
+    const userIdBool = queryParams.userIdBool === 'true';
+    const playlistId = queryParams.playlistId || null;
 
-    if (userId && !(await checkIfExists(usersTable, { userId: { S: userId } }))) {
-        return createErrorResponse({ statusCode: 404, message: 'User does not exist' });
-    }
+    const { userId, errorResponse } = await validateRequest(event, userIdBool, playlistId);
 
-    if (playlistId && !(await checkIfExists(playlistsTable, { PK: { S: `cp#${playlistId}` }, SK: { S: 'metadata' } }))) {
-        return createErrorResponse({ statusCode: 404, message: 'Playlist does not exist' });
-    }
+    if (errorResponse) return errorResponse;
 
-    const fileExtension = fileType.toLowerCase();
+    const fileExtension = 'jpeg';
     const objectKey = generateObjectKey(userId, playlistId, fileExtension);
-    const contentType = getContentType(fileType);
+    const contentType = 'image/jpeg';
 
     try {
         const url = await generateSignedUrl(bucketName, objectKey, contentType);
+
         return createSuccessResponse(200, { uploadUrl: url, objectKey });
     } catch (error) {
         return createErrorResponse(error);
     }
 };
+
+async function validateRequest(event, userIdBool, playlistId) {
+    let userId = null;
+    let errorResponse = null;
+
+    if (userIdBool) {
+        const claims = event.requestContext.authorizer?.claims;
+        userId = claims['sub'];
+    }
+
+    if (userId && !(await checkIfExists(usersTable, { userId: { S: userId } }))) {
+        errorResponse = createErrorResponse({ statusCode: 404, message: 'User does not exist' });
+    } else if (playlistId && !(await checkIfExists(playlistsTable, { PK: { S: `cp#${playlistId}` }, SK: { S: 'metadata' } }))) {
+        errorResponse = createErrorResponse({ statusCode: 404, message: 'Playlist does not exist' });
+    }
+
+    return { userId, errorResponse };
+}
 
 async function checkIfExists(tableName, key) {
     try {
@@ -47,8 +64,8 @@ async function checkIfExists(tableName, key) {
 
 function generateObjectKey(userId, playlistId, fileExtension) {
     const uuid = uuidv4();
-    if (userId) return `images/user/${userId}/${uuid}.${fileExtension}`;
-    if (playlistId) return `images/playlist/${playlistId}/${uuid}.${fileExtension}`;
+    if (userId) return `images/user/${userId}.${fileExtension}`;
+    if (playlistId) return `images/playlist/${playlistId}.${fileExtension}`;
 }
 
 async function generateSignedUrl(bucket, key, contentType) {
@@ -58,17 +75,6 @@ async function generateSignedUrl(bucket, key, contentType) {
         ContentType: contentType,
     });
     return getSignedUrl(s3Client, command, { expiresIn: 300 });
-}
-
-function getContentType(fileType) {
-    const contentTypeMap = {
-        'jpg': 'image/jpeg',
-        'jpeg': 'image/jpeg',
-        'png': 'image/png',
-        'gif': 'image/gif',
-        'heic': 'image/heic',
-    };
-    return contentTypeMap[fileType.toLowerCase()] || 'application/octet-stream';
 }
 
 function createSuccessResponse(statusCode, body) {

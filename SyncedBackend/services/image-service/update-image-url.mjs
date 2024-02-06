@@ -29,7 +29,8 @@ function extractInfoFromEvent(event) {
     const photoURL = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
     const keyParts = objectKey.split('/');
     const entityType = keyParts[1]; // 'user' or 'playlist'
-    const entityId = keyParts[2];
+    const imageName = keyParts[2]
+    const entityId = imageName.split('.')[0];
 
     return { entityId, entityType, photoURL };
 }
@@ -51,12 +52,12 @@ async function updateDatabase(entityId, entityType, photoURL) {
         params = {
             TableName: playlistsTable,
             Key: { 
-                PK: `playlist#${entityId}`, 
+                PK: `cp#${entityId}`, 
                 SK: 'metadata',
             },
-            UpdateExpression: 'SET photoURL = :photoURL, updatedAt = :updatedAt',
+            UpdateExpression: 'SET coverImageUrl = :coverImageUrl, updatedAt = :updatedAt',
             ExpressionAttributeValues: {
-                ':photoURL': photoURL,
+                ':coverImageUrl': photoURL,
                 ':updatedAt': new Date().toISOString(),
             },
         };

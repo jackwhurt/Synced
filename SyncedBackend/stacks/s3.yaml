@@ -6,21 +6,32 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
+        BlockPublicAcls: true
         BlockPublicPolicy: false
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders: ['*']
-            AllowedMethods: ['GET', 'PUT', 'POST', 'DELETE', 'HEAD']
+            AllowedMethods: ['GET']
             AllowedOrigins: ['*']
             MaxAge: 3000
-    Properties:
       NotificationConfiguration:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
-          
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ImageUploadBucket
+      PolicyDocument:
+        Statement:
+          - Sid: PublicReadForImagesFolder
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${ImageUploadBucket}/images/*'
+
 Outputs:
   BucketName:
     Value: !Ref ImageUploadBucket

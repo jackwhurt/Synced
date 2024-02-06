@@ -5,11 +5,13 @@ struct AsyncImageLoader: View {
     let urlString: String?
     let width: CGFloat
     let height: CGFloat
-
+    
     var body: some View {
         if let urlString = urlString, let url = URL(string: urlString) {
             CachedAsyncImage(url: url) { image in
                 image.resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .clipped()
             } placeholder: {
                 ProgressView()
             }
