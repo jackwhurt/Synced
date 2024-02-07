@@ -16,7 +16,8 @@ phases:
       - aws cloudformation package --template template.yaml --s3-bucket synced-cicd --output-template template-export.yml
   post_build:
     commands:
-      - aws cloudformation deploy --template-file template-export.yml --stack-name synced --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND
+      - aws cloudformation deploy --template-file template-export.yml --stack-name synced-prod --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --parameter-overrides EnvironmentTypeParameter=production
+
 artifacts:
   type: zip
   files:

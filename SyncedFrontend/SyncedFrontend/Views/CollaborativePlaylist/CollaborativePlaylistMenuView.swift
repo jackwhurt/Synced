@@ -33,10 +33,15 @@ struct CollaborativePlaylistMenuView: View {
     
     private var playlistsSection: some View {
         Section {
-            ForEach(collaborativePlaylistMenuViewModel.playlists) { playlist in
-                NavigationLink(destination: CollaborativePlaylistView(
-                    playlistId: String(playlist.id.dropFirst(3)))) {
-                    PlaylistView(playlist: playlist)
+            if collaborativePlaylistMenuViewModel.playlists.isEmpty {
+                Text("No playlists available")
+                    .foregroundColor(.gray)
+            } else {
+                ForEach(collaborativePlaylistMenuViewModel.playlists) { playlist in
+                    NavigationLink(destination: CollaborativePlaylistView(
+                        playlistId: String(playlist.id.dropFirst(3)))) {
+                            PlaylistView(playlist: playlist)
+                    }
                 }
             }
         }
@@ -54,8 +59,7 @@ struct PlaylistView: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            // Custom AsyncImageLoader to load and display the cover image
-            AsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
+            MusicAsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
             
             // Title of the playlist
             Text(playlist.title)

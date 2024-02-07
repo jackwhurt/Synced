@@ -1,15 +1,19 @@
 import Foundation
 
 class CollaborativePlaylistMenuViewModel: ObservableObject {
-    @Published var playlists: [GetCollaborativePlaylistResponse] = []
+    @Published var playlists: [GetCollaborativePlaylistResponse] = [] {
+        didSet {
+            CachingService.shared.save(playlists, forKey: "collaborativePlaylists")
+        }
+    }
     
     private let collaborativePlaylistService: CollaborativePlaylistService
 
     init(collaborativePlaylistService: CollaborativePlaylistService) {
         self.collaborativePlaylistService = collaborativePlaylistService
+        loadPlaylistsFromCache()
     }
-
-    // TODO: Call loadplaylists everytime you go back. Then can refactor viewmodel out of create playlist viewmodel
+    
     func loadPlaylists() async {
         do {
             let loadedPlaylists = try await collaborativePlaylistService.getPlaylists()
@@ -19,9 +23,15 @@ class CollaborativePlaylistMenuViewModel: ObservableObject {
             }
         } catch {
             DispatchQueue.main.async {
-                // Update some state here to show error message
+                // TODO: Error msg
                 print("Failed to load playlists: \(error)")
             }
+        }
+    }
+    
+    private func loadPlaylistsFromCache() {
+        if let cachedPlaylists: [GetCollaborativePlaylistResponse] = CachingService.shared.load(forKey: "collaborativePlaylists", type: [GetCollaborativePlaylistResponse].self) {
+            self.playlists = cachedPlaylists
         }
     }
 }

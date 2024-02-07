@@ -1,15 +1,17 @@
 import SwiftUI
 
 struct RoundButtonStyle: ButtonStyle {
-    let backgroundColor: Color
-    let foregroundColor: Color
+    let backgroundColour: Color
+    let foregroundColour: Color
+    var width: CGFloat? = 200
+    var height: CGFloat? = 50
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .frame(width: 200, height: 50) // Set a fixed size for the button
-            .background(backgroundColor)
-            .foregroundColor(foregroundColor)
-            .cornerRadius(20) // Increase corner radius for a rounder button
+            .frame(width: width, height: height)
+            .background(backgroundColour)
+            .foregroundColor(foregroundColour)
+            .cornerRadius(20)
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
 }
@@ -17,6 +19,10 @@ struct RoundButtonStyle: ButtonStyle {
 struct RoundButton: View {
     let title: String
     let action: () -> Void
+    var backgroundColour: Color = Color.syncedBlue
+    var foregroundColour: Color = Color.white
+    var width: CGFloat? = 200
+    var height: CGFloat? = 50
 
     var body: some View {
         Button(action: action) {
@@ -25,20 +31,20 @@ struct RoundButton: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .buttonStyle(RoundButtonStyle(
-            backgroundColor: Color("SyncedBlue"),
-            foregroundColor: Color.white
+            backgroundColour: backgroundColour,
+            foregroundColour: foregroundColour,
+            width: width,
+            height: height
         ))
     }
 }
 
-// Preview for the RoundButton
 struct RoundButton_Previews: PreviewProvider {
     static var previews: some View {
         RoundButton(
-            title: "Sample Button"
-        ) {
-            // Action
-        }
+            title: "Sample Button",
+            action: {}
+        )
         .previewLayout(.sizeThatFits)
         .padding()
     }

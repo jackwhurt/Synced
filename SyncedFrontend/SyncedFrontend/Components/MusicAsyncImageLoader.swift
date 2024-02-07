@@ -1,14 +1,16 @@
 import SwiftUI
 
-struct AsyncImageLoader: View {
+struct MusicAsyncImageLoader: View {
     let urlString: String?
     let width: CGFloat
     let height: CGFloat
-
+    
     var body: some View {
         if let urlString = urlString, let url = URL(string: urlString) {
-            AsyncImage(url: url) { image in
+            CachedAsyncImage(url: url) { image in
                 image.resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .clipped()
             } placeholder: {
                 ProgressView()
             }
@@ -26,7 +28,7 @@ struct AsyncImageLoader: View {
 // Preview Provider
 struct AsyncImageLoader_Previews: PreviewProvider {
     static var previews: some View {
-        AsyncImageLoader(
+        MusicAsyncImageLoader(
             urlString: "https://example.com/sample-image.jpg",
             width: 100,
             height: 100

@@ -84,7 +84,7 @@ struct SongRowToAdd: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            AsyncImageLoader(urlString: song.coverImageUrl, width: 40, height: 40)
+            MusicAsyncImageLoader(urlString: song.coverImageUrl, width: 40, height: 40)
             VStack(alignment: .leading, spacing: 0) {
                 Text(song.title)
                     .bold()

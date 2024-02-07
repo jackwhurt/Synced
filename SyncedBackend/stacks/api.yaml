@@ -49,7 +49,11 @@ Parameters:
     Type: String
   GetUsersFunctionArn:
     Type: String
+  GetUserByIdFunctionArn:
+    Type: String
   RegisterUserForAPNSFunctionArn:
+    Type: String
+  GetSignedImageUrlFunctionArn:
     Type: String
   UserPoolId: 
     Type: String
@@ -769,6 +773,35 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/users"
   
+  # Users / {id}
+  UserIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref UsersResource
+      PathPart: '{id}'
+      RestApiId: !Ref MyApi
+
+  GetUserByIdMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref UserIdResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetUserByIdFunctionArn}/invocations"
+
+  GetUserByIdLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetUserByIdFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/users/{id}"
+  
   # Users / APNS
   ApnsResource:
     Type: AWS::ApiGateway::Resource
@@ -797,6 +830,36 @@ Resources:
       FunctionName: !Ref RegisterUserForAPNSFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/users/apns"
+
+  # Image
+  ImageResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt MyApi.RootResourceId
+      PathPart: image
+      RestApiId: !Ref MyApi
+
+  # Get Spotify Auth Url
+  GetSignedImageUrlMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref ImageResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSignedImageUrlFunctionArn}/invocations"
+
+  GetSignedImageUrlLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetSignedImageUrlFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/image" 
 
   # Deployment of the API
   ApiDeployment:

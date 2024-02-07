@@ -12,7 +12,7 @@ struct ActivityView: View {
             List {
                 Section {
                     HStack {
-                        TextLink(title: "View Requests", destination: RequestView(userRequests: activityViewModel.userRequests, playlistRequests: activityViewModel.playlistRequests))
+                        TextLink(title: "View Requests", destination: RequestView(userRequests: self.activityViewModel.userRequests, playlistRequests: self.activityViewModel.playlistRequests))
                         let requestCount = activityViewModel.playlistRequests.count + activityViewModel.userRequests.count
                         if requestCount > 0 {
                             Text("(\(requestCount))")
@@ -21,15 +21,20 @@ struct ActivityView: View {
                         }
                     }
                 }
-
+                
                 Section(header: Text("Notifications")) {
-                    ForEach(activityViewModel.notifications, id: \.self) { notification in
-                        HStack {
-                            Text(notification.message)
-                                .padding(.vertical, 0.5)
-                            Spacer()
-                            Text(activityViewModel.convertTimestamp(notification.createdAt))
-                                .foregroundColor(.syncedDarkGrey)
+                    if activityViewModel.notifications.isEmpty {
+                        Text("No notifications found")
+                            .foregroundColor(.syncedDarkGrey)
+                    } else {
+                        ForEach(activityViewModel.notifications, id: \.self) { notification in
+                            HStack {
+                                Text(notification.message)
+                                    .padding(.vertical, 0.5)
+                                Spacer()
+                                Text(activityViewModel.convertTimestamp(notification.createdAt))
+                                    .foregroundColor(.gray)
+                            }
                         }
                     }
                 }
@@ -37,13 +42,13 @@ struct ActivityView: View {
             .navigationBarTitle("Activities")
             .onAppear(perform: activityViewModel.loadActivities)
             .alert("Error", isPresented: Binding<Bool>(
-                 get: { self.activityViewModel.errorMessage != nil },
-                 set: { _ in self.activityViewModel.errorMessage = nil }
-             ), presenting: activityViewModel.errorMessage) { errorMessage in
-                 Button("OK", role: .cancel) { }
-             } message: { errorMessage in
-                 Text(errorMessage)
-             }
+                get: { self.activityViewModel.errorMessage != nil },
+                set: { _ in self.activityViewModel.errorMessage = nil }
+            ), presenting: activityViewModel.errorMessage) { errorMessage in
+                Button("OK", role: .cancel) { }
+            } message: { errorMessage in
+                Text(errorMessage)
+            }
         }
     }
 }

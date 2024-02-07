@@ -15,6 +15,24 @@ class UserService {
         }
     }
     
+    func getUserById(userId: String) async throws -> UserMetadata {
+        do {
+            let response = try await apiService.makeGetRequest(endpoint: "/users/\(userId)", model: GetUserByIdResponse.self)
+
+            if let error = response.error {
+                print("Server error: \(error)")
+                throw UserServiceError.failedToRetrieveUser
+            }
+            guard let user = response.user else {
+                throw UserServiceError.failedToRetrieveUser
+            }
+            return user
+        } catch {
+            print("Failed to get user \(userId)")
+            throw UserServiceError.failedToRetrieveUser
+        }
+    }
+    
     func registerUserForApns(deviceToken: String) async {
         do {
             let parameters: [String: String] = ["deviceToken": deviceToken]

@@ -26,6 +26,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'stacks/sns.yaml'
+  
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/s3.yaml'
 
   LambdaStack:
     Type: AWS::CloudFormation::Stack
@@ -37,6 +42,7 @@ Resources:
         TokensTableName: !GetAtt DatabaseStack.Outputs.TokensTableName
         ActivitiesTableName: !GetAtt DatabaseStack.Outputs.ActivitiesTableName
         LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
+        BucketName: !GetAtt S3Stack.Outputs.BucketName
         ApnsPlatformArn: 
           Fn::If:
             - IsDevEnvironment
@@ -62,6 +68,8 @@ Resources:
       Parameters:
         UpdateSpotifyDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateSpotifyDevTokenFunctionArn
         UpdateAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicDevTokenFunctionArn
+        BucketName: !GetAtt S3Stack.Outputs.BucketName
+        UpdateImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.UpdateImageUrlFunctionArn
 
   ApiStack:
     Type: AWS::CloudFormation::Stack
@@ -92,7 +100,7 @@ Resources:
         ResolvePlaylistRequestFunctionArn: !GetAtt LambdaStack.Outputs.ResolvePlaylistRequestFunctionArn
         GetNotificationsFunctionArn: !GetAtt LambdaStack.Outputs.GetNotificationsFunctionArn
         GetUsersFunctionArn: !GetAtt LambdaStack.Outputs.GetUsersFunctionArn
+        GetUserByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetUserByIdFunctionArn
         RegisterUserForAPNSFunctionArn: !GetAtt LambdaStack.Outputs.RegisterUserForAPNSFunctionArn
+        GetSignedImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSignedImageUrlFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
-
-      

@@ -6,7 +6,11 @@ Parameters:
     Type: String
   UpdateAppleMusicDevTokenFunctionArn:
     Type: String
-
+  BucketName:
+    Type: String
+  UpdateImageUrlFunctionArn:
+    Type: String
+  
 Resources:
   SpotifyTokenRefreshRule:
     Type: "AWS::Events::Rule"
@@ -39,3 +43,34 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt AppleMusicTokenRefreshRule.Arn
+
+  # Workaround for the circular dependency
+  S3UploadRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Description: 'Route S3 Object Created events to Lambda'
+      EventBusName: default
+      EventPattern:
+        source:
+          - "aws.s3"
+        detail-type:
+          - "Object Created"
+        detail:
+          bucket:
+            name:
+              - !Ref BucketName
+          object:
+            key:
+              prefix:
+                - "images/"
+      Targets:
+        - Id: "UpdateImageUrlFunction"
+          Arn: !Ref UpdateImageUrlFunctionArn
+
+  S3UploadRulePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UpdateImageUrlFunctionArn
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt S3UploadRule.Arn

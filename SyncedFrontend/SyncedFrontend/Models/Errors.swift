@@ -29,6 +29,7 @@ enum APIServiceError: Error {
     case tokenRetrievalFailed
     case invalidURL
     case failedToDecodeResponse
+    case failedToUploadToS3
 }
 
 enum AppleMusicServiceError: Error {
@@ -64,6 +65,7 @@ enum SongServiceError: Error {
 enum UserServiceError: Error {
     case failedToRetrieveUsers
     case failedToRegisterForApns
+    case failedToRetrieveUser
 }
 
 enum ActivityServiceError: Error {
@@ -79,5 +81,17 @@ enum SpotifyServiceError: Error {
 
 enum CollaborativePlaylistViewModelError: Error {
     case noAppleMusicPlaylistIdSet
+    case failedToSaveImage
 }
 
+enum ImageServiceError: Error {
+    case failedToGetImageUploadUrl
+    case uploadUrlNotFound
+    case failedToUploadImage
+    case imageDataConversionFailed
+}
+
+enum ProfileViewModelError: Error {
+    case failedToGetUserId
+    case failedToSaveChanges
+}

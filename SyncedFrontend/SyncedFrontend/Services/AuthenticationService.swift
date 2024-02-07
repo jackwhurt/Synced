@@ -90,23 +90,6 @@ class AuthenticationService: AuthenticationServiceProtocol {
         }
     }
 
-    private func saveTokens(accessToken: String, idToken: String, refreshToken: String) throws {
-        if let accessTokenData = accessToken.data(using: .utf8),
-           let idTokenData = idToken.data(using: .utf8),
-           let refreshTokenData = refreshToken.data(using: .utf8) {
-            _ = keychainService.save(key: "accessToken", data: accessTokenData)
-            _ = keychainService.save(key: "idToken", data: idTokenData)
-            _ = keychainService.save(key: "refreshToken", data: refreshTokenData)
-        } else {
-            throw AuthenticationServiceError.failedToSaveTokens
-        }
-    }
-    
-    private func loadRefreshToken() -> String? {
-        guard let refreshTokenData = keychainService.load(key: "refreshToken") else { return nil }
-        return String(data: refreshTokenData, encoding: .utf8)
-    }
-    
     func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
         guard loadRefreshToken() != nil else {
             completion(.failure(AuthenticationServiceError.noRefreshTokenFound))
@@ -155,4 +138,22 @@ class AuthenticationService: AuthenticationServiceProtocol {
     func getUserId() -> String? {
         return userPool.currentUser()?.username
     }
+    
+    private func saveTokens(accessToken: String, idToken: String, refreshToken: String) throws {
+        if let accessTokenData = accessToken.data(using: .utf8),
+           let idTokenData = idToken.data(using: .utf8),
+           let refreshTokenData = refreshToken.data(using: .utf8) {
+            _ = keychainService.save(key: "accessToken", data: accessTokenData)
+            _ = keychainService.save(key: "idToken", data: idTokenData)
+            _ = keychainService.save(key: "refreshToken", data: refreshTokenData)
+        } else {
+            throw AuthenticationServiceError.failedToSaveTokens
+        }
+    }
+    
+    private func loadRefreshToken() -> String? {
+        guard let refreshTokenData = keychainService.load(key: "refreshToken") else { return nil }
+        return String(data: refreshTokenData, encoding: .utf8)
+    }
+    
 }
