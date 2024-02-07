@@ -125,3 +125,8 @@ struct GetImageUrlResponse: Codable {
 struct UploadImageResponse: Codable {
     let error: String?
 }
+
+struct GetUserByIdResponse: Codable {
+    let user: UserMetadata?
+    let error: String?
+}

@@ -28,7 +28,20 @@ class CachingService {
             return nil
         }
     }
-
+    
+    func clearCache() {
+        cache.removeAllObjects()
+        let directory = getDocumentsDirectory()
+        do {
+            let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil, options: [])
+            for file in files {
+                try FileManager.default.removeItem(at: file)
+            }
+        } catch {
+            print("Could not clear documents directory: \(error)")
+        }
+    }
+    
     private func getFilePath(forKey key: String) -> URL {
         let fileName = "\(key).json"
         return getDocumentsDirectory().appendingPathComponent(fileName)

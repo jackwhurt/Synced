@@ -59,7 +59,7 @@ struct PlaylistView: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            AsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
+            MusicAsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
             
             // Title of the playlist
             Text(playlist.title)

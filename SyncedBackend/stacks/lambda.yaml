@@ -722,6 +722,25 @@ Resources:
       Environment:
         Variables:
           USERS_TABLE: !Ref UsersTableName
+  
+  GetUserByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/users-service/   
+      Handler: get-user-by-id.getUserByIdHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get a User by ID.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTableName
 
   # Users / APNS
   RegisterUserForAPNSFunction:
@@ -804,7 +823,7 @@ Resources:
           BUCKET_NAME: !Ref BucketName        
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
-          
+
   UpdateImageUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -881,6 +900,8 @@ Outputs:
     Value: !GetAtt GetNotificationsFunction.Arn
   GetUsersFunctionArn:
     Value: !GetAtt GetUsersFunction.Arn
+  GetUserByIdFunctionArn:
+    Value: !GetAtt GetUserByIdFunction.Arn
   RegisterUserForAPNSFunctionArn:
     Value: !GetAtt RegisterUserForAPNSFunction.Arn
   CognitoTriggerFunctionArn:

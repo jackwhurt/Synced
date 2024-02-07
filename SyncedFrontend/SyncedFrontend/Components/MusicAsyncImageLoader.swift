@@ -1,7 +1,6 @@
 import SwiftUI
-import CachedAsyncImage
 
-struct AsyncImageLoader: View {
+struct MusicAsyncImageLoader: View {
     let urlString: String?
     let width: CGFloat
     let height: CGFloat
@@ -29,7 +28,7 @@ struct AsyncImageLoader: View {
 // Preview Provider
 struct AsyncImageLoader_Previews: PreviewProvider {
     static var previews: some View {
-        AsyncImageLoader(
+        MusicAsyncImageLoader(
             urlString: "https://example.com/sample-image.jpg",
             width: 100,
             height: 100

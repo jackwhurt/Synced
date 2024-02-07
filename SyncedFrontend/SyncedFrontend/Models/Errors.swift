@@ -65,6 +65,7 @@ enum SongServiceError: Error {
 enum UserServiceError: Error {
     case failedToRetrieveUsers
     case failedToRegisterForApns
+    case failedToRetrieveUser
 }
 
 enum ActivityServiceError: Error {
@@ -90,3 +91,7 @@ enum ImageServiceError: Error {
     case imageDataConversionFailed
 }
 
+enum ProfileViewModelError: Error {
+    case failedToGetUserId
+    case failedToSaveChanges
+}

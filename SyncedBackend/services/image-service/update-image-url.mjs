@@ -11,9 +11,9 @@ export const updateImageUrlHandler = async (event) => {
     console.info('Received S3 event:', event);
 
     try {
-        const { entityId, entityType, photoURL } = extractInfoFromEvent(event);
+        const { entityId, entityType, photoUrl } = extractInfoFromEvent(event);
         
-        const updateResult = await updateDatabase(entityId, entityType, photoURL);
+        const updateResult = await updateDatabase(entityId, entityType, photoUrl);
         console.info('Update result:', updateResult);
 
         return createResponse(200, { message: 'Successfully updated database', ...updateResult });
@@ -26,25 +26,25 @@ export const updateImageUrlHandler = async (event) => {
 function extractInfoFromEvent(event) {
     const bucketName = event.detail.bucket.name;
     const objectKey = decodeURIComponent(event.detail.object.key.replace(/\+/g, ' '));
-    const photoURL = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
+    const photoUrl = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
     const keyParts = objectKey.split('/');
     const entityType = keyParts[1]; // 'user' or 'playlist'
     const imageName = keyParts[2]
     const entityId = imageName.split('.')[0];
 
-    return { entityId, entityType, photoURL };
+    return { entityId, entityType, photoUrl };
 }
 
 
-async function updateDatabase(entityId, entityType, photoURL) {
+async function updateDatabase(entityId, entityType, photoUrl) {
     let params;
     if (entityType === 'user') {
         params = {
             TableName: usersTable,
             Key: { userId: entityId }, 
-            UpdateExpression: 'SET photoURL = :photoURL, updatedAt = :updatedAt',
+            UpdateExpression: 'SET photoUrl = :photoUrl, updatedAt = :updatedAt',
             ExpressionAttributeValues: {
-                ':photoURL': photoURL,
+                ':photoUrl': photoUrl,
                 ':updatedAt': new Date().toISOString(),
             },
         };
@@ -57,7 +57,7 @@ async function updateDatabase(entityId, entityType, photoURL) {
             },
             UpdateExpression: 'SET coverImageUrl = :coverImageUrl, updatedAt = :updatedAt',
             ExpressionAttributeValues: {
-                ':coverImageUrl': photoURL,
+                ':coverImageUrl': photoUrl,
                 ':updatedAt': new Date().toISOString(),
             },
         };
@@ -67,7 +67,7 @@ async function updateDatabase(entityId, entityType, photoURL) {
 
     await ddbDocClient.send(new UpdateCommand(params));
 
-    return { entityId, entityType, photoURL };
+    return { entityId, entityType, photoUrl };
 }
 
 

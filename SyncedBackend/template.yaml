@@ -100,6 +100,7 @@ Resources:
         ResolvePlaylistRequestFunctionArn: !GetAtt LambdaStack.Outputs.ResolvePlaylistRequestFunctionArn
         GetNotificationsFunctionArn: !GetAtt LambdaStack.Outputs.GetNotificationsFunctionArn
         GetUsersFunctionArn: !GetAtt LambdaStack.Outputs.GetUsersFunctionArn
+        GetUserByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetUserByIdFunctionArn
         RegisterUserForAPNSFunctionArn: !GetAtt LambdaStack.Outputs.RegisterUserForAPNSFunctionArn
         GetSignedImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSignedImageUrlFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId

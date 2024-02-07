@@ -137,10 +137,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
         }
         
         do {
-            let urlString = try await imageService.getImageUploadUrl(playlistId: playlistId, userIdBool: "false")
-            print("Successfully received url: \(urlString)")
-            try await imageService.uploadImage(uploadUrl: urlString, image: image)
-            print("Successfully saved image")
+            try await imageService.saveImage(playlistId: playlistId, image: image, s3Url: playlistMetadata?.coverImageUrl)
         } catch {
             print("Failed to save image: \(error)")
             throw CollaborativePlaylistViewModelError.failedToSaveImage

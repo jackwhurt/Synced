@@ -8,7 +8,19 @@ class ImageService {
         self.apiService = apiService
     }
     
-    func getImageUploadUrl(playlistId: String?, userIdBool: String?) async throws -> String {
+    func saveImage(playlistId: String? = nil, userIdBool: String? = nil, image: UIImage, s3Url: String?) async throws {
+        do {
+            let urlString = try await getImageUploadUrl(playlistId: playlistId, userIdBool: userIdBool)
+            print("Successfully received url: \(urlString)")
+            try await uploadImage(uploadUrl: urlString, image: image, s3Url: s3Url)
+            print("Successfully saved image")
+        } catch {
+            print("Failed to save image: \(error)")
+            throw ImageServiceError.failedToUploadImage
+        }
+    }
+    
+    private func getImageUploadUrl(playlistId: String? = nil, userIdBool: String? = nil) async throws -> String {
         do {
             var params: [String: String] = [:]
             if let playlistId = playlistId {
@@ -36,7 +48,7 @@ class ImageService {
         }
     }
     
-    func uploadImage(uploadUrl: String, image: UIImage) async throws {
+    private func uploadImage(uploadUrl: String, image: UIImage, s3Url: String?) async throws {
         guard let imageData = image.jpegData(compressionQuality: 0.5) else {
             throw ImageServiceError.imageDataConversionFailed
         }
@@ -45,7 +57,8 @@ class ImageService {
             let response = try await apiService.uploadToS3(endpoint: uploadUrl, imageData: imageData)
             print("Successfully uploaded image to S3: \(response)")
             
-            removeImageFromCache(urlString: uploadUrl)
+            guard let url = s3Url else { return }
+            removeImageFromCache(urlString: url)
         } catch {
             print("Failed to upload image to S3: \(error)")
             throw ImageServiceError.failedToUploadImage
@@ -54,7 +67,7 @@ class ImageService {
     
     private func removeImageFromCache(urlString: String) {
         guard let url = URL(string: urlString) else { return }
-        let cacheKey = URLRequest(url: url)
+        var cacheKey = URLRequest(url: url)
         let urlCache: URLCache = .shared
         guard let _ = urlCache.cachedResponse(for: cacheKey) else { return }
         urlCache.removeCachedResponse(for: cacheKey)
