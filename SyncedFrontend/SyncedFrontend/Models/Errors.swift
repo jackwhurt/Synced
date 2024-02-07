@@ -77,6 +77,7 @@ enum ActivityServiceError: Error {
 enum SpotifyServiceError: Error {
     case failedToGetSpotifyAuthUrl
     case failedToExchangeSpotifyToken
+    case failedToCheckAuthStatus
 }
 
 enum CollaborativePlaylistViewModelError: Error {

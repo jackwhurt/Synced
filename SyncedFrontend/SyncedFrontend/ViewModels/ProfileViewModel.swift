@@ -6,11 +6,7 @@ class ProfileViewModel: ObservableObject {
     @Published var imagePreview: UIImage?
     @Published var errorMessage: String?
     @Published var isEditing = false
-    @Published var user: UserMetadata? {
-        didSet {
-            CachingService.shared.save(user, forKey: "UserMetadata")
-        }
-    }
+    @Published var user: UserMetadata?
     var isAppleMusicConnected = false
     
     private let appleMusicService: AppleMusicService
@@ -84,6 +80,7 @@ class ProfileViewModel: ObservableObject {
                 loadUser()
                 DispatchQueue.main.async {
                     self.imagePreview = nil
+                    self.isEditing = false
                 }
             } catch {
                 print("Failed to save changes: \(error)")
@@ -92,6 +89,13 @@ class ProfileViewModel: ObservableObject {
                 }
             }
             
+        }
+    }
+    
+    func cancelChanges() {
+        DispatchQueue.main.async {
+            self.imagePreview = nil
+            self.isEditing = false
         }
     }
     
@@ -122,7 +126,11 @@ class ProfileViewModel: ObservableObject {
     }
     
     private func loadUserMetadataFromCache() {
-        if let cachedUserMetadata: UserMetadata = CachingService.shared.load(forKey: "UserMetadata", type: UserMetadata.self) {
+        guard let userId = authenticationService.getUserId() else {
+            print("Failed to get user id")
+            return
+        }
+        if let cachedUserMetadata: UserMetadata = CachingService.shared.load(forKey: "UserMetadata_\(userId)", type: UserMetadata.self) {
             self.user = cachedUserMetadata
         }
     }

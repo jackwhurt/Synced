@@ -33,11 +33,17 @@ struct ProfileView: View {
                     }
             }
             .navigationTitle("Profile")
-            .onAppear(perform: profileViewModel.loadUser)
+            .toolbar { navigationBarMenu() }
+            .onAppear(perform:{
+                profileViewModel.loadUser()
+                if let isConnected = profileViewModel.user?.isSpotifyConnected {
+                    appSettings.isSpotifyConnected = isConnected
+                }
+            })
         }
     }
     
-    var profileContent: some View {
+    private var profileContent: some View {
         VStack {
             HStack {
                 ProfilePictureView(profileViewModel: profileViewModel)
@@ -72,10 +78,30 @@ struct ProfileView: View {
         }
     }
     
-    var safariView: some View {
+    private var safariView: some View {
         Group {
             if let url = spotifyAuthURL {
                 SafariView(url: url)
+            }
+        }
+    }
+    
+    private func navigationBarMenu() -> some ToolbarContent {
+        Group {
+            ToolbarItemGroup(placement: .navigationBarLeading) {
+                if profileViewModel.isEditing {
+                    Button("Cancel") {
+                        profileViewModel.cancelChanges()
+                    }
+                }
+            }
+            
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                if profileViewModel.isEditing {
+                    Button("Save") {
+                        profileViewModel.saveChanges()
+                    }
+                }
             }
         }
     }
@@ -136,13 +162,11 @@ struct EditProfileView: View {
     var body: some View {
         if profileViewModel.isEditing {
             RoundButton(title: "Save Changes", action: {
-                profileViewModel.isEditing = false
                 profileViewModel.saveChanges()
             }, backgroundColour: .green, width: 180, height: 35)
         } else {
             RoundButton(title: "Edit Profile", action: {
                 profileViewModel.isEditing = true
-                profileViewModel.saveChanges()
             },  width: 180, height: 35)
         }
     }
@@ -245,7 +269,7 @@ struct SafariView: UIViewControllerRepresentable {
 
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        ProfileView(isLoggedIn: .constant(true)).environmentObject(AppSettings(appleMusicService: DIContainer.shared.provideAppleMusicService()))
+        ProfileView(isLoggedIn: .constant(true))
     }
 }
 

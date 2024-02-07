@@ -111,6 +111,35 @@ Resources:
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
 
+  GetSpotifyAuthStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/token-service/   
+      Handler: get-spotify-auth-status.getSpotifyAuthStatusHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get a User by ID.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the Table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName
+
   # Authorisation - Apple Music
   GetAppleMusicDevTokenFunction:
     Type: AWS::Serverless::Function
@@ -729,6 +758,8 @@ Resources:
       CodeUri: ../services/users-service/   
       Handler: get-user-by-id.getUserByIdHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -738,9 +769,17 @@ Resources:
         # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TokensTableName
+        - Statement:
+            - Effect: "Allow"
+              Action:
+                - "ssm:GetParameter"
+              Resource: "*" 
       Environment:
         Variables:
           USERS_TABLE: !Ref UsersTableName
+          TOKENS_TABLE: !Ref TokensTableName
 
   # Users / APNS
   RegisterUserForAPNSFunction:
@@ -854,6 +893,8 @@ Outputs:
     Value: !GetAtt GetSpotifyAuthUrlFunction.Arn
   ExchangeSpotifyTokenFunctionArn:
     Value: !GetAtt ExchangeSpotifyTokenFunction.Arn
+  GetSpotifyAuthStatusFunctionArn:
+    Value: !GetAtt GetSpotifyAuthStatusFunction.Arn
   UpdateAppleMusicDevTokenFunctionArn:
     Value: !GetAtt UpdateAppleMusicDevTokenFunction.Arn
   GetAppleMusicDevTokenFunctionArn:

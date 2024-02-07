@@ -17,6 +17,11 @@ class ActivityService {
                 throw ActivityServiceError.failedToGetRequests
             }
             print("Successfully received requests: \(response)")
+            if let requests = response.requests {
+                CachingService.shared.save(requests.userRequests, forKey: "userRequestsCache")
+                CachingService.shared.save(requests.playlistRequests, forKey: "playlistRequestsCache")
+            }
+            
             return response.requests ?? Requests(playlistRequests: [], userRequests: [])
         } catch {
             print("Failed to retrieve requests")
@@ -54,6 +59,7 @@ class ActivityService {
                 throw ActivityServiceError.failedToGetNotifications
             }
             print("Successfully received requests: \(response)")
+            CachingService.shared.save(response.notifications, forKey: "notificationsCache")
             return response.notifications
         } catch {
             print("Failed to retrieve requests")

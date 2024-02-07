@@ -25,16 +25,16 @@ class DIContainer {
         return SongService(apiService: provideAPIService())
     }
     
-    func provideSpotifyService() -> SpotifyService {
-        return SpotifyService(apiService: provideAPIService())
-    }
-    
     func provideAppleMusicService() -> AppleMusicService {
         return AppleMusicService(apiService: provideAPIService(), musicKitService: provideMusicKitService())
     }
     
     func provideActivityService() -> ActivityService {
         return ActivityService(apiService: provideAPIService(), appleMusicService: provideAppleMusicService())
+    }
+    
+    func provideSpotifyService() -> SpotifyService {
+        return SpotifyService(apiService: provideAPIService(), userService: provideUserService(), authorizationService: provideAuthenticationService())
     }
     
     func provideCollaborativePlaylistService() -> CollaborativePlaylistService {

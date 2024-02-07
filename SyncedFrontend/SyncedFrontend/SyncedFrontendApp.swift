@@ -11,7 +11,7 @@ import UserNotifications
 @main
 struct SyncedFrontendApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    let appSettings = AppSettings(appleMusicService: DIContainer.shared.provideAppleMusicService())
+    let appSettings = AppSettings(appleMusicService: DIContainer.shared.provideAppleMusicService(), spotifyService: DIContainer.shared.provideSpotifyService())
     
     var body: some Scene {
         WindowGroup {

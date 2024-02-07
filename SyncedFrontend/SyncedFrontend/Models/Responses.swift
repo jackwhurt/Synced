@@ -130,3 +130,8 @@ struct GetUserByIdResponse: Codable {
     let user: UserMetadata?
     let error: String?
 }
+
+struct CheckCurrentAuthorisationStatusResponse: Codable {
+    let isSpotifyConnected: Bool?
+    let error: String?
+}

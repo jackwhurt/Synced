@@ -7,8 +7,7 @@ struct StreamingServiceToggles: View {
     
     var body: some View {
         Toggle("Spotify Playlist", isOn: $isOnSpotify)
-    //            TODO: Enables when it works
-    //            .disabled(!appSettings.isSpotifyConnected)
+            .disabled(!appSettings.isSpotifyConnected)
         
         Toggle("Apple Music Playlist", isOn: $isOnAppleMusic)
             .disabled(!appSettings.isAppleMusicConnected)

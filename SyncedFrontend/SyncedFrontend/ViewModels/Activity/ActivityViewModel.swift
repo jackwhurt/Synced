@@ -68,8 +68,6 @@ class ActivityViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.userRequests = requests.userRequests
                 self.playlistRequests = requests.playlistRequests
-                CachingService.shared.save(requests.userRequests, forKey: "userRequestsCache")
-                CachingService.shared.save(requests.playlistRequests, forKey: "playlistRequestsCache")
             }
         } catch {
             DispatchQueue.main.async {
@@ -83,7 +81,6 @@ class ActivityViewModel: ObservableObject {
             let response = try await activityService.getNotifications()
             DispatchQueue.main.async {
                 self.notifications = response
-                CachingService.shared.save(response, forKey: "notificationsCache")
             }
         } catch {
             DispatchQueue.main.async {

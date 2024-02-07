@@ -15,6 +15,7 @@ class CollaborativePlaylistService {
     func getPlaylists() async throws -> [GetCollaborativePlaylistResponse] {
         do {
             let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists", model: [GetCollaborativePlaylistResponse].self)
+            CachingService.shared.save(response, forKey: "collaborativePlaylists")
             return response
         } catch {
             print("Failed to retrieve collaborative playlists")
@@ -25,6 +26,8 @@ class CollaborativePlaylistService {
     func getPlaylistById(playlistId: String) async throws -> GetCollaborativePlaylistByIdResponse {
         do {
             let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/\(playlistId)", model: GetCollaborativePlaylistByIdResponse.self)
+            CachingService.shared.save(response.metadata, forKey: "playlistMetadata_\(playlistId)")
+            CachingService.shared.save(response.songs, forKey: "playlistSongs_\(playlistId)")
             return response
         } catch {
             print("Failed to retrieve collaborative playlist")
@@ -76,7 +79,7 @@ class CollaborativePlaylistService {
 
         let newPlaylistSongs = updatePlaylistSongs(oldSongs: oldSongs, songsToAdd: songsToAdd, songsToDelete: songsToDelete)
         try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: newPlaylistSongs)
-        print("Successfully edited apple music playlist songs: \(newPlaylistSongs)")
+        print("Successfully edited apple music playlist songs for playlist: \(playlistId)")
     }
     
     func updatePlaylists() async throws {
@@ -150,7 +153,7 @@ class CollaborativePlaylistService {
             throw CollaborativePlaylistServiceError.failedToAddSongs
         }
 
-        print("Successfully added songs to backend: \(songsToAdd)")
+        print("Successfully added songs to backend for playlist: \(playlistId)")
     }
 
     private func deleteSongsFromBackendIfNeeded(playlistId: String, songsToDelete: [SongMetadata]) async throws {
@@ -162,7 +165,7 @@ class CollaborativePlaylistService {
             throw CollaborativePlaylistServiceError.failedToDeleteSongs
         }
 
-        print("Successfully deleted songs from backend: \(songsToDelete)")
+        print("Successfully deleted songs from backend playlist: \(playlistId)")
     }
 
     private func updatePlaylistSongs(oldSongs: [SongMetadata], songsToAdd: [SongMetadata], songsToDelete: [SongMetadata]) -> [SongMetadata] {
