@@ -3,22 +3,28 @@ import { DynamoDBDocumentClient, QueryCommand } from '@aws-sdk/lib-dynamodb';
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
+// Accepted collaborators
 export async function getCollaboratorsByPlaylistId(playlistId, playlistsTable) {
     const queryParams = {
         TableName: playlistsTable,
         KeyConditionExpression: 'PK = :pk and begins_with(SK, :sk)',
+        FilterExpression: "#requestStatus = :acceptedStatus",
+        ExpressionAttributeNames: {
+            "#requestStatus": "requestStatus",
+        },
         ExpressionAttributeValues: {
             ':pk': `cp#${playlistId}`,
-            ':sk': 'collaborator#'
+            ':sk': 'collaborator#',
+            ':acceptedStatus': 'accepted',
         }
-    };
+    };    
 
     try {
         const data = await ddbDocClient.send(new QueryCommand(queryParams));
         const collaboratorsData = data.Items.map(collaborator => ({
                 userId: collaborator.SK.replace('collaborator#', ''),
                 spotifyPlaylistId: collaborator.spotifyPlaylistId,
-                spotifyInSync: collaborator.spotifyInSync
+                spotifyInSync: collaborator.spotifyInSync,
             }));
         return collaboratorsData;
     } catch (err) {

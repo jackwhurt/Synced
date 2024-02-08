@@ -118,7 +118,7 @@ async function performTransactionsAndResolve(userId, requestId, playlist, result
         transactItems.push(updateCollaboratorStatus(userId, playlist.playlistId));
         if (spotifyPlaylist) {
             ({ spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([userId], usersTable, tokensTable));
-            if (failedSpotifyUsers) throw new Error('Spotify account could not be prepared for user: ' + userId);
+            if (failedSpotifyUsers.length > 0) throw new Error('Spotify account could not be prepared for user: ' + userId);
 
             spotifyPlaylistId = await createSpotifyPlaylist(playlist, spotifyUsers[0], playlistsTable);
         }

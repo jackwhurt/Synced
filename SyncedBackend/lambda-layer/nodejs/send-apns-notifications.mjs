@@ -6,6 +6,7 @@ const dynamoDBClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const snsClient = new SNSClient({});
 
 export async function sendApnsNotifications(userIds, notificationMessage, usersTable, isDevEnvironment) {
+  if (userIds.length == 0) return;
   const endpointArns = await getEndpointArns(userIds, usersTable, isDevEnvironment);
 
   for (const arn of endpointArns) {
@@ -32,9 +33,14 @@ async function getEndpointArns(userIds, usersTable, isDevEnvironment) {
       },
     },
   };
-  const { Responses } = await dynamoDBClient.send(new BatchGetCommand(batchGetParams));
 
-  return Responses[usersTable].filter(item => item[attributeName]).map(item => item[attributeName]);
+  try {
+    const { Responses } = await dynamoDBClient.send(new BatchGetCommand(batchGetParams));
+    return Responses[usersTable].filter(item => item[attributeName]).map(item => item[attributeName]);
+  } catch {
+    console.info('Failed to retrieve arns');
+    return []
+  }
 }
 
 async function sendApnsMessage(endpointArn, message, isDevEnvironment) {
@@ -44,9 +50,9 @@ async function sendApnsMessage(endpointArn, message, isDevEnvironment) {
     Message: JSON.stringify({
       default: message, 
       [environment]: JSON.stringify({
-        aps: {
-          alert: message,
-          sound: 'default'
+        'aps': {
+          'alert': message,
+          'sound': 'default',
         }
       })
     }),

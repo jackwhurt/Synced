@@ -38,7 +38,7 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
         
         let request = URLRequest(url: url)
         
-        if let cachedResponse = URLCache.shared.cachedResponse(for: request), let image = UIImage(data: cachedResponse.data) {
+        if let cachedResponse = URLCache.shared.cachedResponse(for: request), let _ = UIImage(data: cachedResponse.data) {
             self.imageData = cachedResponse.data
             self.isLoading = false
         } else {

@@ -84,13 +84,13 @@ async function prepareCollaborators(playlistId, collaboratorsData) {
     if (updatedUsers) {
         const updatedCollaborators = await getCollaboratorsByPlaylistId(playlistId, playlistsTable)
         return {
-            collaboratorsData: updatedCollaborators.filter(collaborator => collaborator.spotifyPlaylistId),
+            spotifyCollaboratorsData: updatedCollaborators.filter(collaborator => collaborator.spotifyPlaylistId),
             failedSpotifyUsers,
             spotifyUsersMap
         };
     }
 
-    return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
+    return { spotifyCollaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
 function buildTransactItems(playlistId, songs) {
