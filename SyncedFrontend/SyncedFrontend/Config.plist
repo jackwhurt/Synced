@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_URL</key>
+	<string>$(API_URL)</string>
+	<key>COGNITO_CLIENT_ID</key>
+	<string>$(COGNITO_CLIENT_ID)</string>
+	<key>COGNITO_POOL_ID</key>
+	<string>$(COGNITO_POOL_ID)</string>
+</dict>
+</plist>

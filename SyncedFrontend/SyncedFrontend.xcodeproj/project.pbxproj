@@ -10,7 +10,6 @@
 		61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */; };
 		8002EBDE2B657CBC0017C01A /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDD2B657CBC0017C01A /* ActivityView.swift */; };
 		8002EBE02B658EB70017C01A /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDF2B658EB70017C01A /* Activity.swift */; };
-		80197DDA2B751C8200711CFA /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 80197DD92B751C8200711CFA /* Config.plist */; };
 		801CC9502B16622A006FB76D /* TextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC94F2B16622A006FB76D /* TextLink.swift */; };
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
@@ -80,7 +79,6 @@
 		8002EBDF2B658EB70017C01A /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		80197DD32B7513B100711CFA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		80197DD42B7513C800711CFA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
-		80197DD92B751C8200711CFA /* Config.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Config.plist; path = ../../../../../../../../Downloads/Config.plist; sourceTree = "<group>"; };
 		801CC94F2B16622A006FB76D /* TextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLink.swift; sourceTree = "<group>"; };
 		801CC9512B167183006FB76D /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		801CC9572B167326006FB76D /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
@@ -238,7 +236,6 @@
 			isa = PBXGroup;
 			children = (
 				8061CE102B2A618300B0FFD6 /* Info.plist */,
-				80197DD92B751C8200711CFA /* Config.plist */,
 				8061CE0D2B29EEB700B0FFD6 /* Protocols */,
 				80E2EB302B22747400E99BF9 /* Models */,
 				801CC9562B16730D006FB76D /* ViewModels */,
@@ -445,7 +442,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				805D494A2B0FDE120081B076 /* Preview Assets.xcassets in Resources */,
-				80197DDA2B751C8200711CFA /* Config.plist in Resources */,
 				805D49472B0FDE120081B076 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
