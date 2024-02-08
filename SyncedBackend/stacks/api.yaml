@@ -59,6 +59,15 @@ Parameters:
     Type: String
   UserPoolId: 
     Type: String
+  DevEnvironment:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+Conditions:
+  IsDevEnvironment: !Equals [ !Ref DevEnvironment, 'true' ]
+  IsProdEnvironment: !Not [ !Equals [ !Ref DevEnvironment, 'true' ] ] 
 
 Resources:
   MyApi:
@@ -166,7 +175,6 @@ Resources:
       FunctionName: !Ref GetSpotifyAuthStatusFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/spotify/status" 
-
 
   # Authorisation / Apple Music
   AppleMusicResource:
@@ -904,6 +912,7 @@ Resources:
 
   DevStage:
     Type: AWS::ApiGateway::Stage
+    Condition: IsDevEnvironment
     Properties:
       StageName: dev
       Description: Development stage for the API
@@ -914,6 +923,20 @@ Resources:
           HttpMethod: '*'
           DataTraceEnabled: true
           LoggingLevel: INFO
+
+  ProdStage:
+    Type: AWS::ApiGateway::Stage
+    Condition: IsProdEnvironment
+    Properties:
+      StageName: prod
+      Description: Production stage for the API
+      RestApiId: !Ref MyApi
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          DataTraceEnabled: false 
+          LoggingLevel: ERROR
 
   ApiGatewayAccount:
     Type: 'AWS::ApiGateway::Account'

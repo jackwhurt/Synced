@@ -10,6 +10,7 @@
 		61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */; };
 		8002EBDE2B657CBC0017C01A /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDD2B657CBC0017C01A /* ActivityView.swift */; };
 		8002EBE02B658EB70017C01A /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDF2B658EB70017C01A /* Activity.swift */; };
+		80197DDA2B751C8200711CFA /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 80197DD92B751C8200711CFA /* Config.plist */; };
 		801CC9502B16622A006FB76D /* TextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC94F2B16622A006FB76D /* TextLink.swift */; };
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
@@ -48,7 +49,6 @@
 		8061CE0C2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */; };
 		8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */; };
 		8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */; };
-		8061CE142B2B9EE000B0FFD6 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8061CE132B2B9EE000B0FFD6 /* Config.plist */; };
 		8061CE162B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */; };
 		806485032B66ACF600B62C93 /* ActivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806485022B66ACF600B62C93 /* ActivityService.swift */; };
 		806485062B66B12800B62C93 /* RequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806485052B66B12800B62C93 /* RequestView.swift */; };
@@ -78,6 +78,9 @@
 		74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.release.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.release.xcconfig"; sourceTree = "<group>"; };
 		8002EBDD2B657CBC0017C01A /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		8002EBDF2B658EB70017C01A /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
+		80197DD32B7513B100711CFA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		80197DD42B7513C800711CFA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		80197DD92B751C8200711CFA /* Config.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Config.plist; path = ../../../../../../../../Downloads/Config.plist; sourceTree = "<group>"; };
 		801CC94F2B16622A006FB76D /* TextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLink.swift; sourceTree = "<group>"; };
 		801CC9512B167183006FB76D /* Logo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logo.swift; sourceTree = "<group>"; };
 		801CC9572B167326006FB76D /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
@@ -119,7 +122,6 @@
 		8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationServiceProtocol.swift; sourceTree = "<group>"; };
 		8061CE102B2A618300B0FFD6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
-		8061CE132B2B9EE000B0FFD6 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
 		8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistService.swift; sourceTree = "<group>"; };
 		806485022B66ACF600B62C93 /* ActivityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityService.swift; sourceTree = "<group>"; };
 		806485052B66B12800B62C93 /* RequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestView.swift; sourceTree = "<group>"; };
@@ -235,8 +237,8 @@
 		805D49412B0FDE100081B076 /* SyncedFrontend */ = {
 			isa = PBXGroup;
 			children = (
-				8061CE132B2B9EE000B0FFD6 /* Config.plist */,
 				8061CE102B2A618300B0FFD6 /* Info.plist */,
+				80197DD92B751C8200711CFA /* Config.plist */,
 				8061CE0D2B29EEB700B0FFD6 /* Protocols */,
 				80E2EB302B22747400E99BF9 /* Models */,
 				801CC9562B16730D006FB76D /* ViewModels */,
@@ -248,6 +250,8 @@
 				805D49482B0FDE120081B076 /* Preview Content */,
 				8061CE092B29EC4400B0FFD6 /* DIContainer.swift */,
 				80F9CF822B694455003EAB5F /* AppSettings.swift */,
+				80197DD32B7513B100711CFA /* Debug.xcconfig */,
+				80197DD42B7513C800711CFA /* Release.xcconfig */,
 			);
 			path = SyncedFrontend;
 			sourceTree = "<group>";
@@ -398,8 +402,6 @@
 			dependencies = (
 			);
 			name = Synced;
-			packageProductDependencies = (
-			);
 			productName = SyncedFrontend;
 			productReference = 805D493F2B0FDE100081B076 /* Synced.app */;
 			productType = "com.apple.product-type.application";
@@ -428,8 +430,6 @@
 				Base,
 			);
 			mainGroup = 805D49362B0FDE100081B076;
-			packageReferences = (
-			);
 			productRefGroup = 805D49402B0FDE100081B076 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -445,7 +445,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				805D494A2B0FDE120081B076 /* Preview Assets.xcassets in Resources */,
-				8061CE142B2B9EE000B0FFD6 /* Config.plist in Resources */,
+				80197DDA2B751C8200711CFA /* Config.plist in Resources */,
 				805D49472B0FDE120081B076 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -459,9 +459,11 @@
 			files = (
 			);
 			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Synced/Pods-Synced-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Synced/Pods-Synced-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -686,7 +688,7 @@
 		};
 		805D494E2B0FDE120081B076 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */;
+			baseConfigurationReference = 80197DD32B7513B100711CFA /* Debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -724,7 +726,7 @@
 		};
 		805D494F2B0FDE120081B076 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */;
+			baseConfigurationReference = 80197DD42B7513C800711CFA /* Release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

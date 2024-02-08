@@ -7,12 +7,8 @@ class AuthenticationService: AuthenticationServiceProtocol {
     init(keychainService: KeychainService) throws {
         self.keychainService = keychainService
 
-        guard let config = NSDictionary(contentsOfFile: Bundle.main.path(forResource: "Config", ofType: "plist") ?? "") else {
-            throw AuthenticationServiceError.cognitoIdsNotSet
-        }
-
-        guard let clientId = config["COGNITO_CLIENT_ID"] as? String,
-              let poolId = config["COGNITO_POOL_ID"] as? String else {
+        guard let clientId = Bundle.main.object(forInfoDictionaryKey: "COGNITO_CLIENT_ID") as? String,
+              let poolId = Bundle.main.object(forInfoDictionaryKey: "COGNITO_POOL_ID") as? String else {
             throw AuthenticationServiceError.cognitoIdsNotSet
         }
 

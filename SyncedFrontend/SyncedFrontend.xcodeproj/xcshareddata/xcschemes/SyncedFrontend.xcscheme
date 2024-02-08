@@ -49,26 +49,9 @@
             ReferencedContainer = "container:SyncedFrontend.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <EnvironmentVariables>
-         <EnvironmentVariable
-            key = "COGNITO_POOL_ID"
-            value = "eu-west-2_LJ3d7GUKZ"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "COGNITO_CLIENT_ID"
-            value = "7skq3igbvdh4p15cfg81k19pla"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "API_URL"
-            value = "https://r5qnrn9c94.execute-api.eu-west-2.amazonaws.com/dev"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"

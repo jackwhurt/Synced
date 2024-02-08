@@ -20,6 +20,7 @@ export async function sendApnsNotifications(userIds, notificationMessage, usersT
 }
 
 async function getEndpointArns(userIds, usersTable, isDevEnvironment) {
+  if (userIds.length == 0) return [];
   const attributeName = isDevEnvironment ? 'endpointArnDev' : 'endpointArn';
 
   const keys = userIds.map(id => ({ userId: id }));

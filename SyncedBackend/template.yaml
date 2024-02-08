@@ -105,3 +105,8 @@ Resources:
         RegisterUserForAPNSFunctionArn: !GetAtt LambdaStack.Outputs.RegisterUserForAPNSFunctionArn
         GetSignedImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSignedImageUrlFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
+        DevEnvironment:
+          Fn::If:
+            - IsDevEnvironment
+            - 'true'
+            - 'false'
