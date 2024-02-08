@@ -2,9 +2,13 @@ import Foundation
 
 class SpotifyService {
     private let apiService: APIService
+    private let userService: UserService
+    private let authorizationService: AuthenticationServiceProtocol
     
-    init(apiService: APIService) {
+    init(apiService: APIService, userService: UserService, authorizationService: AuthenticationServiceProtocol) {
         self.apiService = apiService
+        self.userService = userService
+        self.authorizationService = authorizationService
     }
     
     func getSpotifyAuthURL() async throws -> URL {
@@ -53,6 +57,23 @@ class SpotifyService {
             return true
         } catch {
             print("Failed to handle auth callback")
+            return false
+        }
+    }
+    
+    func checkCurrentAuthorisationStatus() async -> Bool {
+        do {
+            let response = try await apiService.makeGetRequest(endpoint: "/auth/spotify/status", model: CheckCurrentAuthorisationStatusResponse.self)
+            if let error = response.error {
+                print("Server error: \(error)")
+                throw SpotifyServiceError.failedToCheckAuthStatus
+            }
+            guard let isSpotifyConnected = response.isSpotifyConnected else { throw SpotifyServiceError.failedToCheckAuthStatus }
+            print("Successfully retrieved spotify auth url")
+            
+            return isSpotifyConnected
+        } catch {
+            print("Failed to check authorisation status: \(error)")
             return false
         }
     }

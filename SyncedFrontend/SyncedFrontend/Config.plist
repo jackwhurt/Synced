@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
 	<key>API_URL</key>
-	<string>https://r5qnrn9c94.execute-api.eu-west-2.amazonaws.com/dev</string>
+	<string>$(API_URL)</string>
 	<key>COGNITO_CLIENT_ID</key>
-	<string>7skq3igbvdh4p15cfg81k19pla</string>
+	<string>$(COGNITO_CLIENT_ID)</string>
 	<key>COGNITO_POOL_ID</key>
-	<string>eu-west-2_LJ3d7GUKZ</string>
+	<string>$(COGNITO_POOL_ID)</string>
 </dict>
 </plist>

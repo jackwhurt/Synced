@@ -19,6 +19,7 @@ export async function createNotifications(userIdsToSendNotifs, notificationMessa
     const transactItems = buildNotificationTransactItems(userIdsToSendNotifs, notificationMessage, userId, playlistId, activitiesTable);
 
     try {
+        if (transactItems.length === 0) return;
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
         await sendApnsNotifications(userIdsToSendNotifs, notificationMessage, usersTable, isDevEnvironment);
         console.info('Successfully added notifications for: ', userIdsToSendNotifs);

@@ -41,8 +41,6 @@ class CollaborativePlaylistViewModel: ObservableObject {
                 self?.playlistSongs = fetchedPlaylist.songs
                 self?.appleMusicPlaylistId = fetchedPlaylist.appleMusicPlaylistId
             }
-            CachingService.shared.save(fetchedPlaylist.metadata, forKey: "playlistMetadata_\(playlistId)")
-            CachingService.shared.save(fetchedPlaylist.songs, forKey: "playlistSongs_\(playlistId)")
             setPlaylistOwner()
         } catch {
             print("Failed to load playlist: \(playlistId)")

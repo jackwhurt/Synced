@@ -1,9 +1,12 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
-const usersTableName = process.env.USERS_TABLE;
+
+const usersTable = process.env.USERS_TABLE;
+const tokensTable = process.env.TOKENS_TABLE;
 
 export const getUserByIdHandler = async (event) => {
     console.info('received:', event);
@@ -19,11 +22,14 @@ export const getUserByIdHandler = async (event) => {
             return handleError('User not found', null, 404);
         }
 
+        const { spotifyUsers, failedSpotifyUsers } = await prepareSpotifyAccounts([user.userId], usersTable, tokensTable);
+
         const filteredUser = {
             user: {
                 userId: user.userId,
                 username: user.attributeValue,
-                photoUrl: user.photoUrl
+                photoUrl: user.photoUrl,
+                isSpotifyConnected: spotifyUsers.length === 1 ? true : false
             }
         }
 
@@ -40,7 +46,7 @@ export const getUserByIdHandler = async (event) => {
 
 async function getUserData(userId) {
     const params = {
-        TableName: usersTableName,
+        TableName: usersTable,
         Key: { userId: userId }
     };
 

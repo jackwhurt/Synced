@@ -1,12 +1,7 @@
 import Foundation
 
 class CollaborativePlaylistMenuViewModel: ObservableObject {
-    @Published var playlists: [GetCollaborativePlaylistResponse] = [] {
-        didSet {
-            CachingService.shared.save(playlists, forKey: "collaborativePlaylists")
-        }
-    }
-    
+    @Published var playlists: [GetCollaborativePlaylistResponse] = []
     private let collaborativePlaylistService: CollaborativePlaylistService
 
     init(collaborativePlaylistService: CollaborativePlaylistService) {
@@ -17,7 +12,7 @@ class CollaborativePlaylistMenuViewModel: ObservableObject {
     func loadPlaylists() async {
         do {
             let loadedPlaylists = try await collaborativePlaylistService.getPlaylists()
-            print("Loaded playlists: \(loadedPlaylists)")
+            print("Loaded playlists")
             DispatchQueue.main.async {
                 self.playlists = loadedPlaylists
             }

@@ -61,8 +61,7 @@ Resources:
               - !Ref BucketName
           object:
             key:
-              prefix:
-                - "images/"
+              - prefix: "images/"
       Targets:
         - Id: "UpdateImageUrlFunction"
           Arn: !Ref UpdateImageUrlFunctionArn

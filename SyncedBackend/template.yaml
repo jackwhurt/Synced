@@ -94,6 +94,7 @@ Resources:
         SpotifySongsToAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.SpotifySongsToAppleMusicFunctionArn
         GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
         ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
+        GetSpotifyAuthStatusFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthStatusFunctionArn
         GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn
         UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
         GetRequestsFunctionArn: !GetAtt LambdaStack.Outputs.GetRequestsFunctionArn
@@ -104,3 +105,8 @@ Resources:
         RegisterUserForAPNSFunctionArn: !GetAtt LambdaStack.Outputs.RegisterUserForAPNSFunctionArn
         GetSignedImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSignedImageUrlFunctionArn
         UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
+        DevEnvironment:
+          Fn::If:
+            - IsDevEnvironment
+            - 'true'
+            - 'false'

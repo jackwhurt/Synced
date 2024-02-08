@@ -37,6 +37,8 @@ Parameters:
     Type: String
   ExchangeSpotifyTokenFunctionArn:
     Type: String
+  GetSpotifyAuthStatusFunctionArn:
+    Type: String
   GetAppleMusicDevTokenFunctionArn:
     Type: String
   UpdateAppleMusicUserTokenFunctionArn:
@@ -57,6 +59,15 @@ Parameters:
     Type: String
   UserPoolId: 
     Type: String
+  DevEnvironment:
+    Type: String
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+Conditions:
+  IsDevEnvironment: !Equals [ !Ref DevEnvironment, 'true' ]
+  IsProdEnvironment: !Not [ !Equals [ !Ref DevEnvironment, 'true' ] ] 
 
 Resources:
   MyApi:
@@ -134,6 +145,36 @@ Resources:
       FunctionName: !Ref ExchangeSpotifyTokenFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/POST/auth/spotify" 
+
+  # Authorisation / Spotify / Status
+  SpotifyAuthStatusResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref SpotifyResource 
+      PathPart: 'status'
+      RestApiId: !Ref MyApi
+
+  # Get Spotify Auth Status
+  GetSpotifyAuthStatusMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref SpotifyAuthStatusResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSpotifyAuthStatusFunctionArn}/invocations"
+     
+  GetSpotifyAuthStatusLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetSpotifyAuthStatusFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/auth/spotify/status" 
 
   # Authorisation / Apple Music
   AppleMusicResource:
@@ -871,6 +912,7 @@ Resources:
 
   DevStage:
     Type: AWS::ApiGateway::Stage
+    Condition: IsDevEnvironment
     Properties:
       StageName: dev
       Description: Development stage for the API
@@ -881,6 +923,20 @@ Resources:
           HttpMethod: '*'
           DataTraceEnabled: true
           LoggingLevel: INFO
+
+  ProdStage:
+    Type: AWS::ApiGateway::Stage
+    Condition: IsProdEnvironment
+    Properties:
+      StageName: prod
+      Description: Production stage for the API
+      RestApiId: !Ref MyApi
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          DataTraceEnabled: false 
+          LoggingLevel: ERROR
 
   ApiGatewayAccount:
     Type: 'AWS::ApiGateway::Account'

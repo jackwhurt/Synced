@@ -1,3 +1,5 @@
+import SwiftUI
+
 class UserService {
     private let apiService: APIService
     
@@ -26,6 +28,9 @@ class UserService {
             guard let user = response.user else {
                 throw UserServiceError.failedToRetrieveUser
             }
+            
+            CachingService.shared.save(user, forKey: "UserMetadata_\(userId)")
+            
             return user
         } catch {
             print("Failed to get user \(userId)")

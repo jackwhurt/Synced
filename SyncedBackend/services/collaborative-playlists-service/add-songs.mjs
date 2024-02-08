@@ -141,16 +141,16 @@ async function prepareCollaboratorData(playlistId, collaboratorsData) {
 
     const { updatedUsers, failedUsers } = await syncPlaylists(playlistId, spotifyUsersMap, spotifyCollaboratorsData, playlistsTable);
     // Update collaborator data (streaming service playlist id) if users have been resynced
-    if (updatedUsers) {
+    if (updatedUsers.length > 0) {
         const updatedCollaborators = await getCollaboratorsByPlaylistId(playlistId, playlistsTable)
         return {
-            collaboratorsData: updatedCollaborators.filter(collaborator => collaborator.spotifyPlaylistId),
+            spotifyCollaboratorsData: updatedCollaborators.filter(collaborator => collaborator.spotifyPlaylistId),
             failedSpotifyUsers,
             spotifyUsersMap
         };
     }
 
-    return { collaboratorsData, failedSpotifyUsers, spotifyUsersMap };
+    return { spotifyCollaboratorsData, failedSpotifyUsers, spotifyUsersMap };
 }
 
 function buildTransactItems(playlistId, songs, timestamp) {

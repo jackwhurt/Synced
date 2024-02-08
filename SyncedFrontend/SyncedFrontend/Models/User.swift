@@ -4,4 +4,5 @@ struct UserMetadata: Codable, Hashable {
     let email: String?
     let photoUrl: String?
     let bio: String?
+    let isSpotifyConnected: Bool?
 }

@@ -11,6 +11,7 @@ class LoginViewModel: ObservableObject {
     init(isLoggedIn: Binding<Bool>, authenticationService: AuthenticationServiceProtocol) {
         self.authenticationService = authenticationService
         self.isLoggedIn = isLoggedIn
+        CachingService.shared.clearCache()
     }
 
     func loginUser() {
