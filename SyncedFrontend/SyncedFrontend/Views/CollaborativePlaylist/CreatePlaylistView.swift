@@ -1,5 +1,6 @@
 import SwiftUI
 
+// TODO: add pps to collaborator search
 struct CreatePlaylistView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var appSettings: AppSettings

@@ -5,8 +5,7 @@ struct ProfileView: View {
     @EnvironmentObject var appSettings: AppSettings
     
     @StateObject private var profileViewModel: ProfileViewModel
-    @State private var showingSafariView = false
-    @State private var spotifyAuthURL: URL?
+    @State private var spotifyAuthURL: IdentifiableURL?
     @State private var showErrorAlert = false
     
     init(isLoggedIn: Binding<Bool>) {
@@ -25,7 +24,9 @@ struct ProfileView: View {
             ScrollView {
                 profileContent
                     .padding()
-                    .sheet(isPresented: $showingSafariView) { safariView }
+                    .sheet(item: $spotifyAuthURL) { url in
+                        SafariView(idUrl: url)
+                    }
                     .alert("Error", isPresented: $showErrorAlert, presenting: profileViewModel.errorMessage) { detail in
                         Button("OK") { profileViewModel.errorMessage = nil }
                     } message: { detail in
@@ -59,13 +60,12 @@ struct ProfileView: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
                     .padding(.top, 10)
-                StreamingServiceConnectView(profileViewModel: profileViewModel, showingSafariView: $showingSafariView, spotifyAuthURL: $spotifyAuthURL, appSettings: _appSettings)
+                StreamingServiceConnectView(profileViewModel: profileViewModel, spotifyAuthURL: $spotifyAuthURL, appSettings: _appSettings)
             }
             LogoutButtonView(profileViewModel: profileViewModel)
         }
         .onChange(of: appSettings.isSpotifyConnected) { _, newValue in
             if newValue {
-                showingSafariView = false
                 spotifyAuthURL = nil
             }
         }
@@ -74,14 +74,6 @@ struct ProfileView: View {
                 DispatchQueue.main.async {
                     showErrorAlert = true
                 }
-            }
-        }
-    }
-    
-    private var safariView: some View {
-        Group {
-            if let url = spotifyAuthURL {
-                SafariView(url: url)
             }
         }
     }
@@ -174,8 +166,7 @@ struct EditProfileView: View {
 
 struct StreamingServiceConnectView: View {
     @ObservedObject var profileViewModel: ProfileViewModel
-    @Binding var showingSafariView: Bool
-    @Binding var spotifyAuthURL: URL?
+    @Binding var spotifyAuthURL: IdentifiableURL?
     @EnvironmentObject var appSettings: AppSettings
     
     var body: some View {
@@ -204,8 +195,7 @@ struct StreamingServiceConnectView: View {
         Task {
             let url = await profileViewModel.getSpotifyAuthURL()
             if let url = url {
-                spotifyAuthURL = url
-                showingSafariView = true
+                spotifyAuthURL = IdentifiableURL(url: url)
             }
         }
     }
@@ -258,21 +248,26 @@ struct LogoutButtonView: View {
 }
 
 struct SafariView: UIViewControllerRepresentable {
-    let url: URL
+    let idUrl: IdentifiableURL
     
     func makeUIViewController(context: Context) -> some UIViewController {
-        SFSafariViewController(url: url)
+        SFSafariViewController(url: idUrl.url)
     }
     
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {}
+}
+
+enum StreamingService {
+    case appleMusic, spotify
+}
+
+struct IdentifiableURL: Identifiable {
+    let id = UUID()
+    let url: URL
 }
 
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
         ProfileView(isLoggedIn: .constant(true))
     }
-}
-
-enum StreamingService {
-    case appleMusic, spotify
 }
