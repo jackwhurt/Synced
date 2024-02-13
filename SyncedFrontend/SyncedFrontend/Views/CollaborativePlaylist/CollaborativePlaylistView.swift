@@ -14,6 +14,7 @@ struct CollaborativePlaylistView: View {
     @State private var showAlert: AlertType? = nil
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
+    @State private var isSaving = false
 
     init(playlistId: String) {
         let viewModel = CollaborativePlaylistViewModel(
@@ -99,13 +100,20 @@ struct CollaborativePlaylistView: View {
             
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if collaborativePlaylistViewModel.isEditing {
-                    Button("Save") {
-                        Task{
-                            await collaborativePlaylistViewModel.saveChanges()
-                            if collaborativePlaylistViewModel.errorMessage != nil {
-                                showAlert = .error
+                    if isSaving {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                    } else {
+                        Button("Save", action: {
+                            Task {
+                                isSaving = true
+                                await collaborativePlaylistViewModel.saveChanges()
+                                if collaborativePlaylistViewModel.errorMessage != nil {
+                                    showAlert = .error
+                                }
+                                isSaving = false
                             }
-                        }
+                        })
                     }
                 } else {
                     Menu {

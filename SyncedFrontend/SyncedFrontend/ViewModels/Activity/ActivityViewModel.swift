@@ -1,10 +1,12 @@
 import Foundation
 
+// TODO: Double request on appear
 class ActivityViewModel: ObservableObject {
     @Published var notifications: [NotificationMetadata] = []
     @Published var userRequests: [UserRequest] = []
     @Published var playlistRequests: [PlaylistRequest] = []
     @Published var errorMessage: String? = nil
+    @Published var isLoading: Bool = false
     
     private let activityService: ActivityService
     
@@ -15,8 +17,8 @@ class ActivityViewModel: ObservableObject {
     
     func loadActivities() {
         Task {
-            await loadRequests()
-            await loadNotifications()
+            await self.loadRequests()
+            await self.loadNotifications()
         }
     }
     
@@ -49,16 +51,35 @@ class ActivityViewModel: ObservableObject {
     }
     
     private func loadCachedData() {
+        var cacheMiss = false
+        
         if let cachedNotifications: [NotificationMetadata] = CachingService.shared.load(forKey: "notificationsCache", type: [NotificationMetadata].self) {
             self.notifications = cachedNotifications
+        } else {
+            cacheMiss = true
         }
         
         if let cachedUserRequests: [UserRequest] = CachingService.shared.load(forKey: "userRequestsCache", type: [UserRequest].self) {
             self.userRequests = cachedUserRequests
+        } else {
+            cacheMiss = true
         }
         
         if let cachedPlaylistRequests: [PlaylistRequest] = CachingService.shared.load(forKey: "playlistRequestsCache", type: [PlaylistRequest].self) {
             self.playlistRequests = cachedPlaylistRequests
+        } else {
+            cacheMiss = true
+        }
+        
+        if cacheMiss {
+            DispatchQueue.main.async {
+                Task {
+                    self.isLoading = true
+                    await self.loadRequests()
+                    await self.loadNotifications()
+                    self.isLoading = false
+                }
+            }
         }
     }
     
