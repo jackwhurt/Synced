@@ -22,6 +22,11 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ScrollView {
+                if profileViewModel.isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .padding()
+                }
                 profileContent
                     .padding()
                     .sheet(item: $spotifyAuthURL) { url in
@@ -35,8 +40,12 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .toolbar { navigationBarMenu() }
+            .animation(.easeInOut(duration: 0.2), value: profileViewModel.isLoading)
+            .transition(.slide)
             .onAppear(perform:{
-                profileViewModel.loadUser()
+                Task {
+                    await profileViewModel.loadUser()
+                }
                 if let isConnected = profileViewModel.user?.isSpotifyConnected {
                     appSettings.isSpotifyConnected = isConnected
                 }

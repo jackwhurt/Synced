@@ -148,6 +148,7 @@ struct CollaborativePlaylistView: View {
             if collaborativePlaylistViewModel.autoDismiss {
                 presentationMode.wrappedValue.dismiss()
             }
+            collaborativePlaylistViewModel.errorMessage = nil
         })
 
         return Alert(title: Text("Error"),
@@ -162,6 +163,9 @@ struct CollaborativePlaylistView: View {
             primaryButton: .destructive(Text("Delete")) {
                 Task {
                     await collaborativePlaylistViewModel.deletePlaylist()
+                    if collaborativePlaylistViewModel.errorMessage != nil {
+                        showAlert = .error
+                    }
                 }
             },
             secondaryButton: .cancel()

@@ -35,29 +35,37 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             self.isLoading = false
             return
         }
-        
-        let request = URLRequest(url: url)
-        
-        if let cachedResponse = URLCache.shared.cachedResponse(for: request), let _ = UIImage(data: cachedResponse.data) {
+
+        var request = URLRequest(url: url)
+        var cachedEtag = ""
+        if let cachedResponse = URLCache.shared.cachedResponse(for: request) {
             self.imageData = cachedResponse.data
             self.isLoading = false
-        } else {
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                guard let data = data, let response = response, error == nil, let _ = UIImage(data: data) else {
+            
+            if let httpResponse = cachedResponse.response as? HTTPURLResponse {
+                if let eTag = httpResponse.allHeaderFields["Etag"] as? String {
+                    request.addValue(eTag, forHTTPHeaderField: "If-None-Match")
+                    cachedEtag = eTag
+                }
+            }
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let response = response, error == nil else {
+                return
+            }
+            if let httpResponse = response as? HTTPURLResponse, let data = data {
+                print(httpResponse.statusCode)
+                if httpResponse.allHeaderFields["Etag"] as? String != cachedEtag {
+                    let cachedData = CachedURLResponse(response: response, data: data)
+                    let requestUrlOnly = URLRequest(url: request.url!)
+                    URLCache.shared.storeCachedResponse(cachedData, for: requestUrlOnly)
                     DispatchQueue.main.async {
+                        self.imageData = data
                         self.isLoading = false
                     }
-                    return
                 }
-                
-                let cachedData = CachedURLResponse(response: response, data: data)
-                URLCache.shared.storeCachedResponse(cachedData, for: request)
-                
-                DispatchQueue.main.async {
-                    self.imageData = data
-                    self.isLoading = false
-                }
-            }.resume()
-        }
+            }
+        }.resume()
     }
 }

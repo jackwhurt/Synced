@@ -7,6 +7,7 @@ class ProfileViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isEditing = false
     @Published var user: UserMetadata?
+    @Published var isLoading: Bool = false
     var isAppleMusicConnected = false
     
     private let appleMusicService: AppleMusicService
@@ -27,20 +28,18 @@ class ProfileViewModel: ObservableObject {
         self.loadUserMetadataFromCache()
     }
     
-    func loadUser() {
-        Task {
-            do {
-                guard let userId = authenticationService.getUserId() else { throw ProfileViewModelError.failedToGetUserId }
-                let response = try await userService.getUserById(userId: userId)
-                DispatchQueue.main.async {
-                    self.user = response
-                }
-            } catch {
-                DispatchQueue.main.async { [weak self] in
-                    self?.errorMessage = "Failed to load profile, please try again later."
-                }
-                print("Failed to retrieve user: \(error)")
+    func loadUser() async {
+        do {
+            guard let userId = authenticationService.getUserId() else { throw ProfileViewModelError.failedToGetUserId }
+            let response = try await userService.getUserById(userId: userId)
+            DispatchQueue.main.async {
+                self.user = response
             }
+        } catch {
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Failed to load profile, please try again later."
+            }
+            print("Failed to retrieve user: \(error)")
         }
     }
     
@@ -77,7 +76,7 @@ class ProfileViewModel: ObservableObject {
         Task {
             do {
                 try await saveImage()
-                loadUser()
+                await loadUser()
                 DispatchQueue.main.async {
                     self.imagePreview = nil
                     self.isEditing = false
@@ -132,6 +131,14 @@ class ProfileViewModel: ObservableObject {
         }
         if let cachedUserMetadata: UserMetadata = CachingService.shared.load(forKey: "UserMetadata_\(userId)", type: UserMetadata.self) {
             self.user = cachedUserMetadata
+        } else {
+            DispatchQueue.main.async {
+                Task {
+                    self.isLoading = true
+                    await self.loadUser()
+                    self.isLoading = false
+                }
+            }
         }
     }
 }

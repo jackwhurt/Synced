@@ -56,21 +56,9 @@ class ImageService {
         do {
             let response = try await apiService.uploadToS3(endpoint: uploadUrl, imageData: imageData)
             print("Successfully uploaded image to S3: \(response)")
-            
-            guard let url = s3Url else { return }
-            removeImageFromCache(urlString: url)
         } catch {
             print("Failed to upload image to S3: \(error)")
             throw ImageServiceError.failedToUploadImage
         }
-    }
-    
-    // TODO: doesnt work for all devices
-    private func removeImageFromCache(urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        let cacheKey = URLRequest(url: url)
-        let urlCache: URLCache = .shared
-        guard let _ = urlCache.cachedResponse(for: cacheKey) else { return }
-        urlCache.removeCachedResponse(for: cacheKey)
     }
 }
