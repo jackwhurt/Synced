@@ -8,6 +8,7 @@ class ProfileViewModel: ObservableObject {
     @Published var isEditing = false
     @Published var user: UserMetadata?
     @Published var isLoading: Bool = false
+    @Published var isSaving: Bool = false
     var isAppleMusicConnected = false
     
     private let appleMusicService: AppleMusicService
@@ -75,16 +76,20 @@ class ProfileViewModel: ObservableObject {
     func saveChanges() {
         Task {
             do {
+                DispatchQueue.main.async { [weak self] in
+                    self?.isSaving = true
+                }
                 try await saveImage()
-                await loadUser()
-                DispatchQueue.main.async {
-                    self.imagePreview = nil
-                    self.isEditing = false
+                DispatchQueue.main.async { [weak self] in
+                    self?.isEditing = false
+                    self?.isSaving = false
+                    self?.imagePreview = nil
                 }
             } catch {
                 print("Failed to save changes: \(error)")
                 DispatchQueue.main.async { [weak self] in
                     self?.errorMessage = "Failed to save changes, please try again later."
+                    self?.isSaving = false
                 }
             }
             

@@ -55,14 +55,15 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
                 return
             }
             if let httpResponse = response as? HTTPURLResponse, let data = data {
-                print(httpResponse.statusCode)
                 if httpResponse.allHeaderFields["Etag"] as? String != cachedEtag {
                     let cachedData = CachedURLResponse(response: response, data: data)
-                    let requestUrlOnly = URLRequest(url: request.url!)
-                    URLCache.shared.storeCachedResponse(cachedData, for: requestUrlOnly)
-                    DispatchQueue.main.async {
-                        self.imageData = data
-                        self.isLoading = false
+                    if let url = request.url {
+                        let requestUrlOnly = URLRequest(url: url)
+                        URLCache.shared.storeCachedResponse(cachedData, for: requestUrlOnly)
+                        DispatchQueue.main.async {
+                            self.imageData = data
+                            self.isLoading = false
+                        }
                     }
                 }
             }

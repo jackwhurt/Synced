@@ -59,7 +59,13 @@ struct ProfileView: View {
                 ProfilePictureView(profileViewModel: profileViewModel)
                 VStack {
                     ProfileDetailsView(profileViewModel: profileViewModel)
-                    EditProfileView(profileViewModel: profileViewModel)
+                    if profileViewModel.isSaving {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .frame(width: 180, height: 35)
+                    } else {
+                        EditProfileView(profileViewModel: profileViewModel)
+                    }
                 }
             }
             Divider()
@@ -88,20 +94,10 @@ struct ProfileView: View {
     }
     
     private func navigationBarMenu() -> some ToolbarContent {
-        Group {
-            ToolbarItemGroup(placement: .navigationBarLeading) {
-                if profileViewModel.isEditing {
-                    Button("Cancel") {
-                        profileViewModel.cancelChanges()
-                    }
-                }
-            }
-            
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                if profileViewModel.isEditing {
-                    Button("Save") {
-                        profileViewModel.saveChanges()
-                    }
+        ToolbarItemGroup(placement: .navigationBarLeading) {
+            if profileViewModel.isEditing {
+                Button("Cancel") {
+                    profileViewModel.cancelChanges()
                 }
             }
         }
