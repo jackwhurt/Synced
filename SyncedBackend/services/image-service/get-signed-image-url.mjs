@@ -63,8 +63,8 @@ async function checkIfExists(tableName, key) {
 }
 
 function generateObjectKey(userId, playlistId, fileExtension) {
-    if (userId) return `images/user/${userId}.${fileExtension}`;
-    if (playlistId) return `images/playlist/${playlistId}.${fileExtension}`;
+    if (userId) return `images/user/${userId}/${uuidv4()}.${fileExtension}`;
+    if (playlistId) return `images/playlist/${playlistId}/${uuidv4()}.${fileExtension}`;
 }
 
 async function generateSignedUrl(bucket, key, contentType) {

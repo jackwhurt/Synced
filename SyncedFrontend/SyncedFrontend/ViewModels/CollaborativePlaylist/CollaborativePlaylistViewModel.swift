@@ -135,7 +135,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
         }
         
         do {
-            try await imageService.saveImage(playlistId: playlistId, image: image, s3Url: playlistMetadata?.coverImageUrl)
+            let newCoverImageUrl = try await imageService.saveImage(playlistId: playlistId, image: image, s3Url: playlistMetadata?.coverImageUrl)
         } catch {
             print("Failed to save image: \(error)")
             throw CollaborativePlaylistViewModelError.failedToSaveImage

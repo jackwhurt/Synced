@@ -10,6 +10,7 @@ const usersTable = process.env.USERS_TABLE;
 
 const MAX_TRANSACTION_ITEMS = 100;
 
+// TODO: Delete images
 export const deleteCollaborativePlaylistHandler = async (event) => {
     console.info('Received:', event);
 

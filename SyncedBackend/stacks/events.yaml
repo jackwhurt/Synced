@@ -6,6 +6,8 @@ Parameters:
     Type: String
   UpdateAppleMusicDevTokenFunctionArn:
     Type: String
+  DeleteImagesFunctionArn:
+    Type: String
   BucketName:
     Type: String
   UpdateImageUrlFunctionArn:
@@ -43,6 +45,22 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt AppleMusicTokenRefreshRule.Arn
+
+  DeleteImagesRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "cron(0 6,18 * * ? *)"
+      Targets:
+        - Arn: !Ref DeleteImagesFunctionArn
+          Id: "DeleteImagesTokenTarget"
+
+  DeleteImagesInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref DeleteImagesFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt DeleteImagesRule.Arn
 
   # Workaround for the circular dependency
   S3UploadRule:

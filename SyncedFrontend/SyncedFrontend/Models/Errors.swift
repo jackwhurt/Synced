@@ -90,6 +90,7 @@ enum ImageServiceError: Error {
     case uploadUrlNotFound
     case failedToUploadImage
     case imageDataConversionFailed
+    case invalidURL
 }
 
 enum ProfileViewModelError: Error {

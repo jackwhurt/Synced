@@ -35,6 +35,7 @@ class ProfileViewModel: ObservableObject {
             let response = try await userService.getUserById(userId: userId)
             DispatchQueue.main.async {
                 self.user = response
+                self.imagePreview = nil
             }
         } catch {
             DispatchQueue.main.async { [weak self] in
@@ -83,7 +84,6 @@ class ProfileViewModel: ObservableObject {
                 DispatchQueue.main.async { [weak self] in
                     self?.isEditing = false
                     self?.isSaving = false
-                    self?.imagePreview = nil
                 }
             } catch {
                 print("Failed to save changes: \(error)")
@@ -122,7 +122,11 @@ class ProfileViewModel: ObservableObject {
             return
         }
         do {
-            try await imageService.saveImage(userIdBool: "true", image: image, s3Url: user?.photoUrl)
+            let newPhotoUrl = try await imageService.saveImage(userIdBool: "true", image: image, s3Url: user?.photoUrl)
+            DispatchQueue.main.async {
+                self.user?.photoUrl = newPhotoUrl.split(separator: "?").first.map(String.init)
+                self.imagePreview = nil
+            }
         } catch {
             print("Failed to save changes: \(error)")
             throw CollaborativePlaylistViewModelError.failedToSaveImage

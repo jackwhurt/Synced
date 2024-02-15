@@ -29,47 +29,6 @@ class APIService {
         return try await makeRequest(endpoint: endpoint, httpMethod: "DELETE", model: model, body: bodyData)
     }
     
-    func uploadToS3(endpoint: String, imageData: Data) async throws -> String {
-        guard let url = URL(string: endpoint) else {
-            throw APIServiceError.invalidURL
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
-        
-        let uploadResult = try await uploadData(request: request, data: imageData)
-        return uploadResult
-    }
-    
-    private func uploadData(request: URLRequest, data: Data) async throws -> String {
-        do {
-            let (responseData, response) = try await URLSession.shared.upload(for: request, from: data)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw APIServiceError.failedToDecodeResponse
-            }
-            
-            print("Status code: \(httpResponse.statusCode)")
-            print("Headers: \(httpResponse.allHeaderFields)")
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                if let responseBody = String(data: responseData, encoding: .utf8) {
-                    print("Error response body: \(responseBody)")
-                }
-                throw APIServiceError.failedToUploadToS3
-            }
-            
-            if let responseBody = String(data: responseData, encoding: .utf8) {
-                return responseBody
-            } else {
-                throw APIServiceError.failedToDecodeResponse
-            }
-        } catch {
-            print("Failed to upload image to S3: \(error)")
-            throw APIServiceError.failedToUploadToS3
-        }
-    }
-    
     private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil, parameters: [String: String]? = nil) async throws -> T {
         guard let idToken = getIdToken() else {
             throw APIServiceError.tokenRetrievalFailed

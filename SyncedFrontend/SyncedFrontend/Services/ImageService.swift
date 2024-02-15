@@ -8,12 +8,13 @@ class ImageService {
         self.apiService = apiService
     }
     
-    func saveImage(playlistId: String? = nil, userIdBool: String? = nil, image: UIImage, s3Url: String?) async throws {
+    func saveImage(playlistId: String? = nil, userIdBool: String? = nil, image: UIImage, s3Url: String?) async throws -> String {
         do {
             let urlString = try await getImageUploadUrl(playlistId: playlistId, userIdBool: userIdBool)
             print("Successfully received url: \(urlString)")
             try await uploadImage(uploadUrl: urlString, image: image, s3Url: s3Url)
             print("Successfully saved image")
+            return urlString
         } catch {
             print("Failed to save image: \(error)")
             throw ImageServiceError.failedToUploadImage
@@ -52,25 +53,48 @@ class ImageService {
         guard let imageData = image.jpegData(compressionQuality: 0.5) else {
             throw ImageServiceError.imageDataConversionFailed
         }
+        guard let url = URL(string: uploadUrl) else {
+            throw ImageServiceError.invalidURL
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
         
         do {
-            let response = try await apiService.uploadToS3(endpoint: uploadUrl, imageData: imageData)
+            let response = try await uploadData(request: request, data: imageData)
             print("Successfully uploaded image to S3: \(response)")
-            
-            guard let url = s3Url else { return }
-            removeImageFromCache(urlString: url)
         } catch {
             print("Failed to upload image to S3: \(error)")
             throw ImageServiceError.failedToUploadImage
         }
     }
     
-    // TODO: remove
-    private func removeImageFromCache(urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        let cacheKey = URLRequest(url: url)
-        let urlCache: URLCache = .shared
-        guard let _ = urlCache.cachedResponse(for: cacheKey) else { return }
-        urlCache.removeCachedResponse(for: cacheKey)
+    private func uploadData(request: URLRequest, data: Data) async throws -> String {
+        do {
+            let (responseData, response) = try await URLSession.shared.upload(for: request, from: data)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw APIServiceError.failedToDecodeResponse
+            }
+            
+            print("Status code: \(httpResponse.statusCode)")
+            print("Headers: \(httpResponse.allHeaderFields)")
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                if let responseBody = String(data: responseData, encoding: .utf8) {
+                    print("Error response body: \(responseBody)")
+                }
+                throw APIServiceError.failedToUploadToS3
+            }
+            
+            if let responseBody = String(data: responseData, encoding: .utf8) {
+                return responseBody
+            } else {
+                throw APIServiceError.failedToDecodeResponse
+            }
+        } catch {
+            print("Failed to upload image to S3: \(error)")
+            throw APIServiceError.failedToUploadToS3
+        }
     }
 }

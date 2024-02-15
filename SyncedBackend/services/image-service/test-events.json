@@ -17,5 +17,16 @@
             "playlistId": "70f23806-2368-4be9-a1a1-f078d9660b1d",
             "fileType": "jpg"
         }
-    }
+    },
+    "update-url": {
+        "detail": {
+          "bucket": {
+            "name": "your-bucket-name"
+          },
+          "object": {
+            "key": "uploads/user/12345.jpg"
+          }
+        }
+      }
+      
 }

@@ -12,6 +12,10 @@ Parameters:
     Type: String
   LambdaFailureTopicName:
     Type: String
+  DeleteImageQueueArn:
+    Type: String
+  DeleteImageQueueUrl:
+    Type: String
   ApnsPlatformArn:
     Type: String
   BucketName:
@@ -830,6 +834,49 @@ Resources:
         Variables:
           USERS_TABLE: !Ref UsersTableName
 
+  # Delete Images from SQS queue
+  DeleteImagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/image-service/
+      Handler: delete-images.deleteImagesHandler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Role: !GetAtt SqsDeleteImageRole.Arn
+      Description: A function to delete images.
+      Environment:
+        Variables:
+          DELETE_QUEUE_URL: !Ref DeleteImageQueueUrl
+
+  SqsDeleteImageRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: DeleteImageCombinedPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "sqs:ReceiveMessage"
+                  - "sqs:DeleteMessage"
+                Resource: !Ref DeleteImageQueueArn
+              - Effect: "Allow"
+                Action:
+                  - "s3:DeleteObject"
+                Resource: 
+                  - !Sub "arn:aws:s3:::${BucketName}/*"
+
   # Image
   GetSignedImageUrlFunction:
     Type: AWS::Serverless::Function
@@ -871,20 +918,41 @@ Resources:
       Runtime: nodejs18.x
       Architectures:
         - x86_64
-      MemorySize: 128
+      MemorySize: 256
       Timeout: 100
-      Description: A function to update the url to an image.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the Table
-        - DynamoDBCrudPolicy:
-            TableName: !Ref PlaylistsTableName
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTableName
+      Role: !GetAtt UpdateImageRole.Arn
+      Description: A function to update the URL to an image.
       Environment:
         Variables:
-          # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           USERS_TABLE: !Ref UsersTableName
+          DELETE_QUEUE_URL: !Ref DeleteImageQueueUrl
+
+  UpdateImageRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: UpdateImageDynamoDBAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:UpdateItem"
+                Resource: 
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${PlaylistsTableName}"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${UsersTableName}"
+              - Effect: "Allow"
+                Action:
+                  - "sqs:SendMessage"
+                Resource: !Ref DeleteImageQueueArn
 
 Outputs:
   UpdateSpotifyDevTokenFunctionArn:
@@ -947,6 +1015,8 @@ Outputs:
     Value: !GetAtt RegisterUserForAPNSFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
+  DeleteImagesFunctionArn:
+    Value: !GetAtt DeleteImagesFunction.Arn
   GetSignedImageUrlFunctionArn:
     Value: !GetAtt GetSignedImageUrlFunction.Arn
   UpdateImageUrlFunctionArn:

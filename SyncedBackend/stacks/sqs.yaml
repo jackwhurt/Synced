@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Synced SQS Stack
+
+Resources:
+  DeleteImageQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      VisibilityTimeout: 300
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DeleteImageDLQ.Arn
+        maxReceiveCount: 5 
+
+  DeleteImageDLQ:
+    Type: "AWS::SQS::Queue"
+
+Outputs:
+  DeleteImageQueueArn:
+    Value: !GetAtt DeleteImageQueue.Arn
+  DeleteImageQueueUrl:
+    Value: !Ref DeleteImageQueue
+  DeleteImageDLQArn:
+    Value: !GetAtt DeleteImageDLQ.Arn
