@@ -49,21 +49,27 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
                 }
             }
         }
+
+        loadImage(url: url, eTag: cachedEtag)
+    }
+    
+    private func loadImage(url: URL, eTag: String) {
+        var request = URLRequest(url: url)
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.addValue("image/jpeg", forHTTPHeaderField: "Accept")
+        request.addValue(eTag, forHTTPHeaderField: "If-None-Match")
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             guard let response = response, error == nil else {
                 return
             }
             if let httpResponse = response as? HTTPURLResponse, let data = data {
-                if httpResponse.allHeaderFields["Etag"] as? String != cachedEtag {
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
                     let cachedData = CachedURLResponse(response: response, data: data)
-                    if let url = request.url {
-                        let requestUrlOnly = URLRequest(url: url)
-                        URLCache.shared.storeCachedResponse(cachedData, for: requestUrlOnly)
-                        DispatchQueue.main.async {
-                            self.imageData = data
-                            self.isLoading = false
-                        }
+                    URLCache.shared.storeCachedResponse(cachedData, for: URLRequest(url: url))
+                    DispatchQueue.main.async {
+                        self.imageData = data
+                        self.isLoading = false
                     }
                 }
             }

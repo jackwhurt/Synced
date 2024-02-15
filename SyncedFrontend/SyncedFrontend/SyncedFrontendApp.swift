@@ -38,6 +38,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                 }
             }
         }
+        
+        let memoryCapacity = 50 * 1024 * 1024
+        let diskCapacity = 200 * 1024 * 1024
+        let urlCache = URLCache(memoryCapacity: memoryCapacity, diskCapacity: diskCapacity)
+        URLCache.shared = urlCache
+        
         return true
     }
 
