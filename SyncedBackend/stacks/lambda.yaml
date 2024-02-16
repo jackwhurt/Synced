@@ -14,6 +14,10 @@ Parameters:
     Type: String
   ApnsPlatformArn:
     Type: String
+  DeleteImageQueueArn:
+    Type: String
+  DeleteImageQueueUrl:
+    Type: String
   BucketName:
     Type: String
   DevEnvironment:
@@ -324,12 +328,25 @@ Resources:
               Action:
                 - "ssm:GetParameter"
               Resource: "*"
+        - Statement:
+          - Effect: "Allow"
+            Action:
+              - "sqs:SendMessage"
+            Resource: 
+              - !Ref DeleteImageQueueArn
+        - Statement:
+          - Effect: "Allow"
+            Action:
+              - "s3:DeleteObject"
+            Resource: 
+              - !Sub arn:aws:s3:::${BucketName}/*
       Environment:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
           TOKENS_TABLE: !Ref TokensTableName  
           USERS_TABLE: !Ref UsersTableName
+          DELETE_QUEUE_URL: !Ref DeleteImageQueueUrl
 
   # Collaborative Playlists - Metadata
   UpdateCollaborativePlaylistMetadataFunction:
@@ -830,6 +847,38 @@ Resources:
         Variables:
           USERS_TABLE: !Ref UsersTableName
 
+  # Delete Images from SQS queue
+  DeleteImagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/image-service/
+      Handler: delete-images.deleteImagesHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to delete images.
+      Policies:
+        - Statement:
+          - Effect: "Allow"
+            Action:
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+            Resource: 
+              - !Ref DeleteImageQueueArn
+        - Statement:
+          - Effect: "Allow"
+            Action:
+              - "s3:DeleteObject"
+            Resource: 
+              - !Sub arn:aws:s3:::${BucketName}/*
+      Environment:
+        Variables:
+          DELETE_QUEUE_URL: !Ref DeleteImageQueueUrl
+
   # Image
   GetSignedImageUrlFunction:
     Type: AWS::Serverless::Function
@@ -945,6 +994,8 @@ Outputs:
     Value: !GetAtt GetUserByIdFunction.Arn
   RegisterUserForAPNSFunctionArn:
     Value: !GetAtt RegisterUserForAPNSFunction.Arn
+  DeleteImagesFunctionArn:
+    Value: !GetAtt DeleteImagesFunction.Arn
   CognitoTriggerFunctionArn:
     Value: !GetAtt CognitoTriggerFunction.Arn
   GetSignedImageUrlFunctionArn:

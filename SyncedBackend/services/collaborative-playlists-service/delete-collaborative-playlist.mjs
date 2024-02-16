@@ -1,12 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand, TransactWriteCommand } from '@aws-sdk/lib-dynamodb';
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { deleteSpotifyPlaylist } from '/opt/nodejs/streaming-service/delete-streaming-service-playlist.mjs';
 import { prepareSpotifyAccounts } from '/opt/nodejs/spotify-utils.mjs';
+import { deleteS3ObjectByUrl } from '/opt/nodejs/delete-s3-object.mjs';
 
+const sqsClient = new SQSClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const playlistsTable = process.env.PLAYLISTS_TABLE;
 const tokensTable = process.env.TOKENS_TABLE;
 const usersTable = process.env.USERS_TABLE;
+const deleteQueueUrl = process.env.DELETE_QUEUE_URL;
 
 const MAX_TRANSACTION_ITEMS = 100;
 
@@ -37,6 +41,8 @@ export const deleteCollaborativePlaylistHandler = async (event) => {
         await deleteSpotifyPlaylists(spotifyDetails);
 
         await addAppleMusicDeleteFlag(playlistRecords);
+
+        if(metadataRecord && metadataRecord.coverImageUrl) await deleteImage(metadataRecord.coverImageUrl);
 
         return createSuccessResponse(playlistId);
     } catch (err) {
@@ -101,12 +107,39 @@ async function addAppleMusicDeleteFlag(playlistRecords) {
             SK: record.PK,
             appleMusicPlaylistId: record.appleMusicPlaylistId
         }));
+    if (deleteFlags.length == 0) return;
     const transactItems = deleteFlags.map(record => ({ Put: { TableName: playlistsTable, Item: record } }));
 
     try {
         await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
     } catch (err) {
         console.error('Failed to add Apple Music delete flags:', err);
+    }
+}
+
+async function deleteImage(imageUrl) {
+    try {
+        await deleteS3ObjectByUrl(imageUrl);
+    } catch {
+        console.error(`Failed to delete image: ${imageUrl}, adding to delete queue`)
+        await addUrlToDeleteQueue(imageUrl);
+    }
+    
+}
+
+async function addUrlToDeleteQueue(imageUrl) {
+    const params = {
+        QueueUrl: deleteQueueUrl, 
+        MessageBody: JSON.stringify({
+            imageUrl: imageUrl,
+        }),
+    };
+
+    try {
+        const result = await sqsClient.send(new SendMessageCommand(params));
+        console.info('Successfully sent message to SQS:', result);
+    } catch (error) {
+        console.error('Failed to send message to SQS:', error);
     }
 }
 

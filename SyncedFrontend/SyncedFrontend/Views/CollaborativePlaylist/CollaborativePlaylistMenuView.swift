@@ -47,6 +47,7 @@ struct CollaborativePlaylistMenuView: View {
         }
     }
     
+    // TODO: update view when back
     private var playlistsSection: some View {
         Section {
             if collaborativePlaylistMenuViewModel.playlists.isEmpty {
