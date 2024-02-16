@@ -1,13 +1,15 @@
 import SwiftUI
 
 struct AddSongsView: View {
+    @Environment(\.presentationMode) var presentationMode
     @Binding var showSheet: Bool
+    
     @State private var searchText = ""
     @State private var showErrorAlert = false
+    @State private var isSaving = false
     @StateObject private var addSongsViewModel: AddSongsViewModel
     @FocusState private var isTextFieldFocused: Bool
-    @Environment(\.presentationMode) var presentationMode
-    
+
     init(showSheet: Binding<Bool>, songsToAdd: Binding<[SongMetadata]>, playlistSongs: [SongMetadata]) {
         _showSheet = showSheet
         _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService(), playlistSongs: playlistSongs, songsToAdd: songsToAdd))
@@ -17,7 +19,6 @@ struct AddSongsView: View {
         NavigationView {
             VStack {
                 HStack {
-                    // Search bar
                     TextField("Search songs", text: $searchText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .focused($isTextFieldFocused)
@@ -45,16 +46,7 @@ struct AddSongsView: View {
                 }
             }
             .navigationBarTitle("Add Songs", displayMode: .inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        Task {
-                            await addSongsViewModel.convertSongs()
-                            showErrorAlert = addSongsViewModel.errorMessage != nil
-                        }
-                    }
-                }
-            }
+            .toolbar { toolbarContent() }
             .alert(isPresented: $showErrorAlert, content: errorAlert)
         }
         .onAppear {
@@ -65,6 +57,25 @@ struct AddSongsView: View {
         .accentColor(Color("SyncedBlue"))
     }
     
+    private func toolbarContent() -> some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            if isSaving {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+            } else {
+                Button("Save", action: {
+                    Task {
+                        isSaving = true
+                        await addSongsViewModel.convertSongs()
+                        if addSongsViewModel.errorMessage != nil {
+                            showErrorAlert = true
+                            isSaving = false
+                        }
+                    }
+                })
+            }
+        }
+    }
     
     private func errorAlert() -> Alert {
         Alert(
@@ -84,7 +95,7 @@ struct SongRowToAdd: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            MusicAsyncImageLoader(urlString: song.coverImageUrl, width: 40, height: 40)
+            MusicAsyncImageLoader(urlString: song.coverImageUrl, reloadAfterCacheHit: false, width: 40, height: 40)
             VStack(alignment: .leading, spacing: 0) {
                 Text(song.title)
                     .bold()

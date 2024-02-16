@@ -65,7 +65,7 @@ class ImageService {
         }
     }
     
-    // TODO: doesnt work for all devices
+    // TODO: remove
     private func removeImageFromCache(urlString: String) {
         guard let url = URL(string: urlString) else { return }
         let cacheKey = URLRequest(url: url)

@@ -2,13 +2,16 @@ import SwiftUI
 
 struct CachedAsyncImage<Content: View, Placeholder: View>: View {
     let url: URL?
+    var reloadAfterCacheHit: Bool
     var content: (Image) -> Content
     var placeholder: () -> Placeholder
+    
     @State private var imageData: Data?
     @State private var isLoading = true
     
-    init(url: URL?, @ViewBuilder content: @escaping (Image) -> Content, @ViewBuilder placeholder: @escaping () -> Placeholder) {
+    init(url: URL?, reloadAfterCacheHit: Bool, @ViewBuilder content: @escaping (Image) -> Content, @ViewBuilder placeholder: @escaping () -> Placeholder) {
         self.url = url
+        self.reloadAfterCacheHit = reloadAfterCacheHit
         self.content = content
         self.placeholder = placeholder
     }
@@ -35,29 +38,48 @@ struct CachedAsyncImage<Content: View, Placeholder: View>: View {
             self.isLoading = false
             return
         }
-        
-        let request = URLRequest(url: url)
-        
-        if let cachedResponse = URLCache.shared.cachedResponse(for: request), let _ = UIImage(data: cachedResponse.data) {
+
+        var request = URLRequest(url: url)
+        var cachedEtag = ""
+        if let cachedResponse = URLCache.shared.cachedResponse(for: request) {
             self.imageData = cachedResponse.data
             self.isLoading = false
-        } else {
-            URLSession.shared.dataTask(with: request) { data, response, error in
-                guard let data = data, let response = response, error == nil, let _ = UIImage(data: data) else {
-                    DispatchQueue.main.async {
-                        self.isLoading = false
-                    }
-                    return
+            
+            if let httpResponse = cachedResponse.response as? HTTPURLResponse {
+                if let eTag = httpResponse.allHeaderFields["Etag"] as? String {
+                    request.addValue(eTag, forHTTPHeaderField: "If-None-Match")
+                    cachedEtag = eTag
                 }
-                
+            }
+            
+            if reloadAfterCacheHit {
+                loadImage(url: url, eTag: cachedEtag)
+            }
+        } else {
+            loadImage(url: url, eTag: cachedEtag)
+        }
+    }
+    
+    private func loadImage(url: URL, eTag: String) {
+        var request = URLRequest(url: url)
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.addValue("image/jpeg", forHTTPHeaderField: "Accept")
+        request.addValue(eTag, forHTTPHeaderField: "If-None-Match")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let response = response, error == nil else {
+                return
+            }
+            if let httpResponse = response as? HTTPURLResponse, let data = data, httpResponse.statusCode == 200 {
                 let cachedData = CachedURLResponse(response: response, data: data)
-                URLCache.shared.storeCachedResponse(cachedData, for: request)
-                
+                URLCache.shared.storeCachedResponse(cachedData, for: URLRequest(url: url))
                 DispatchQueue.main.async {
                     self.imageData = data
-                    self.isLoading = false
                 }
-            }.resume()
-        }
+            }
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+        }.resume()
     }
 }

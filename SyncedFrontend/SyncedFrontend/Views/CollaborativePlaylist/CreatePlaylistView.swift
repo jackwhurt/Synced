@@ -1,8 +1,11 @@
 import SwiftUI
 
+// TODO: add pps to collaborator search
 struct CreatePlaylistView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var appSettings: AppSettings
+    
+    @State private var isSaving = false
     @State private var showErrorAlert = false
     @StateObject private var createPlaylistViewModel: CreatePlaylistViewModel
     
@@ -22,16 +25,7 @@ struct CreatePlaylistView: View {
                     searchCollaborators: createPlaylistViewModel.searchUsers)
             }
             .navigationBarTitle("New Playlist", displayMode: .inline)
-            .navigationBarItems(leading: Button("Cancel", action: { dismiss() }), trailing: Button("Save", action: {
-                Task {
-                    await createPlaylistViewModel.save()
-                    if (createPlaylistViewModel.errorMessage != nil) {
-                        showErrorAlert = true
-                    } else {
-                        dismiss()
-                    }
-                }
-            }))
+            .navigationBarItems(leading: Button("Cancel", action: { dismiss() }), trailing: saveButton)
             .alert(isPresented: $showErrorAlert) {
                 Alert(
                     title: Text("Error"),
@@ -44,6 +38,29 @@ struct CreatePlaylistView: View {
             }
         }
         .accentColor(Color("SyncedBlue"))
+    }
+    
+    private var saveButton: some View {
+        Group {
+            if isSaving {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+            } else {
+                Button("Save", action: {
+                    Task {
+                        isSaving = true
+                        await createPlaylistViewModel.save()
+                        
+                        if createPlaylistViewModel.errorMessage != nil {
+                            showErrorAlert = true
+                            isSaving = false
+                        } else {
+                            dismiss()
+                        }
+                    }
+                })
+            }
+        }
     }
 }
 

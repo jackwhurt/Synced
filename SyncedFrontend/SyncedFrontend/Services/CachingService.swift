@@ -1,8 +1,6 @@
 import Foundation
 import UIKit
 
-
-// TODO: Move saving caching to services. duh
 class CachingService {
     // Provides a single instance that can be accessed throughout the app, ensuring storage logic is centralised
     static let shared = CachingService()

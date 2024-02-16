@@ -1,6 +1,7 @@
 import Foundation
 import MusicKit
 
+// TODO: unauthorised playlist issue, i.e. user has redownloaded the app
 class CollaborativePlaylistService {
     private let apiService: APIService
     private let appleMusicService: AppleMusicService

@@ -1,7 +1,6 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
-import { v4 as uuidv4 } from 'uuid';
 
 const s3Client = new S3Client({});
 const ddbClient = new DynamoDBClient({});

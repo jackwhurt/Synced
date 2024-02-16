@@ -14,6 +14,7 @@ struct CollaborativePlaylistView: View {
     @State private var showAlert: AlertType? = nil
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
+    @State private var isSaving = false
 
     init(playlistId: String) {
         let viewModel = CollaborativePlaylistViewModel(
@@ -99,13 +100,20 @@ struct CollaborativePlaylistView: View {
             
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if collaborativePlaylistViewModel.isEditing {
-                    Button("Save") {
-                        Task{
-                            await collaborativePlaylistViewModel.saveChanges()
-                            if collaborativePlaylistViewModel.errorMessage != nil {
-                                showAlert = .error
+                    if isSaving {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                    } else {
+                        Button("Save", action: {
+                            Task {
+                                isSaving = true
+                                await collaborativePlaylistViewModel.saveChanges()
+                                if collaborativePlaylistViewModel.errorMessage != nil {
+                                    showAlert = .error
+                                }
+                                isSaving = false
                             }
-                        }
+                        })
                     }
                 } else {
                     Menu {
@@ -140,6 +148,7 @@ struct CollaborativePlaylistView: View {
             if collaborativePlaylistViewModel.autoDismiss {
                 presentationMode.wrappedValue.dismiss()
             }
+            collaborativePlaylistViewModel.errorMessage = nil
         })
 
         return Alert(title: Text("Error"),
@@ -154,6 +163,9 @@ struct CollaborativePlaylistView: View {
             primaryButton: .destructive(Text("Delete")) {
                 Task {
                     await collaborativePlaylistViewModel.deletePlaylist()
+                    if collaborativePlaylistViewModel.errorMessage != nil {
+                        showAlert = .error
+                    }
                 }
             },
             secondaryButton: .cancel()
@@ -177,7 +189,7 @@ struct PlaylistHeaderView: View {
                         .cornerRadius(5)
                         .clipped()
                 } else {
-                    MusicAsyncImageLoader(urlString: metadata.coverImageUrl, width: 300, height: 300)
+                    MusicAsyncImageLoader(urlString: metadata.coverImageUrl, reloadAfterCacheHit: true, width: 300, height: 300)
                 }
                 
                 if collaborativePlaylistViewModel.isEditing {
@@ -226,7 +238,7 @@ struct SongRow: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            MusicAsyncImageLoader(urlString: song.coverImageUrl, width: 40, height: 40)
+            MusicAsyncImageLoader(urlString: song.coverImageUrl, reloadAfterCacheHit: false, width: 40, height: 40)
             VStack(alignment: .leading, spacing: 0) {
                 Text(song.title)
                     .bold()

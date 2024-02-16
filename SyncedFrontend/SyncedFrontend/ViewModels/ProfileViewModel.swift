@@ -7,6 +7,8 @@ class ProfileViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isEditing = false
     @Published var user: UserMetadata?
+    @Published var isLoading: Bool = false
+    @Published var isSaving: Bool = false
     var isAppleMusicConnected = false
     
     private let appleMusicService: AppleMusicService
@@ -27,20 +29,18 @@ class ProfileViewModel: ObservableObject {
         self.loadUserMetadataFromCache()
     }
     
-    func loadUser() {
-        Task {
-            do {
-                guard let userId = authenticationService.getUserId() else { throw ProfileViewModelError.failedToGetUserId }
-                let response = try await userService.getUserById(userId: userId)
-                DispatchQueue.main.async {
-                    self.user = response
-                }
-            } catch {
-                DispatchQueue.main.async { [weak self] in
-                    self?.errorMessage = "Failed to load profile, please try again later."
-                }
-                print("Failed to retrieve user: \(error)")
+    func loadUser() async {
+        do {
+            guard let userId = authenticationService.getUserId() else { throw ProfileViewModelError.failedToGetUserId }
+            let response = try await userService.getUserById(userId: userId)
+            DispatchQueue.main.async {
+                self.user = response
             }
+        } catch {
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Failed to load profile, please try again later."
+            }
+            print("Failed to retrieve user: \(error)")
         }
     }
     
@@ -76,16 +76,20 @@ class ProfileViewModel: ObservableObject {
     func saveChanges() {
         Task {
             do {
+                DispatchQueue.main.async { [weak self] in
+                    self?.isSaving = true
+                }
                 try await saveImage()
-                loadUser()
-                DispatchQueue.main.async {
-                    self.imagePreview = nil
-                    self.isEditing = false
+                DispatchQueue.main.async { [weak self] in
+                    self?.isEditing = false
+                    self?.isSaving = false
+                    self?.imagePreview = nil
                 }
             } catch {
                 print("Failed to save changes: \(error)")
                 DispatchQueue.main.async { [weak self] in
                     self?.errorMessage = "Failed to save changes, please try again later."
+                    self?.isSaving = false
                 }
             }
             
@@ -132,6 +136,14 @@ class ProfileViewModel: ObservableObject {
         }
         if let cachedUserMetadata: UserMetadata = CachingService.shared.load(forKey: "UserMetadata_\(userId)", type: UserMetadata.self) {
             self.user = cachedUserMetadata
+        } else {
+            DispatchQueue.main.async {
+                Task {
+                    self.isLoading = true
+                    await self.loadUser()
+                    self.isLoading = false
+                }
+            }
         }
     }
 }

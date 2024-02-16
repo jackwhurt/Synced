@@ -21,6 +21,11 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: 'stacks/database.yaml'
+
+  SqsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/sqs.yaml'
   
   SnsStack:
     Type: AWS::CloudFormation::Stack
@@ -43,6 +48,8 @@ Resources:
         ActivitiesTableName: !GetAtt DatabaseStack.Outputs.ActivitiesTableName
         LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
         BucketName: !GetAtt S3Stack.Outputs.BucketName
+        DeleteImageQueueArn: !GetAtt SqsStack.Outputs.DeleteImageQueueArn
+        DeleteImageQueueUrl: !GetAtt SqsStack.Outputs.DeleteImageQueueUrl
         ApnsPlatformArn: 
           Fn::If:
             - IsDevEnvironment
@@ -68,6 +75,7 @@ Resources:
       Parameters:
         UpdateSpotifyDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateSpotifyDevTokenFunctionArn
         UpdateAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicDevTokenFunctionArn
+        DeleteImagesFunctionArn: !GetAtt LambdaStack.Outputs.DeleteImagesFunctionArn
         BucketName: !GetAtt S3Stack.Outputs.BucketName
         UpdateImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.UpdateImageUrlFunctionArn
 

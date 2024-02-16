@@ -7,7 +7,7 @@ struct ProfileAsyncImageLoader: View {
     
     var body: some View {
         if let imageURL = urlString, let url = URL(string: imageURL) {
-            CachedAsyncImage(url: url) { image in
+            CachedAsyncImage(url: url, reloadAfterCacheHit: true) { image in
                 image.resizable()
             } placeholder: {
                 ProgressView()

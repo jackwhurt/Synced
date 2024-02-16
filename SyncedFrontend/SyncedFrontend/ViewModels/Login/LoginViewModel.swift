@@ -11,13 +11,13 @@ class LoginViewModel: ObservableObject {
     init(isLoggedIn: Binding<Bool>, authenticationService: AuthenticationServiceProtocol) {
         self.authenticationService = authenticationService
         self.isLoggedIn = isLoggedIn
-        CachingService.shared.clearCache()
     }
 
     func loginUser() {
         authenticationService.loginUser(email: email, password: password) { [weak self] result in
             switch result {
             case .success():
+                CachingService.shared.clearCache()
                 print("Login successful")
                 DispatchQueue.main.async {
                     self?.isLoggedIn.wrappedValue = true

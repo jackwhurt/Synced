@@ -8,6 +8,8 @@ const tokensTable = process.env.TOKENS_TABLE;
 const redirectUrl = 'syncedapp://callback';
 
 export const spotifyAuthUrlHandler = async (event) => {
+    console.info('received:', event);
+
 	try {
         const claims = event.requestContext.authorizer?.claims;
 		const cognitoUserId = claims['sub'];
@@ -17,6 +19,8 @@ export const spotifyAuthUrlHandler = async (event) => {
 		await storeState(cognitoUserId, stateUuid);
 
 		const authoriseURL = buildSpotifyAuthUrl(clientId, stateUuid);
+
+		console.info('returned: ', authoriseURL);
 
 		return { statusCode: 302, body: JSON.stringify({ Location: authoriseURL }) };
 	} catch (error) {

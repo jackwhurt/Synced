@@ -3,7 +3,7 @@ import SwiftUI
 struct CollaborativePlaylistMenuView: View {
     @StateObject private var collaborativePlaylistMenuViewModel: CollaborativePlaylistMenuViewModel
     @State private var showingAddPlaylistSheet = false
-    
+
     init() {
         let collaborativePlaylistService = DIContainer.shared.provideCollaborativePlaylistService()
         _collaborativePlaylistMenuViewModel = StateObject(wrappedValue: CollaborativePlaylistMenuViewModel(collaborativePlaylistService: collaborativePlaylistService))
@@ -11,12 +11,27 @@ struct CollaborativePlaylistMenuView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                addPlaylistSection
-                playlistsSection
+            VStack {
+                if collaborativePlaylistMenuViewModel.isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .padding()
+                }
+                List {
+                    addPlaylistSection
+                    playlistsSection
+                }
+                .navigationTitle("Playlists")
             }
-            .navigationTitle("Playlists")
             .onAppear(perform: loadPlaylists)
+        }
+        .animation(.easeInOut(duration: 0.2), value: collaborativePlaylistMenuViewModel.isLoading)
+        .transition(.slide)
+        .alert(isPresented: Binding<Bool>(
+            get: { collaborativePlaylistMenuViewModel.errorMessage != nil },
+            set: { _ in collaborativePlaylistMenuViewModel.errorMessage = nil }
+        )) {
+            Alert(title: Text("Error"), message: Text(collaborativePlaylistMenuViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
         }
     }
     
@@ -25,6 +40,7 @@ struct CollaborativePlaylistMenuView: View {
             Button(action: { showingAddPlaylistSheet = true }) {
                 Label("Add New Playlist", systemImage: "plus")
             }
+            .foregroundColor(.syncedBlue)
             .sheet(isPresented: $showingAddPlaylistSheet) {
                 CreatePlaylistView(collaborativePlaylistViewModel: collaborativePlaylistMenuViewModel)
             }
@@ -59,9 +75,8 @@ struct PlaylistView: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            MusicAsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
+            MusicAsyncImageLoader(urlString: playlist.coverImageUrl, reloadAfterCacheHit: true, width: 50, height: 50)
             
-            // Title of the playlist
             Text(playlist.title)
                 .foregroundColor(.primary)
                 .font(.headline)
