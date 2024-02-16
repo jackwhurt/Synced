@@ -23,8 +23,8 @@ struct CollaborativePlaylistMenuView: View {
                 }
                 .navigationTitle("Playlists")
             }
+            .onAppear(perform: loadPlaylists)
         }
-        .onAppear(perform: loadPlaylists)
         .animation(.easeInOut(duration: 0.2), value: collaborativePlaylistMenuViewModel.isLoading)
         .transition(.slide)
         .alert(isPresented: Binding<Bool>(
@@ -47,7 +47,6 @@ struct CollaborativePlaylistMenuView: View {
         }
     }
     
-    // TODO: update view when back
     private var playlistsSection: some View {
         Section {
             if collaborativePlaylistMenuViewModel.playlists.isEmpty {
@@ -76,7 +75,7 @@ struct PlaylistView: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            MusicAsyncImageLoader(urlString: playlist.coverImageUrl, width: 50, height: 50)
+            MusicAsyncImageLoader(urlString: playlist.coverImageUrl, reloadAfterCacheHit: true, width: 50, height: 50)
             
             Text(playlist.title)
                 .foregroundColor(.primary)

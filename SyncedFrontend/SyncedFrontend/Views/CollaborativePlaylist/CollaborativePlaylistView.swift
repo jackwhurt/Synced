@@ -189,7 +189,7 @@ struct PlaylistHeaderView: View {
                         .cornerRadius(5)
                         .clipped()
                 } else {
-                    MusicAsyncImageLoader(urlString: metadata.coverImageUrl, width: 300, height: 300)
+                    MusicAsyncImageLoader(urlString: metadata.coverImageUrl, reloadAfterCacheHit: true, width: 300, height: 300)
                 }
                 
                 if collaborativePlaylistViewModel.isEditing {
@@ -238,7 +238,7 @@ struct SongRow: View {
     
     var body: some View {
         HStack(spacing: 10) {
-            MusicAsyncImageLoader(urlString: song.coverImageUrl, width: 40, height: 40)
+            MusicAsyncImageLoader(urlString: song.coverImageUrl, reloadAfterCacheHit: false, width: 40, height: 40)
             VStack(alignment: .leading, spacing: 0) {
                 Text(song.title)
                     .bold()
