@@ -109,6 +109,22 @@ class CollaborativePlaylistService {
             print("Failed to delete delete flags for playlists \(playlistIds): \(error)")
         }
     }
+    
+    func getCollaborators(playlistId: String) async throws -> [UserMetadata] {
+        do {
+            let params = ["playlistId": playlistId]
+            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/collaborators", model: GetCollaboratorsResponse.self, parameters: params)
+            if let error = response.error {
+                print("Failed to retrieve collaborative playlists, error from backend: \(error)")
+                throw CollaborativePlaylistServiceError.failedToGetCollaborators
+            }
+            CachingService.shared.save(response, forKey: "collaborators/\(playlistId)")
+            return response.collaborators ?? []
+        } catch {
+            print("Failed to retrieve collaborative playlists")
+            throw CollaborativePlaylistServiceError.failedToGetCollaborators
+        }
+    }
 
     private func createBackendPlaylist(request: CreateCollaborativePlaylistRequest) async throws -> String {
         do {

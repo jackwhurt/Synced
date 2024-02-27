@@ -136,3 +136,8 @@ struct CheckCurrentAuthorisationStatusResponse: Codable {
     let isSpotifyConnected: Bool?
     let error: String?
 }
+
+struct GetCollaboratorsResponse: Codable {
+    let collaborators: [UserMetadata]?
+    let error: String?
+}

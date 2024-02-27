@@ -5,20 +5,35 @@ class EditCollaboratorsViewModel: ObservableObject {
     @Published var collaborators: [UserMetadata] = []
     @Published var errorMessage: String? = nil
     @Published var playlistId: String
+    @Published var isLoading: Bool = false
     
     private let collaborativePlaylistService: CollaborativePlaylistService
     
     init(playlistId: String, collaborativePlaylistService: CollaborativePlaylistService) {
         self.playlistId = playlistId
         self.collaborativePlaylistService = collaborativePlaylistService
+        loadCachedCollaborators()
     }
     
     func loadCollaborators() {
+        if !CachingService.shared.exists(forKey: "playlistCollaborators_\(playlistId)") {
+            isLoading = true
+        }
+        
         Task {
             do {
-                //self.collaborators = collaborativePlaylistService.getCollaborators(playlistId: playlistId)
+                let response = try await collaborativePlaylistService.getCollaborators(playlistId: playlistId)
+                DispatchQueue.main.async {
+                    self.collaborators = response
+                }
             } catch {
-                // error
+                print("Failed to load collaborators")
+                DispatchQueue.main.async {
+                    self.errorMessage = "Failed to load collaborators, please try again later."
+                }
+            }
+            DispatchQueue.main.async {
+                self.isLoading = false 
             }
         }
     }

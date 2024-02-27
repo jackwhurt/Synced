@@ -1,6 +1,7 @@
 import SwiftUI
 
 // TODO: No same usernames & case lowercase only & plaintext
+// TODO: Loading circle
 struct SignUpView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var presentationMode

@@ -5,4 +5,6 @@ struct UserMetadata: Codable, Hashable {
     let photoUrl: String?
     let bio: String?
     let isSpotifyConnected: Bool?
+    let requestStatus: String?
+    let isPlaylistOwner: Bool?
 }

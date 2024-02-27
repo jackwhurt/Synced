@@ -55,6 +55,7 @@ enum CollaborativePlaylistServiceError: Error {
     case failedToEditSongs
     case failedToAddSongs
     case backendPlaylistDeletionFailed
+    case failedToGetCollaborators
 }
 
 enum SongServiceError: Error {
