@@ -14,6 +14,7 @@ struct CollaborativePlaylistView: View {
     @State private var showAlert: AlertType? = nil
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
+    @State private var showingCollaboratorsSheet = false
     @State private var isSaving = false
 
     init(playlistId: String) {
@@ -57,6 +58,10 @@ struct CollaborativePlaylistView: View {
         .toolbar { navigationBarMenu() }
         .sheet(isPresented: $showingAddSongsSheet) {
             AddSongsView(showSheet: $showingAddSongsSheet, songsToAdd: $collaborativePlaylistViewModel.songsToAdd, playlistSongs: collaborativePlaylistViewModel.playlistSongs)
+        }
+        .sheet(isPresented: $showingCollaboratorsSheet) {
+            // TODO: Reload playlist data upon exit
+            EditCollaboratorsView(showSheet: $showingCollaboratorsSheet, playlistId: collaborativePlaylistViewModel.playlistId)
         }
         .onAppear {
             collaborativePlaylistViewModel.dismissAction = {
@@ -119,6 +124,9 @@ struct CollaborativePlaylistView: View {
                     Menu {
                         Button("Edit Playlist") {
                             collaborativePlaylistViewModel.setEditingTrue()
+                        }
+                        Button("Edit Collaborators") {
+                            showingCollaboratorsSheet = true
                         }
 
                         if collaborativePlaylistViewModel.playlistOwner {
@@ -253,7 +261,6 @@ struct SongRow: View {
     }
 }
 
-// Preview Provider and Sample Data
 struct CollaborativePlaylistView_Previews: PreviewProvider {
     static var previews: some View {
         CollaborativePlaylistView(playlistId: "")

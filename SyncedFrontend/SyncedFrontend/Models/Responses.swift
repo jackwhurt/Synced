@@ -35,6 +35,7 @@ struct GetCollaborativePlaylistByIdResponse: Codable {
     let appleMusicPlaylistId: String?
     let metadata: PlaylistMetadata
     let songs: [SongMetadata]
+    let collaborators: [UserMetadata]
 }
 
 struct GetCollaborativePlaylistMetadataResponse: Codable {

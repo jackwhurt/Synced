@@ -55,6 +55,8 @@
 		8064850B2B66B1BF00B62C93 /* RequestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850A2B66B1BF00B62C93 /* RequestViewModel.swift */; };
 		8064850D2B6923C900B62C93 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850C2B6923C900B62C93 /* ProfileView.swift */; };
 		8064850F2B69259F00B62C93 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850E2B69259F00B62C93 /* ProfileViewModel.swift */; };
+		8068584F2B8E173B00DD973D /* EditCollaboratorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8068584E2B8E173B00DD973D /* EditCollaboratorsView.swift */; };
+		806858512B8E176600DD973D /* EditCollaboratorsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806858502B8E176600DD973D /* EditCollaboratorsViewModel.swift */; };
 		80B4E6AA2B73F8B50026D9C4 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B4E6A92B73F8B50026D9C4 /* CachedAsyncImage.swift */; };
 		80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */; };
 		80B82BFF2B49DB5800277AEA /* MusicAsyncImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B82BFE2B49DB5800277AEA /* MusicAsyncImageLoader.swift */; };
@@ -127,6 +129,8 @@
 		8064850A2B66B1BF00B62C93 /* RequestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestViewModel.swift; sourceTree = "<group>"; };
 		8064850C2B6923C900B62C93 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		8064850E2B69259F00B62C93 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		8068584E2B8E173B00DD973D /* EditCollaboratorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCollaboratorsView.swift; sourceTree = "<group>"; };
+		806858502B8E176600DD973D /* EditCollaboratorsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCollaboratorsViewModel.swift; sourceTree = "<group>"; };
 		80B4E6A92B73F8B50026D9C4 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
 		80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistView.swift; sourceTree = "<group>"; };
 		80B82BFE2B49DB5800277AEA /* MusicAsyncImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicAsyncImageLoader.swift; sourceTree = "<group>"; };
@@ -188,6 +192,7 @@
 				802184EF2B497F570096F702 /* CreatePlaylistView.swift */,
 				80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */,
 				80B82C022B4AC5F400277AEA /* AddSongsView.swift */,
+				8068584E2B8E173B00DD973D /* EditCollaboratorsView.swift */,
 			);
 			path = CollaborativePlaylist;
 			sourceTree = "<group>";
@@ -208,6 +213,7 @@
 				802184F32B4986FA0096F702 /* CreatePlaylistViewModel.swift */,
 				80B82C002B49DE3400277AEA /* CollaborativePlaylistViewModel.swift */,
 				8023D1F22B4B0D9D000A1C57 /* AddSongsViewModel.swift */,
+				806858502B8E176600DD973D /* EditCollaboratorsViewModel.swift */,
 			);
 			path = CollaborativePlaylist;
 			sourceTree = "<group>";
@@ -499,6 +505,7 @@
 				80B82C012B49DE3400277AEA /* CollaborativePlaylistViewModel.swift in Sources */,
 				802184E62B4885E90096F702 /* HomeView.swift in Sources */,
 				805D49542B0FDF370081B076 /* SignUpView.swift in Sources */,
+				806858512B8E176600DD973D /* EditCollaboratorsViewModel.swift in Sources */,
 				805D49522B0FDEA60081B076 /* LoginView.swift in Sources */,
 				8061CE0C2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift in Sources */,
 				802184EA2B4887DA0096F702 /* CollaborativePlaylistMenuView.swift in Sources */,
@@ -547,6 +554,7 @@
 				80CE06AC2B2CB23A00D926E2 /* LoadingView.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,
 				801CC95A2B16736B006FB76D /* SignUpViewModel.swift in Sources */,
+				8068584F2B8E173B00DD973D /* EditCollaboratorsView.swift in Sources */,
 				802184E82B4885F30096F702 /* HomeViewModel.swift in Sources */,
 				806485032B66ACF600B62C93 /* ActivityService.swift in Sources */,
 				80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */,

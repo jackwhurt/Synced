@@ -86,7 +86,12 @@ async function fetchUsersData(userIds) {
 
     try {
         const usersData = await ddbDocClient.send(new BatchGetCommand(params));
-        return usersData.Responses[usersTableName] || [];
+        const transformedUsersData = usersData.Responses[usersTableName].map(user => ({
+            ...user,
+            username: user.attributeValue,
+        })).map(({userAttribute, attributeValue, ...rest}) => rest);
+
+        return transformedUsersData || [];
     } catch (err) {
         throw new Error('Failed to fetch user data');
     }
