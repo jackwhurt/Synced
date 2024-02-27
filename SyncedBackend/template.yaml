@@ -93,6 +93,7 @@ Resources:
         UpdateAppleMusicPlaylistIdFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicPlaylistIdFunctionArn
         AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
         DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
+        GetCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaboratorsFunctionArn
         SyncCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.SyncCollaboratorsFunctionArn
         AddSongsFunctionArn: !GetAtt LambdaStack.Outputs.AddSongsFunctionArn
         DeleteSongsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteSongsFunctionArn

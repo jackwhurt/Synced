@@ -1,10 +1,11 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, QueryCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
+import { getUsers } from '/opt/nodejs/get-users.mjs';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
-const playlistsTableName = process.env.PLAYLISTS_TABLE;
-const usersTableName = process.env.USERS_TABLE;
+const playlistsTable = process.env.PLAYLISTS_TABLE;
+const usersTable = process.env.USERS_TABLE;
 
 export const getCollaborativePlaylistByIdHandler = async (event) => {
     console.info('received:', event);
@@ -44,7 +45,7 @@ async function getPlaylistData(playlistId, userId) {
 
 async function queryPlaylistItems(playlistId) {
     const params = {
-        TableName: playlistsTableName,
+        TableName: playlistsTable,
         KeyConditionExpression: 'PK = :pk',
         ExpressionAttributeValues: { ':pk': playlistId }
     };
@@ -57,8 +58,8 @@ async function queryPlaylistItems(playlistId) {
 }
 
 async function processPlaylistItems(items, userId) {
-    const collaboratorsIds = items.filter(item => item.SK.startsWith('collaborator#')).map(item => ({ userId: item.GSI1PK.split('#')[1] }));
-    const collaborators = collaboratorsIds.length > 0 ? await fetchUsersData(collaboratorsIds) : [];
+    const collaboratorsIds = items.filter(item => item.SK.startsWith('collaborator#')).map(item => item.GSI1PK.split('#')[1]);
+    const collaborators = collaboratorsIds.length > 0 ? await getUsers(collaboratorsIds, usersTable) : [];
     const playlistMetadata = items.find(item => item.SK === 'metadata') || null;
     const songs = items.filter(item => item.SK.startsWith('song#')).map(item => ({ ...item, songId: item.SK.substring(5) })).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     const userItem = items.find(item => item.SK === `collaborator#${userId}`);
@@ -71,30 +72,6 @@ async function processPlaylistItems(items, userId) {
         songs,
         appleMusicPlaylistId
     };
-}
-
-async function fetchUsersData(userIds) {
-    if (userIds.length === 0) return [];
-
-    const params = {
-        RequestItems: {
-            [usersTableName]: {
-                Keys: userIds
-            }
-        }
-    };
-
-    try {
-        const usersData = await ddbDocClient.send(new BatchGetCommand(params));
-        const transformedUsersData = usersData.Responses[usersTableName].map(user => ({
-            ...user,
-            username: user.attributeValue,
-        })).map(({userAttribute, attributeValue, ...rest}) => rest);
-
-        return transformedUsersData || [];
-    } catch (err) {
-        throw new Error('Failed to fetch user data');
-    }
 }
 
 function handleError(message, err, statusCode) {

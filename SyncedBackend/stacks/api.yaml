@@ -19,6 +19,8 @@ Parameters:
     Type: String
   DeleteCollaboratorsFunctionArn:
     Type: String
+  GetCollaboratorsFunctionArn:
+    Type: String
   SyncCollaboratorsFunctionArn:
     Type: String
   AddSongsFunctionArn:
@@ -489,6 +491,28 @@ Resources:
       FunctionName: !Ref DeleteCollaboratorsFunctionArn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/DELETE/collaborative-playlists/collaborators"
+
+  # Get Collaborators
+  GetCollaboratorMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref CognitoAuthoriser
+      HttpMethod: GET
+      ResourceId: !Ref CollaboratorsResource
+      RestApiId: !Ref MyApi
+      Integration:
+        IntegrationHttpMethod: POST  # Lambda functions are always invoked with POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCollaboratorsFunctionArn}/invocations"
+
+  GetCollaboratorLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetCollaboratorsFunctionArn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApi}/*/GET/collaborative-playlists/collaborators"
 
   # Collaborative Playlists / Collaborators / Sync
   SyncResource:
