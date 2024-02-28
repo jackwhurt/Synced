@@ -1,9 +1,0 @@
-{
-    "get-users": {
-        "queryStringParameters": {
-            "username": "testuser",
-            "page": "1",
-            "lastEvaluatedKey": null
-        }
-    }
-}
