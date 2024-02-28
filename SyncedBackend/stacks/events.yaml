@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudWatch Events Stack for Synced
+Parameters:
+  UpdateSpotifyDevTokenFunctionArn:
+    Type: String
+  UpdateAppleMusicDevTokenFunctionArn:
+    Type: String
+  DeleteImagesFunctionArn:
+    Type: String
+  BucketName:
+    Type: String
+  UpdateImageUrlFunctionArn:
+    Type: String
+  
+Resources:
+  SpotifyTokenRefreshRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "rate(55 minutes)"
+      Targets:
+        - Arn: !Ref UpdateSpotifyDevTokenFunctionArn
+          Id: "UpdateSpotifyDevTokenTarget"
+
+  SpotifyTokenRefreshInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref UpdateSpotifyDevTokenFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt SpotifyTokenRefreshRule.Arn
+
+  AppleMusicTokenRefreshRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "cron(0 0 1 * ? *)"
+      Targets:
+        - Arn: !Ref UpdateAppleMusicDevTokenFunctionArn
+          Id: "UpdateAppleMusicDevTokenTarget"
+
+  AppleMusicTokenRefreshInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref UpdateAppleMusicDevTokenFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt AppleMusicTokenRefreshRule.Arn
+
+  DeleteImagesRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: "cron(0 6,18 * * ? *)"
+      Targets:
+        - Arn: !Ref DeleteImagesFunctionArn
+          Id: "DeleteImagesTokenTarget"
+
+  DeleteImagesInvokePermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref DeleteImagesFunctionArn
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt DeleteImagesRule.Arn
+
+  # Workaround for the circular dependency
+  S3UploadRule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Description: 'Route S3 Object Created events to Lambda'
+      EventBusName: default
+      EventPattern:
+        source:
+          - "aws.s3"
+        detail-type:
+          - "Object Created"
+        detail:
+          bucket:
+            name:
+              - !Ref BucketName
+          object:
+            key:
+              - prefix: "images/"
+      Targets:
+        - Id: "UpdateImageUrlFunction"
+          Arn: !Ref UpdateImageUrlFunctionArn
+
+  S3UploadRulePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref UpdateImageUrlFunctionArn
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt S3UploadRule.Arn

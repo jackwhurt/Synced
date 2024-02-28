@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main Stack for SyncedBackend
+
+Parameters:
+  EnvironmentTypeParameter:
+    Type: String
+    Description: Specify the environment type (e.g., 'development' or 'production').
+    Default: 'development'
+    AllowedValues:
+      - 'development'
+      - 'production'
+
+Conditions:
+  IsDevEnvironment:
+    Fn::Equals:
+      - !Ref EnvironmentTypeParameter
+      - 'development'
+
+Resources:
+  DatabaseStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/database.yaml'
+
+  SqsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/sqs.yaml'
+  
+  SnsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/sns.yaml'
+  
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/s3.yaml'
+
+  LambdaStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/lambda.yaml'
+      Parameters:
+        PlaylistsTableName: !GetAtt DatabaseStack.Outputs.PlaylistsTableName
+        UsersTableName: !GetAtt DatabaseStack.Outputs.UsersTableName
+        TokensTableName: !GetAtt DatabaseStack.Outputs.TokensTableName
+        ActivitiesTableName: !GetAtt DatabaseStack.Outputs.ActivitiesTableName
+        LambdaFailureTopicName: !GetAtt SnsStack.Outputs.LambdaFailureTopicName
+        BucketName: !GetAtt S3Stack.Outputs.BucketName
+        DeleteImageQueueArn: !GetAtt SqsStack.Outputs.DeleteImageQueueArn
+        DeleteImageQueueUrl: !GetAtt SqsStack.Outputs.DeleteImageQueueUrl
+        ApnsPlatformArn: 
+          Fn::If:
+            - IsDevEnvironment
+            - '{{resolve:ssm:apnsPlatformArnDev:1}}'
+            - '{{resolve:ssm:apnsPlatformArn:1}}'
+        DevEnvironment:
+          Fn::If:
+            - IsDevEnvironment
+            - 'true'
+            - 'false'
+
+  CognitoStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/cognito.yaml'
+      Parameters:
+        CognitoTriggerFunctionArn: !GetAtt LambdaStack.Outputs.CognitoTriggerFunctionArn
+
+  EventsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/events.yaml'
+      Parameters:
+        UpdateSpotifyDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateSpotifyDevTokenFunctionArn
+        UpdateAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicDevTokenFunctionArn
+        DeleteImagesFunctionArn: !GetAtt LambdaStack.Outputs.DeleteImagesFunctionArn
+        BucketName: !GetAtt S3Stack.Outputs.BucketName
+        UpdateImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.UpdateImageUrlFunctionArn
+
+  ApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: 'stacks/api.yaml'
+      Parameters:
+        GetCollaborativePlaylistByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistByIdFunctionArn
+        GetAllCollaborativePlaylistsFunctionArn: !GetAtt LambdaStack.Outputs.GetAllCollaborativePlaylistsFunctionArn
+        CreateCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.CreateCollaborativePlaylistFunctionArn
+        DeleteCollaborativePlaylistFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaborativePlaylistFunctionArn
+        UpdateCollaborativePlaylistMetadataFunctionArn: !GetAtt LambdaStack.Outputs.UpdateCollaborativePlaylistMetadataFunctionArn
+        GetCollaborativePlaylistMetadataByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaborativePlaylistMetadataByIdFunctionArn
+        UpdateAppleMusicPlaylistIdFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicPlaylistIdFunctionArn
+        AddCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.AddCollaboratorsFunctionArn
+        DeleteCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteCollaboratorsFunctionArn
+        GetCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.GetCollaboratorsFunctionArn
+        SyncCollaboratorsFunctionArn: !GetAtt LambdaStack.Outputs.SyncCollaboratorsFunctionArn
+        AddSongsFunctionArn: !GetAtt LambdaStack.Outputs.AddSongsFunctionArn
+        DeleteSongsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteSongsFunctionArn
+        GetSongsForAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.GetSongsForAppleMusicFunctionArn
+        DeleteAppleMusicDeleteFlagsFunctionArn: !GetAtt LambdaStack.Outputs.DeleteAppleMusicDeleteFlagsFunctionArn
+        GetSpotifyApiSongsFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyApiSongsFunctionArn
+        SpotifySongsToAppleMusicFunctionArn: !GetAtt LambdaStack.Outputs.SpotifySongsToAppleMusicFunctionArn
+        GetSpotifyAuthUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthUrlFunctionArn
+        ExchangeSpotifyTokenFunctionArn: !GetAtt LambdaStack.Outputs.ExchangeSpotifyTokenFunctionArn
+        GetSpotifyAuthStatusFunctionArn: !GetAtt LambdaStack.Outputs.GetSpotifyAuthStatusFunctionArn
+        GetAppleMusicDevTokenFunctionArn: !GetAtt LambdaStack.Outputs.GetAppleMusicDevTokenFunctionArn
+        UpdateAppleMusicUserTokenFunctionArn: !GetAtt LambdaStack.Outputs.UpdateAppleMusicUserTokenFunctionArn
+        GetRequestsFunctionArn: !GetAtt LambdaStack.Outputs.GetRequestsFunctionArn
+        ResolvePlaylistRequestFunctionArn: !GetAtt LambdaStack.Outputs.ResolvePlaylistRequestFunctionArn
+        GetNotificationsFunctionArn: !GetAtt LambdaStack.Outputs.GetNotificationsFunctionArn
+        GetUsersFunctionArn: !GetAtt LambdaStack.Outputs.GetUsersFunctionArn
+        GetUserByIdFunctionArn: !GetAtt LambdaStack.Outputs.GetUserByIdFunctionArn
+        RegisterUserForAPNSFunctionArn: !GetAtt LambdaStack.Outputs.RegisterUserForAPNSFunctionArn
+        GetSignedImageUrlFunctionArn: !GetAtt LambdaStack.Outputs.GetSignedImageUrlFunctionArn
+        UserPoolId: !GetAtt CognitoStack.Outputs.UserPoolId
+        DevEnvironment:
+          Fn::If:
+            - IsDevEnvironment
+            - 'true'
+            - 'false'
