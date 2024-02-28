@@ -1,17 +1,10 @@
 import SwiftUI
 
-enum AlertType: Identifiable {
-    case error
-    case deleteConfirmation
-
-    var id: Self { self }
-}
-
 struct CollaborativePlaylistView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @StateObject private var collaborativePlaylistViewModel: CollaborativePlaylistViewModel
-    @State private var showAlert: AlertType? = nil
+    @State private var showAlert: CollaborativePlaylistAlertType? = nil
     @State private var selectedOption: String? = nil
     @State private var showingAddSongsSheet = false
     @State private var showingCollaboratorsSheet = false
@@ -61,7 +54,7 @@ struct CollaborativePlaylistView: View {
         }
         .sheet(isPresented: $showingCollaboratorsSheet) {
             // TODO: Reload playlist data upon exit
-            EditCollaboratorsView(showSheet: $showingCollaboratorsSheet, isOwner: $collaborativePlaylistViewModel.playlistOwner, playlistId: collaborativePlaylistViewModel.playlistId)
+            CollaboratorsView(showSheet: $showingCollaboratorsSheet, isOwner: $collaborativePlaylistViewModel.playlistOwner, playlistId: collaborativePlaylistViewModel.playlistId)
         }
         .onAppear {
             collaborativePlaylistViewModel.dismissAction = {
@@ -125,7 +118,7 @@ struct CollaborativePlaylistView: View {
                         Button("Edit Playlist") {
                             collaborativePlaylistViewModel.setEditingTrue()
                         }
-                        Button("Edit Collaborators") {
+                        Button("View Collaborators") {
                             showingCollaboratorsSheet = true
                         }
 

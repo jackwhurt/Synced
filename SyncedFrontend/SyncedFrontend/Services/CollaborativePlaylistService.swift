@@ -118,8 +118,9 @@ class CollaborativePlaylistService {
                 print("Failed to retrieve collaborative playlists, error from backend: \(error)")
                 throw CollaborativePlaylistServiceError.failedToGetCollaborators
             }
-            CachingService.shared.save(response.collaborators, forKey: "collaborators_\(playlistId)")
-            return response.collaborators ?? []
+            let sorted = sortCollaborators(collaborators: response.collaborators ?? [])
+            CachingService.shared.save(sorted, forKey: "collaborators_\(playlistId)")
+            return sorted
         } catch {
             print("Failed to retrieve collaborative playlists")
             throw CollaborativePlaylistServiceError.failedToGetCollaborators
@@ -252,6 +253,15 @@ class CollaborativePlaylistService {
             }
         }
         return deleteFlagsToDelete
+    }
+    
+    private func sortCollaborators(collaborators: [UserMetadata]) -> [UserMetadata] {
+        let sorted = collaborators.sorted {
+            if $0.isPlaylistOwner ?? false, !($1.isPlaylistOwner ?? false) { return true }
+            if !($0.isPlaylistOwner ?? false), $1.isPlaylistOwner ?? false { return false }
+            return ($0.requestStatus == "accepted" && $1.requestStatus != "accepted") || ($0.requestStatus != "pending" && $1.requestStatus == "pending")
+        }
+        return sorted
     }
 
     private func getSongUpdates(parameters: [String: String]) async throws -> UpdatePlaylistsResponse {

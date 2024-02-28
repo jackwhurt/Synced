@@ -20,6 +20,7 @@ export const addCollaboratorsHandler = async (event) => {
     const userId = claims['sub'];
     const validationResponse = await validateEvent(playlistId, collaboratorIds, userId);
     if (validationResponse) return validationResponse;
+    collaboratorIds.push(userId);
 
     try {
         const title = await getPlaylistTitle(playlistId);

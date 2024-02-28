@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct EditCollaboratorsView: View {
+struct CollaboratorsView: View {
     @Binding var showSheet: Bool
     @Binding var isOwner: Bool
     
@@ -33,7 +33,7 @@ struct EditCollaboratorsView: View {
             }
             .animation(.easeInOut(duration: 0.2), value: editCollaboratorsViewModel.isLoading)
             .transition(.slide)
-            .navigationBarTitle("Edit Collaborators", displayMode: .inline)
+            .navigationBarTitle("View Collaborators", displayMode: .inline)
             .toolbar { toolbarContent() }
             .alert("Error", isPresented: Binding<Bool>(
                 get: { self.editCollaboratorsViewModel.errorMessage != nil },
@@ -105,8 +105,8 @@ struct AddCollaboratorButtonView: View {
     }
 }
 
-struct EditCollaboratorsView_Previews: PreviewProvider {    
+struct CollaboratorsView_Previews: PreviewProvider {    
     static var previews: some View {
-        EditCollaboratorsView(showSheet: .constant(true), isOwner: .constant(true), playlistId: "")
+        CollaboratorsView(showSheet: .constant(true), isOwner: .constant(true), playlistId: "")
     }
 }

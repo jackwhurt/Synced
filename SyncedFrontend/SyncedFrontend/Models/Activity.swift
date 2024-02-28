@@ -7,6 +7,7 @@ struct PlaylistRequest: Codable, Hashable {
     let createdBy: String
     let createdByUsername: String
     let createdAt: String
+    var isDeclining: Bool? = false
 }
 
 struct UserRequest: Codable, Hashable {

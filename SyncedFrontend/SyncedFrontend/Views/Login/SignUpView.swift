@@ -1,6 +1,5 @@
 import SwiftUI
 
-// TODO: No same usernames & case lowercase only & plaintext
 // TODO: Loading circle
 struct SignUpView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
@@ -22,17 +21,22 @@ struct SignUpView: View {
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
-                .alert(isPresented: $signUpViewModel.showingSignUpError) {
-                    Alert(title: Text("Sign Up Error"), message: Text(signUpViewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
-                }
-                .alert(isPresented: $signUpViewModel.showingSignUpSuccess) {
-                    Alert(
-                        title: Text("Sign Up Success"),
-                        message: Text(signUpViewModel.signUpSuccessMessage),
-                        dismissButton: .default(Text("OK"), action: {
-                            presentationMode.wrappedValue.dismiss()
-                        })
-                    )
+                .alert(item: $signUpViewModel.alert) { alert in
+                    switch alert {
+                    case .error:
+                        Alert(title: Text("Sign Up Error"), message: Text(signUpViewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
+                    case .success:
+                        Alert(
+                            title: Text("Sign Up Success"),
+                            message: Text(signUpViewModel.signUpSuccessMessage),
+                            dismissButton: .default(Text("OK"), action: {
+                                presentationMode.wrappedValue.dismiss()
+                                signUpViewModel.email = ""
+                                signUpViewModel.password = ""
+                                signUpViewModel.username = ""
+                                signUpViewModel.confirmPassword = ""
+                            }))
+                    }
                 }
             }
             .background(Color("SyncedBackground"))
@@ -55,6 +59,9 @@ struct SignUpInputFields: View {
         VStack {
             LongInputField(placeholder: "Email", text: $signUpViewModel.email)
             LongInputField(placeholder: "Username", text: $signUpViewModel.username)
+                .onChange(of: signUpViewModel.username) {
+                    _ = signUpViewModel.validateUsernameCriteria()
+                }
             LongSecureInputField(placeholder: "Password", text: $signUpViewModel.password)
                 .onChange(of: signUpViewModel.password) {
                     _ = signUpViewModel.validatePasswordCriteria()
@@ -68,6 +75,14 @@ struct SignUpInputFields: View {
                     .foregroundColor(Color("SyncedErrorRed"))
                     .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 3)
+            }
+            if(signUpViewModel.usernameValidationMessage != "") {
+                Text(signUpViewModel.usernameValidationMessage)
+                    .foregroundColor(Color("SyncedErrorRed"))
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 3)
             }
         }
     }

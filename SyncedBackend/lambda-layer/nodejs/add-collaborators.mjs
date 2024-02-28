@@ -9,8 +9,7 @@ const MAX_COLLABORATORS = 10;
 
 export async function addCollaborators(playlistId, playlistTitle, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable, isDevEnvironment) {
     const timestamp = new Date().toISOString();
-    const allIds = [...collaboratorIds, cognitoUserId];
-    const usernames = await getUsernames(allIds, usersTable);
+    const usernames = await getUsernames(collaboratorIds, usersTable);
     const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp);
     const message = `@${usernames[cognitoUserId]} has requested you to join ${playlistTitle}!` 
     const userIdsWithoutCreator = collaboratorIds.filter(id => id != cognitoUserId);

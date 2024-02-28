@@ -24,7 +24,7 @@ class EditCollaboratorsViewModel: ObservableObject {
             do {
                 let response = try await collaborativePlaylistService.getCollaborators(playlistId: playlistId)
                 DispatchQueue.main.async {
-                    self.setAndSortCollaborators(response: response)
+                    self.collaborators = response
                 }
             } catch {
                 print("Failed to load collaborators")
@@ -69,14 +69,5 @@ class EditCollaboratorsViewModel: ObservableObject {
                 self?.collaborators = cachedCollaborators
             }
         }
-    }
-    
-    private func setAndSortCollaborators(response: [UserMetadata]) {
-        let sorted = response.sorted {
-            if $0.isPlaylistOwner ?? false, !($1.isPlaylistOwner ?? false) { return true }
-            if !($0.isPlaylistOwner ?? false), $1.isPlaylistOwner ?? false { return false }
-            return ($0.requestStatus == "accepted" && $1.requestStatus != "accepted") || ($0.requestStatus != "pending" && $1.requestStatus == "pending")
-        }
-        self.collaborators = sorted
     }
 }

@@ -73,8 +73,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
     func signUpUser(email: String, password: String, username: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
         let emailAttribute = AWSCognitoIdentityUserAttributeType(name: "email", value: email)
         let usernameAttribute = AWSCognitoIdentityUserAttributeType(name: "custom:username", value: username)
-        userPool.signUp(email, password: password, userAttributes: [emailAttribute, usernameAttribute], validationData: nil).continueWith { [weak self] task -> Any? in
-            guard self != nil else { return nil }
+        userPool.signUp(email, password: password, userAttributes: [emailAttribute, usernameAttribute], validationData: nil).continueWith { task -> Any? in
             DispatchQueue.main.async {
                 if let error = task.error {
                     completion(.failure(error))

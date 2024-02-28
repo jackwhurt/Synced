@@ -3,7 +3,7 @@ import SwiftUI
 struct RequestView: View {
     @State private var selectedTab: Tab = .users
     @State private var isAccepting = false
-    @State private var isDeclining = false
+    @State private var isDeclining = (false, -1)
     @StateObject private var requestViewModel: RequestViewModel
     
     init(userRequests: [UserRequest], playlistRequests: [PlaylistRequest]) {
@@ -70,7 +70,7 @@ struct RequestView: View {
 struct PlaylistRequestListView: View {
     @StateObject var requestViewModel: RequestViewModel
     @Binding var isAccepting: Bool
-    @Binding var isDeclining: Bool
+    @Binding var isDeclining: (Bool, Int)
     
     @State private var showingPlaylistOptions = false
     @State private var selectedRequest: PlaylistRequest?
@@ -93,7 +93,7 @@ struct PlaylistRequestListView: View {
                 onReject: { request in
                     print("Rejected playlist invitation from \(request.createdByUsername)")
                     Task {
-                        isDeclining = true
+                        isDeclining = (true, request.hashValue)
                         await requestViewModel.resolveRequest(request: request, result: false, spotifyPlaylist: false, appleMusicPlaylist: false)
                     }
                 }
@@ -117,7 +117,7 @@ struct PlaylistRequestListView: View {
 }
 
 struct RequestListView<Request>: View where Request: Hashable {
-    @Binding var isDeclining: Bool
+    @Binding var isDeclining: (Bool, Int)
     var requests: [Request]
     var requestText: (Request) -> String
     var onAccept: (Request) -> Void
@@ -136,8 +136,7 @@ struct RequestListView<Request>: View where Request: Hashable {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 
-                // TODO: Animation for decline happens for ALL requests
-                if isDeclining {
+                if isDeclining.0 && isDeclining.1 == request.hashValue {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .frame(width: 44, height: 44)
@@ -153,7 +152,6 @@ struct RequestListView<Request>: View where Request: Hashable {
         }
     }
 }
-
 
 struct PlaylistOptionsView: View {
     @EnvironmentObject var appSettings: AppSettings
