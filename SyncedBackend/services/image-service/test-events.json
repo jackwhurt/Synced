@@ -1,0 +1,21 @@
+{
+    "get-url-user": {
+        "requestContext": {
+            "authorizer": {
+                "claims": {
+                    "sub": "70f23806-2368-4be9-a1a1-f078d9660b1d"
+                }
+            }
+        },
+        "queryStringParameters": {
+            "userIdBool": "true",
+            "fileType": "jpg"
+        }
+    },
+    "get-url-playlist": {
+        "queryStringParameters": {
+            "playlistId": "70f23806-2368-4be9-a1a1-f078d9660b1d",
+            "fileType": "jpg"
+        }
+    }
+}

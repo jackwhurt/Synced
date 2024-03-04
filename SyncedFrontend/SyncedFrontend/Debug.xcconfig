@@ -1,0 +1,5 @@
+#include "Pods/Target Support Files/Pods-Synced/Pods-Synced.debug.xcconfig"
+
+COGNITO_POOL_ID = eu-west-2_9GJfrL6l1
+COGNITO_CLIENT_ID = 4tb7r225ldcb58k7cpnmloajc0
+API_URL = https:/$()/u8k6x8axsh.execute-api.eu-west-2.amazonaws.com/dev
