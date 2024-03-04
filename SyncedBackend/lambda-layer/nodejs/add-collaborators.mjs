@@ -7,10 +7,10 @@ const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const MAX_COLLABORATORS = 10;
 
-export async function addCollaborators(playlistId, playlistTitle, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable, isDevEnvironment) {
+export async function addCollaborators(playlistId, playlistTitle, collaboratorIds, cognitoUserId, isNewPlaylist, playlistsTable, activitiesTable, usersTable, isDevEnvironment) {
     const timestamp = new Date().toISOString();
     const usernames = await getUsernames(collaboratorIds, usersTable);
-    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp);
+    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, usernames, timestamp, isNewPlaylist, playlistsTable, activitiesTable);
     const message = `@${usernames[cognitoUserId]} has requested you to join ${playlistTitle}!` 
     const userIdsWithoutCreator = collaboratorIds.filter(id => id != cognitoUserId);
 
@@ -19,11 +19,11 @@ export async function addCollaborators(playlistId, playlistTitle, collaboratorId
         await sendApnsNotifications(userIdsWithoutCreator, message, usersTable, isDevEnvironment);
     } catch (err) {
         console.error('Error in transaction:', err);
-        throw new err;
+        throw err;
     }
 }
 
-function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp) {
+function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, usernames, timestamp, isNewPlaylist, playlistsTable, activitiesTable) {
     const transactItems = [];
 
     // Increment the counter and add new collaborators atomically
@@ -75,7 +75,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
                 }
             });
-        } else {
+        } else if (isNewPlaylist) {
             transactItems.push({
                 Put: {
                     TableName: playlistsTable,

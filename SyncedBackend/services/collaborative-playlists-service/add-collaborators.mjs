@@ -24,7 +24,7 @@ export const addCollaboratorsHandler = async (event) => {
 
     try {
         const title = await getPlaylistTitle(playlistId);
-        await addCollaborators(playlistId, title, collaboratorIds, userId, playlistsTable, activitiesTable, usersTable, isDevEnvironment);
+        await addCollaborators(playlistId, title, collaboratorIds, userId, false, playlistsTable, activitiesTable, usersTable, isDevEnvironment);
 
         return {
             statusCode: 200,

@@ -9,18 +9,22 @@ struct ActivityView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                if activityViewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .padding()
+            ZStack {
+                Color(UIColor.systemGroupedBackground)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    if activityViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .padding()
+                    }
+                    List {
+                        ViewRequestsView(activityViewModel: activityViewModel)
+                        NotificationsView(activityViewModel: activityViewModel)
+                    }
+                    .navigationBarTitle("Activities", displayMode: .large) // Adjusted for consistency
                 }
-                List {
-                    ViewRequestsView(activityViewModel: activityViewModel)
-                    NotificationsView(activityViewModel: activityViewModel)
-                }
-                .navigationBarTitle("Activities")
-                .onAppear(perform: activityViewModel.loadActivities)
                 .animation(.easeInOut(duration: 0.2), value: activityViewModel.isLoading)
                 .transition(.slide)
                 .alert("Error", isPresented: Binding<Bool>(
@@ -32,6 +36,7 @@ struct ActivityView: View {
                     Text(errorMessage)
                 }
             }
+            .onAppear(perform: activityViewModel.loadActivities)
         }
     }
 }

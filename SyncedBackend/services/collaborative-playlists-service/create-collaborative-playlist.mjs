@@ -90,7 +90,7 @@ function createPlaylistItem(playlistId, userId, playlist, timestamp) {
 
 const handlePlaylistCreation = async (transactItem, playlist, collaborators, userId, spotifyPlaylist) => {
     await ddbDocClient.send(new TransactWriteCommand({ TransactItems: [transactItem] }));
-    await addCollaborators(playlist.playlistId, playlist.title, collaborators, userId, playlistsTable, activitiesTable, usersTable, isDevEnvironment);
+    await addCollaborators(playlist.playlistId, playlist.title, collaborators, userId, true, playlistsTable, activitiesTable, usersTable, isDevEnvironment);
     if(!spotifyPlaylist) return;
 
     let spotifyPlaylistId;

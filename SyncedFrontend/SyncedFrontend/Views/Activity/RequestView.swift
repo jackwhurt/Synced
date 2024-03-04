@@ -31,6 +31,7 @@ struct RequestView: View {
         }
         .navigationBarTitle("Requests", displayMode: .inline)
         .onAppear(perform: requestViewModel.loadRequests)
+        .background(Color(UIColor.systemGroupedBackground))
         .alert(isPresented: Binding<Bool>(
             get: { requestViewModel.errorMessage != nil },
             set: { _ in requestViewModel.errorMessage = nil }

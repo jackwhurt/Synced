@@ -86,9 +86,11 @@ class AuthenticationService: AuthenticationServiceProtocol {
     }
 
     func refreshTokenIfNeeded(completion: @escaping (Result<Void, Error>) -> Void) {
-        guard let accessToken = loadAccessToken(), isTokenExpired(accessToken) else {
-             completion(.success(()))
-             return
+        if let accessToken = loadAccessToken() {
+            if !isTokenExpired(accessToken) {
+                completion(.success(()))
+                return
+            }
          }
         
         guard let _ = loadRefreshToken() else {
