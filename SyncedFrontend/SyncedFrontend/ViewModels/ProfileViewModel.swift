@@ -80,6 +80,19 @@ class ProfileViewModel: ObservableObject {
                     self?.isSaving = true
                 }
                 try await saveImage()
+                var attempts = 0
+                var userLoaded = false
+                while attempts < 5 && !userLoaded {
+                    await loadUser()
+                    if let user = self.user {
+                        if let photoUrl = user.photoUrl, !photoUrl.isEmpty {
+                            userLoaded = true
+                        } else {
+                            attempts += 1
+                            try await Task.sleep(nanoseconds: 1_000_000_000)
+                        }
+                    }
+                }
                 DispatchQueue.main.async { [weak self] in
                     self?.isEditing = false
                     self?.isSaving = false

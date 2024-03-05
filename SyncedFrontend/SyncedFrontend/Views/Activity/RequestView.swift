@@ -12,31 +12,36 @@ struct RequestView: View {
     }
     
     var body: some View {
-        VStack {
-            // TODO: reimplement after demo
-//            Picker("Requests", selection: $selectedTab) {
-//                Text("Users").tag(Tab.users)
-//                Text("Playlists").tag(Tab.playlists)
-//            }
-//            .pickerStyle(SegmentedPickerStyle())
-//            .padding()
-//
-//            if selectedTab == .users {
-//                UserRequestListView(userRequests: requestViewModel.userRequests)
-//            } else {
-//                PlaylistRequestListView(requestViewModel: requestViewModel, playlistRequests: requestViewModel.playlistRequests)
-//            }
+        ZStack {
+            Color(UIColor.systemGroupedBackground)
+                .edgesIgnoringSafeArea(.all)
+            VStack {
+                // TODO: reimplement after demo
+                //            Picker("Requests", selection: $selectedTab) {
+                //                Text("Users").tag(Tab.users)
+                //                Text("Playlists").tag(Tab.playlists)
+                //            }
+                //            .pickerStyle(SegmentedPickerStyle())
+                //            .padding()
+                //
+                //            if selectedTab == .users {
+                //                UserRequestListView(userRequests: requestViewModel.userRequests)
+                //            } else {
+                //                PlaylistRequestListView(requestViewModel: requestViewModel, playlistRequests: requestViewModel.playlistRequests)
+                //            }
+                
+                PlaylistRequestListView(requestViewModel: requestViewModel, isAccepting: $isAccepting, isDeclining: $isDeclining).padding()
+            }
             
-            PlaylistRequestListView(requestViewModel: requestViewModel, isAccepting: $isAccepting, isDeclining: $isDeclining).padding()
-        }
-        .navigationBarTitle("Requests", displayMode: .inline)
-        .onAppear(perform: requestViewModel.loadRequests)
-        .background(Color(UIColor.systemGroupedBackground))
-        .alert(isPresented: Binding<Bool>(
-            get: { requestViewModel.errorMessage != nil },
-            set: { _ in requestViewModel.errorMessage = nil }
-        )) {
-            Alert(title: Text("Error"), message: Text(requestViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            .navigationBarTitle("Requests", displayMode: .inline)
+            .onAppear(perform: requestViewModel.loadRequests)
+            .background(Color(UIColor.systemGroupedBackground))
+            .alert(isPresented: Binding<Bool>(
+                get: { requestViewModel.errorMessage != nil },
+                set: { _ in requestViewModel.errorMessage = nil }
+            )) {
+                Alert(title: Text("Error"), message: Text(requestViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            }
         }
     }
 }

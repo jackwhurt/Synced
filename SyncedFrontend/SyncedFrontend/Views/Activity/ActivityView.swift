@@ -23,7 +23,7 @@ struct ActivityView: View {
                         ViewRequestsView(activityViewModel: activityViewModel)
                         NotificationsView(activityViewModel: activityViewModel)
                     }
-                    .navigationBarTitle("Activities", displayMode: .large) // Adjusted for consistency
+                    .navigationBarTitle("Activities", displayMode: .large)
                 }
                 .animation(.easeInOut(duration: 0.2), value: activityViewModel.isLoading)
                 .transition(.slide)
