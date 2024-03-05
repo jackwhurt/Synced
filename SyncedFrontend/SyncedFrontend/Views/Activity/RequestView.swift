@@ -3,7 +3,7 @@ import SwiftUI
 struct RequestView: View {
     @State private var selectedTab: Tab = .users
     @State private var isAccepting = false
-    @State private var isDeclining = false
+    @State private var isDeclining = (false, -1)
     @StateObject private var requestViewModel: RequestViewModel
     
     init(userRequests: [UserRequest], playlistRequests: [PlaylistRequest]) {
@@ -12,30 +12,36 @@ struct RequestView: View {
     }
     
     var body: some View {
-        VStack {
-            // TODO: reimplement after demo
-//            Picker("Requests", selection: $selectedTab) {
-//                Text("Users").tag(Tab.users)
-//                Text("Playlists").tag(Tab.playlists)
-//            }
-//            .pickerStyle(SegmentedPickerStyle())
-//            .padding()
-//
-//            if selectedTab == .users {
-//                UserRequestListView(userRequests: requestViewModel.userRequests)
-//            } else {
-//                PlaylistRequestListView(requestViewModel: requestViewModel, playlistRequests: requestViewModel.playlistRequests)
-//            }
+        ZStack {
+            Color(UIColor.systemGroupedBackground)
+                .edgesIgnoringSafeArea(.all)
+            VStack {
+                // TODO: reimplement after demo
+                //            Picker("Requests", selection: $selectedTab) {
+                //                Text("Users").tag(Tab.users)
+                //                Text("Playlists").tag(Tab.playlists)
+                //            }
+                //            .pickerStyle(SegmentedPickerStyle())
+                //            .padding()
+                //
+                //            if selectedTab == .users {
+                //                UserRequestListView(userRequests: requestViewModel.userRequests)
+                //            } else {
+                //                PlaylistRequestListView(requestViewModel: requestViewModel, playlistRequests: requestViewModel.playlistRequests)
+                //            }
+                
+                PlaylistRequestListView(requestViewModel: requestViewModel, isAccepting: $isAccepting, isDeclining: $isDeclining).padding()
+            }
             
-            PlaylistRequestListView(requestViewModel: requestViewModel, isAccepting: $isAccepting, isDeclining: $isDeclining).padding()
-        }
-        .navigationBarTitle("Requests", displayMode: .inline)
-        .onAppear(perform: requestViewModel.loadRequests)
-        .alert(isPresented: Binding<Bool>(
-            get: { requestViewModel.errorMessage != nil },
-            set: { _ in requestViewModel.errorMessage = nil }
-        )) {
-            Alert(title: Text("Error"), message: Text(requestViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            .navigationBarTitle("Requests", displayMode: .inline)
+            .onAppear(perform: requestViewModel.loadRequests)
+            .background(Color(UIColor.systemGroupedBackground))
+            .alert(isPresented: Binding<Bool>(
+                get: { requestViewModel.errorMessage != nil },
+                set: { _ in requestViewModel.errorMessage = nil }
+            )) {
+                Alert(title: Text("Error"), message: Text(requestViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            }
         }
     }
 }
@@ -70,7 +76,7 @@ struct RequestView: View {
 struct PlaylistRequestListView: View {
     @StateObject var requestViewModel: RequestViewModel
     @Binding var isAccepting: Bool
-    @Binding var isDeclining: Bool
+    @Binding var isDeclining: (Bool, Int)
     
     @State private var showingPlaylistOptions = false
     @State private var selectedRequest: PlaylistRequest?
@@ -93,7 +99,7 @@ struct PlaylistRequestListView: View {
                 onReject: { request in
                     print("Rejected playlist invitation from \(request.createdByUsername)")
                     Task {
-                        isDeclining = true
+                        isDeclining = (true, request.hashValue)
                         await requestViewModel.resolveRequest(request: request, result: false, spotifyPlaylist: false, appleMusicPlaylist: false)
                     }
                 }
@@ -117,7 +123,7 @@ struct PlaylistRequestListView: View {
 }
 
 struct RequestListView<Request>: View where Request: Hashable {
-    @Binding var isDeclining: Bool
+    @Binding var isDeclining: (Bool, Int)
     var requests: [Request]
     var requestText: (Request) -> String
     var onAccept: (Request) -> Void
@@ -136,7 +142,7 @@ struct RequestListView<Request>: View where Request: Hashable {
                 }
                 .buttonStyle(BorderlessButtonStyle())
                 
-                if isDeclining {
+                if isDeclining.0 && isDeclining.1 == request.hashValue {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle())
                         .frame(width: 44, height: 44)
@@ -152,7 +158,6 @@ struct RequestListView<Request>: View where Request: Hashable {
         }
     }
 }
-
 
 struct PlaylistOptionsView: View {
     @EnvironmentObject var appSettings: AppSettings

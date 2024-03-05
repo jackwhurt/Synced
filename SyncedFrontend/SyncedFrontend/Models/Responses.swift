@@ -35,6 +35,7 @@ struct GetCollaborativePlaylistByIdResponse: Codable {
     let appleMusicPlaylistId: String?
     let metadata: PlaylistMetadata
     let songs: [SongMetadata]
+    let collaborators: [UserMetadata]
 }
 
 struct GetCollaborativePlaylistMetadataResponse: Codable {
@@ -133,5 +134,22 @@ struct GetUserByIdResponse: Codable {
 
 struct CheckCurrentAuthorisationStatusResponse: Codable {
     let isSpotifyConnected: Bool?
+    let error: String?
+}
+
+struct GetCollaboratorsResponse: Codable {
+    let collaborators: [UserMetadata]?
+    let error: String?
+}
+
+struct AddCollaboratorsResponse: Codable {
+    let playlistId: String?
+    let collaboratorIds: [String]?
+    let error: String?
+}
+
+struct DeleteCollaboratorsResponse: Codable {
+    let playlistId: String?
+    let collaboratorIds: [String]?
     let error: String?
 }

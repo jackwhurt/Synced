@@ -109,6 +109,51 @@ class CollaborativePlaylistService {
             print("Failed to delete delete flags for playlists \(playlistIds): \(error)")
         }
     }
+    
+    func getCollaborators(playlistId: String) async throws -> [UserMetadata] {
+        do {
+            let params = ["playlistId": playlistId]
+            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/collaborators", model: GetCollaboratorsResponse.self, parameters: params)
+            if let error = response.error {
+                print("Failed to retrieve collaborative playlists, error from backend: \(error)")
+                throw CollaborativePlaylistServiceError.failedToGetCollaborators
+            }
+            let sorted = sortCollaborators(collaborators: response.collaborators ?? [])
+            CachingService.shared.save(sorted, forKey: "collaborators_\(playlistId)")
+            return sorted
+        } catch {
+            print("Failed to retrieve collaborative playlists")
+            throw CollaborativePlaylistServiceError.failedToGetCollaborators
+        }
+    }
+    
+    func addCollaborators(playlistId: String, collaboratorIds: [String]) async throws {
+        do {
+            let body = AddCollaboratorsRequest(playlistId: playlistId, collaboratorIds: collaboratorIds)
+            let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/collaborators", model: AddCollaboratorsResponse.self, body: body)
+            if let error = response.error {
+                print("Failed to add collaborators, error from backend: \(error)")
+                throw CollaborativePlaylistServiceError.failedToAddCollaborators
+            }
+        } catch {
+            print("Failed to add collaborators: \(error)")
+            throw CollaborativePlaylistServiceError.failedToAddCollaborators
+        }
+    }
+    
+    func deleteCollaborators(playlistId: String, collaboratorIds: [String]) async throws {
+        do {
+            let body = DeleteCollaboratorsRequest(playlistId: playlistId, collaboratorIds: collaboratorIds)
+            let response = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/collaborators", model: DeleteCollaboratorsResponse.self, body: body)
+            if let error = response.error {
+                print("Failed to delete collaborators, error from backend: \(error)")
+                throw CollaborativePlaylistServiceError.failedToAddCollaborators
+            }
+        } catch {
+            print("Failed to delete collaborators: \(error)")
+            throw CollaborativePlaylistServiceError.failedToAddCollaborators
+        }
+    }
 
     private func createBackendPlaylist(request: CreateCollaborativePlaylistRequest) async throws -> String {
         do {
@@ -208,6 +253,15 @@ class CollaborativePlaylistService {
             }
         }
         return deleteFlagsToDelete
+    }
+    
+    private func sortCollaborators(collaborators: [UserMetadata]) -> [UserMetadata] {
+        let sorted = collaborators.sorted {
+            if $0.isPlaylistOwner ?? false, !($1.isPlaylistOwner ?? false) { return true }
+            if !($0.isPlaylistOwner ?? false), $1.isPlaylistOwner ?? false { return false }
+            return ($0.requestStatus == "accepted" && $1.requestStatus != "accepted") || ($0.requestStatus != "pending" && $1.requestStatus == "pending")
+        }
+        return sorted
     }
 
     private func getSongUpdates(parameters: [String: String]) async throws -> UpdatePlaylistsResponse {

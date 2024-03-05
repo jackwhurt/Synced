@@ -23,3 +23,13 @@ struct AddSongsRequest: Codable {
 struct DeleteAppleMusicDeleteFlagsRequest: Codable {
     let playlistIds: [String]
 }
+
+struct AddCollaboratorsRequest: Codable {
+    let playlistId: String
+    let collaboratorIds: [String]
+}
+
+struct DeleteCollaboratorsRequest: Codable {
+    let playlistId: String
+    let collaboratorIds: [String]
+}

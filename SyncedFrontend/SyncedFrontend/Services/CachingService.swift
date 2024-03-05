@@ -29,6 +29,11 @@ class CachingService {
         }
     }
     
+    func exists(forKey key: String) -> Bool {
+        let filePath = getFilePath(forKey: key)
+        return FileManager.default.fileExists(atPath: filePath.path)
+    }
+    
     func clearCache() {
         cache.removeAllObjects()
         let directory = getDocumentsDirectory()

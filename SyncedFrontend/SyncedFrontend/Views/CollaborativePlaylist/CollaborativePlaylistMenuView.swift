@@ -11,27 +11,32 @@ struct CollaborativePlaylistMenuView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                if collaborativePlaylistMenuViewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .padding()
+            ZStack {
+                Color(UIColor.systemGroupedBackground)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    if collaborativePlaylistMenuViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .padding()
+                    }
+                    List {
+                        addPlaylistSection
+                        playlistsSection
+                    }
+                    .navigationTitle("Playlists")
                 }
-                List {
-                    addPlaylistSection
-                    playlistsSection
-                }
-                .navigationTitle("Playlists")
+                .onAppear(perform: loadPlaylists)
             }
-            .onAppear(perform: loadPlaylists)
-        }
-        .animation(.easeInOut(duration: 0.2), value: collaborativePlaylistMenuViewModel.isLoading)
-        .transition(.slide)
-        .alert(isPresented: Binding<Bool>(
-            get: { collaborativePlaylistMenuViewModel.errorMessage != nil },
-            set: { _ in collaborativePlaylistMenuViewModel.errorMessage = nil }
-        )) {
-            Alert(title: Text("Error"), message: Text(collaborativePlaylistMenuViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            .animation(.easeInOut(duration: 0.2), value: collaborativePlaylistMenuViewModel.isLoading)
+            .transition(.slide)
+            .alert(isPresented: Binding<Bool>(
+                get: { collaborativePlaylistMenuViewModel.errorMessage != nil },
+                set: { _ in collaborativePlaylistMenuViewModel.errorMessage = nil }
+            )) {
+                Alert(title: Text("Error"), message: Text(collaborativePlaylistMenuViewModel.errorMessage ?? "Unknown error"), dismissButton: .default(Text("OK")))
+            }
         }
     }
     

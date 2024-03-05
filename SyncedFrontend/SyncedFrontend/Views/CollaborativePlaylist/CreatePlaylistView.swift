@@ -19,9 +19,7 @@ struct CreatePlaylistView: View {
                 TitleSection(title: $createPlaylistViewModel.title)
                 DescriptionSection(description: $createPlaylistViewModel.description)
                 PlaylistCreationToggles(createPlaylistViewModel: createPlaylistViewModel)
-                CollaboratorsSection(collaborators: $createPlaylistViewModel.collaborators,
-                    usernameQuery: $createPlaylistViewModel.usernameQuery,
-                    deleteCollaborator: createPlaylistViewModel.deleteCollaborator,
+                UserSelect(collaborators: $createPlaylistViewModel.collaborators,
                     searchCollaborators: createPlaylistViewModel.searchUsers)
             }
             .navigationBarTitle("New Playlist", displayMode: .inline)
@@ -97,59 +95,6 @@ struct PlaylistCreationToggles: View {
                 get: { self.createPlaylistViewModel.createSpotifyPlaylist },
                 set: { self.createPlaylistViewModel.createSpotifyPlaylist = $0 }
             ))
-        }
-    }
-}
-
-struct CollaboratorsSection: View {
-    @Binding var collaborators: [UserMetadata]
-    @Binding var usernameQuery: String
-    var deleteCollaborator: (IndexSet) -> Void
-    var searchCollaborators: (String, Int) async -> [UserMetadata]
-
-    @State private var searchResults = [UserMetadata]()
-    @State private var isSearching = false
-
-    var body: some View {
-        Section(header: Text("Collaborators")) {
-            // Displaying selected collaborators
-            ForEach(collaborators, id: \.self) { collaborator in
-                Text(collaborator.username)
-                    .foregroundColor(.syncedBlue)
-                    .padding(.vertical, 4)
-            }
-            .onDelete(perform: deleteCollaborator)
-
-            TextField("Search users", text: $usernameQuery)
-                .onChange(of: usernameQuery) {
-                    if usernameQuery.isEmpty {
-                        searchResults = []
-                        isSearching = false
-                    } else {
-                        Task {
-                            let results = await searchCollaborators(usernameQuery, 1)
-                            searchResults = results.filter { !collaborators.contains($0) }
-                            isSearching = true
-                        }
-                    }
-                }
-
-            // Displaying search results or a message if no results are found
-            if isSearching {
-                if searchResults.isEmpty {
-                    Text("No users found")
-                        .foregroundColor(.syncedErrorRed)
-                } else {
-                    ForEach(searchResults, id: \.self) { result in
-                        Text(result.username)
-                            .onTapGesture {
-                                collaborators.append(result)
-                                usernameQuery = ""
-                                isSearching = false
-                            }
-                    }
-                }
-            }
         }
     }
 }

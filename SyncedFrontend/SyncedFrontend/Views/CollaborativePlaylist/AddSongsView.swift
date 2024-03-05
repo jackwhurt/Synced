@@ -9,7 +9,7 @@ struct AddSongsView: View {
     @State private var isSaving = false
     @StateObject private var addSongsViewModel: AddSongsViewModel
     @FocusState private var isTextFieldFocused: Bool
-
+    
     init(showSheet: Binding<Bool>, songsToAdd: Binding<[SongMetadata]>, playlistSongs: [SongMetadata]) {
         _showSheet = showSheet
         _addSongsViewModel = StateObject(wrappedValue: AddSongsViewModel(songService: DIContainer.shared.provideSongsService(), playlistSongs: playlistSongs, songsToAdd: songsToAdd))
@@ -17,37 +17,47 @@ struct AddSongsView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                HStack {
-                    TextField("Search songs", text: $searchText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .focused($isTextFieldFocused)
-                        .submitLabel(.search)
-                        .onSubmit {
-                            Task {
-                                await addSongsViewModel.searchSpotifyApi(query: searchText, page: 0)
-                                showErrorAlert = addSongsViewModel.errorMessage != nil
+            ZStack {
+                Color(UIColor.systemGroupedBackground)
+                    .edgesIgnoringSafeArea(.all)
+                VStack {
+                    HStack {
+                        TextField("Search songs", text: $searchText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .focused($isTextFieldFocused)
+                            .submitLabel(.search)
+                            .onSubmit {
+                                Task {
+                                    await addSongsViewModel.searchSpotifyApi(query: searchText, page: 0)
+                                    showErrorAlert = addSongsViewModel.errorMessage != nil
+                                }
+                            }
+                        
+                        if isTextFieldFocused {
+                            Button("Cancel") {
+                                isTextFieldFocused = false
+                                searchText = ""
                             }
                         }
+                    }
+                    .padding()
                     
-                    if isTextFieldFocused {
-                        Button("Cancel") {
-                            isTextFieldFocused = false
-                            searchText = ""
+                    if addSongsViewModel.spotifySongs.isEmpty {
+                        Text("")
+                            .padding()
+                        Spacer()
+                    } else {
+                        List {
+                            ForEach(addSongsViewModel.spotifySongs, id: \.self) { song in
+                                SongRowToAdd(addSongsViewModel: addSongsViewModel, song: song)
+                            }
                         }
                     }
                 }
-                .padding()
-                
-                List {
-                    ForEach(addSongsViewModel.spotifySongs, id: \.self) { song in
-                        SongRowToAdd(addSongsViewModel: addSongsViewModel, song: song)
-                    }
-                }
+                .navigationBarTitle("Add Songs", displayMode: .inline)
+                .toolbar { toolbarContent() }
+                .alert(isPresented: $showErrorAlert, content: errorAlert)
             }
-            .navigationBarTitle("Add Songs", displayMode: .inline)
-            .toolbar { toolbarContent() }
-            .alert(isPresented: $showErrorAlert, content: errorAlert)
         }
         .onAppear {
             addSongsViewModel.dismissAction = {

@@ -55,6 +55,10 @@
 		8064850B2B66B1BF00B62C93 /* RequestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850A2B66B1BF00B62C93 /* RequestViewModel.swift */; };
 		8064850D2B6923C900B62C93 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850C2B6923C900B62C93 /* ProfileView.swift */; };
 		8064850F2B69259F00B62C93 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8064850E2B69259F00B62C93 /* ProfileViewModel.swift */; };
+		8068584F2B8E173B00DD973D /* CollaboratorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8068584E2B8E173B00DD973D /* CollaboratorsView.swift */; };
+		806858512B8E176600DD973D /* EditCollaboratorsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806858502B8E176600DD973D /* EditCollaboratorsViewModel.swift */; };
+		806858532B8E66BE00DD973D /* AddCollaboratorsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806858522B8E66BE00DD973D /* AddCollaboratorsView.swift */; };
+		806858552B8E66DC00DD973D /* AddCollaboratorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806858542B8E66DC00DD973D /* AddCollaboratorViewModel.swift */; };
 		80B4E6AA2B73F8B50026D9C4 /* CachedAsyncImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B4E6A92B73F8B50026D9C4 /* CachedAsyncImage.swift */; };
 		80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */; };
 		80B82BFF2B49DB5800277AEA /* MusicAsyncImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80B82BFE2B49DB5800277AEA /* MusicAsyncImageLoader.swift */; };
@@ -66,6 +70,8 @@
 		80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
 		80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
 		80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB332B22775F00E99BF9 /* ApiService.swift */; };
+		80EDF02F2B8F53940087DD53 /* UserSelect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EDF02E2B8F53940087DD53 /* UserSelect.swift */; };
+		80EDF0312B8FE8A80087DD53 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EDF0302B8FE8A70087DD53 /* Alerts.swift */; };
 		80F9CF832B694455003EAB5F /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF822B694455003EAB5F /* AppSettings.swift */; };
 		80F9CF852B6945FA003EAB5F /* SpotifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF842B6945FA003EAB5F /* SpotifyService.swift */; };
 /* End PBXBuildFile section */
@@ -127,6 +133,10 @@
 		8064850A2B66B1BF00B62C93 /* RequestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestViewModel.swift; sourceTree = "<group>"; };
 		8064850C2B6923C900B62C93 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		8064850E2B69259F00B62C93 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		8068584E2B8E173B00DD973D /* CollaboratorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaboratorsView.swift; sourceTree = "<group>"; };
+		806858502B8E176600DD973D /* EditCollaboratorsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCollaboratorsViewModel.swift; sourceTree = "<group>"; };
+		806858522B8E66BE00DD973D /* AddCollaboratorsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCollaboratorsView.swift; sourceTree = "<group>"; };
+		806858542B8E66DC00DD973D /* AddCollaboratorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCollaboratorViewModel.swift; sourceTree = "<group>"; };
 		80B4E6A92B73F8B50026D9C4 /* CachedAsyncImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImage.swift; sourceTree = "<group>"; };
 		80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistView.swift; sourceTree = "<group>"; };
 		80B82BFE2B49DB5800277AEA /* MusicAsyncImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicAsyncImageLoader.swift; sourceTree = "<group>"; };
@@ -141,6 +151,8 @@
 		80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		80E2EB312B22748D00E99BF9 /* Responses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Responses.swift; sourceTree = "<group>"; };
 		80E2EB332B22775F00E99BF9 /* ApiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiService.swift; sourceTree = "<group>"; };
+		80EDF02E2B8F53940087DD53 /* UserSelect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSelect.swift; sourceTree = "<group>"; };
+		80EDF0302B8FE8A70087DD53 /* Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alerts.swift; sourceTree = "<group>"; };
 		80F9CF822B694455003EAB5F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		80F9CF842B6945FA003EAB5F /* SpotifyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyService.swift; sourceTree = "<group>"; };
 		D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.debug.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.debug.xcconfig"; sourceTree = "<group>"; };
@@ -188,6 +200,8 @@
 				802184EF2B497F570096F702 /* CreatePlaylistView.swift */,
 				80B82BFC2B49CB5F00277AEA /* CollaborativePlaylistView.swift */,
 				80B82C022B4AC5F400277AEA /* AddSongsView.swift */,
+				8068584E2B8E173B00DD973D /* CollaboratorsView.swift */,
+				806858522B8E66BE00DD973D /* AddCollaboratorsView.swift */,
 			);
 			path = CollaborativePlaylist;
 			sourceTree = "<group>";
@@ -208,6 +222,8 @@
 				802184F32B4986FA0096F702 /* CreatePlaylistViewModel.swift */,
 				80B82C002B49DE3400277AEA /* CollaborativePlaylistViewModel.swift */,
 				8023D1F22B4B0D9D000A1C57 /* AddSongsViewModel.swift */,
+				806858502B8E176600DD973D /* EditCollaboratorsViewModel.swift */,
+				806858542B8E66DC00DD973D /* AddCollaboratorViewModel.swift */,
 			);
 			path = CollaborativePlaylist;
 			sourceTree = "<group>";
@@ -286,6 +302,7 @@
 				8020A8B42B726D32004C9568 /* SelectImage.swift */,
 				80319D9C2B73C44B00C4AB19 /* ProfileAsyncImageLoader.swift */,
 				80B4E6A92B73F8B50026D9C4 /* CachedAsyncImage.swift */,
+				80EDF02E2B8F53940087DD53 /* UserSelect.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -358,6 +375,7 @@
 				80D896E42B5B1B8C00543685 /* User.swift */,
 				8002EBDF2B658EB70017C01A /* Activity.swift */,
 				804931582B6AAA2700A413A1 /* Notification.swift */,
+				80EDF0302B8FE8A70087DD53 /* Alerts.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -499,9 +517,11 @@
 				80B82C012B49DE3400277AEA /* CollaborativePlaylistViewModel.swift in Sources */,
 				802184E62B4885E90096F702 /* HomeView.swift in Sources */,
 				805D49542B0FDF370081B076 /* SignUpView.swift in Sources */,
+				806858512B8E176600DD973D /* EditCollaboratorsViewModel.swift in Sources */,
 				805D49522B0FDEA60081B076 /* LoginView.swift in Sources */,
 				8061CE0C2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift in Sources */,
 				802184EA2B4887DA0096F702 /* CollaborativePlaylistMenuView.swift in Sources */,
+				80EDF02F2B8F53940087DD53 /* UserSelect.swift in Sources */,
 				8061CE162B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift in Sources */,
 				802184EC2B488A340096F702 /* CollaborativePlaylistMenuViewModel.swift in Sources */,
 				801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */,
@@ -511,6 +531,7 @@
 				806485092B66B1B200B62C93 /* ActivityViewModel.swift in Sources */,
 				8002EBE02B658EB70017C01A /* Activity.swift in Sources */,
 				802184F02B497F570096F702 /* CreatePlaylistView.swift in Sources */,
+				80EDF0312B8FE8A80087DD53 /* Alerts.swift in Sources */,
 				8020A8B02B6D52A9004C9568 /* CachingService.swift in Sources */,
 				805D495C2B0FF8350081B076 /* LongInput.swift in Sources */,
 				802184F42B4986FA0096F702 /* CreatePlaylistViewModel.swift in Sources */,
@@ -524,6 +545,7 @@
 				80F9CF852B6945FA003EAB5F /* SpotifyService.swift in Sources */,
 				8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */,
 				80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */,
+				806858532B8E66BE00DD973D /* AddCollaboratorsView.swift in Sources */,
 				80D896E52B5B1B8C00543685 /* User.swift in Sources */,
 				8061CE082B29DAAF00B0FFD6 /* Errors.swift in Sources */,
 				80F9CF832B694455003EAB5F /* AppSettings.swift in Sources */,
@@ -533,6 +555,7 @@
 				80B82C032B4AC5F400277AEA /* AddSongsView.swift in Sources */,
 				8064850F2B69259F00B62C93 /* ProfileViewModel.swift in Sources */,
 				80550D392B17CB1A00678B11 /* KeychainService.swift in Sources */,
+				806858552B8E66DC00DD973D /* AddCollaboratorViewModel.swift in Sources */,
 				80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */,
 				8020A8B52B726D32004C9568 /* SelectImage.swift in Sources */,
 				8064850D2B6923C900B62C93 /* ProfileView.swift in Sources */,
@@ -547,6 +570,7 @@
 				80CE06AC2B2CB23A00D926E2 /* LoadingView.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,
 				801CC95A2B16736B006FB76D /* SignUpViewModel.swift in Sources */,
+				8068584F2B8E173B00DD973D /* CollaboratorsView.swift in Sources */,
 				802184E82B4885F30096F702 /* HomeViewModel.swift in Sources */,
 				806485032B66ACF600B62C93 /* ActivityService.swift in Sources */,
 				80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */,

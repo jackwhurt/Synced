@@ -27,7 +27,7 @@ Resources:
           AttributeDataType: String
           Mutable: true
           Required: false
-      # TODO: DELETE username - requires creating a new pool...
+          # TODO: DELETE username - requires creating a new pool...
         - Name: username
           AttributeDataType: String
           Mutable: true

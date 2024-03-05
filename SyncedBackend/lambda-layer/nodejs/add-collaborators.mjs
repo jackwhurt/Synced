@@ -1,17 +1,16 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, TransactWriteCommand, BatchGetCommand } from '@aws-sdk/lib-dynamodb';
 import { sendApnsNotifications } from '/opt/nodejs/send-apns-notifications.mjs';
-import { v4 as uuidv4 } from 'uuid';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
 const MAX_COLLABORATORS = 10;
 
-export async function addCollaborators(playlistId, playlistTitle, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usersTable, isDevEnvironment) {
+export async function addCollaborators(playlistId, playlistTitle, collaboratorIds, cognitoUserId, isNewPlaylist, playlistsTable, activitiesTable, usersTable, isDevEnvironment) {
     const timestamp = new Date().toISOString();
-    const usernames = await getCollaboratorsUsername(collaboratorIds, usersTable);
-    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp);
+    const usernames = await getUsernames(collaboratorIds, usersTable);
+    const transactItems = buildTransactItems(playlistId, collaboratorIds, cognitoUserId, usernames, timestamp, isNewPlaylist, playlistsTable, activitiesTable);
     const message = `@${usernames[cognitoUserId]} has requested you to join ${playlistTitle}!` 
     const userIdsWithoutCreator = collaboratorIds.filter(id => id != cognitoUserId);
 
@@ -20,11 +19,11 @@ export async function addCollaborators(playlistId, playlistTitle, collaboratorId
         await sendApnsNotifications(userIdsWithoutCreator, message, usersTable, isDevEnvironment);
     } catch (err) {
         console.error('Error in transaction:', err);
-        throw new err;
+        throw err;
     }
 }
 
-function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlistsTable, activitiesTable, usernames, timestamp) {
+function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, usernames, timestamp, isNewPlaylist, playlistsTable, activitiesTable) {
     const transactItems = [];
 
     // Increment the counter and add new collaborators atomically
@@ -45,15 +44,15 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
         }
     });
 
+    const username = usernames[cognitoUserId] || 'Unknown';
     for (let collaboratorId of collaboratorIds) {
         if (collaboratorId != cognitoUserId) {
-            const username = usernames[cognitoUserId] || 'Unknown';
             transactItems.push({
                 Put: {
                     TableName: activitiesTable,
                     Item: {
                         PK: collaboratorId,
-                        SK: `requestPlaylist#${uuidv4()}`,
+                        SK: `requestPlaylist#${playlistId}`,
                         playlistId: playlistId,
                         createdByUsername: username,
                         createdBy: cognitoUserId,
@@ -76,7 +75,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
                     ConditionExpression: 'attribute_not_exists(PK) AND attribute_not_exists(SK)'
                 }
             });
-        } else {
+        } else if (isNewPlaylist) {
             transactItems.push({
                 Put: {
                     TableName: playlistsTable,
@@ -98,7 +97,7 @@ function buildTransactItems(playlistId, collaboratorIds, cognitoUserId, playlist
     return transactItems;
 }
 
-async function getCollaboratorsUsername(collaboratorIds, usersTable) {
+async function getUsernames(collaboratorIds, usersTable) {
     const keysToGet = collaboratorIds.map(id => ({ userId: id }));
     const params = {
         RequestItems: {

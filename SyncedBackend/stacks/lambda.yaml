@@ -218,6 +218,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/   
       Handler: get-collaborative-playlist-by-id.getCollaborativePlaylistByIdHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -449,6 +451,8 @@ Resources:
       CodeUri: ../services/collaborative-playlists-service/
       Handler: delete-collaborators.deleteCollaboratorsHandler
       Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
       Architectures:
         - x86_64
       MemorySize: 128
@@ -458,9 +462,48 @@ Resources:
         # Give Create/Read/Update/Delete Permissions to the Table
         - DynamoDBCrudPolicy:
             TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ActivitiesTableName
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource: !Ref ApnsPlatformArn
       Environment:
         Variables:
           PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
+          ACTIVITIES_TABLE: !Ref ActivitiesTableName
+          DEV_ENVIRONMENT: !Ref DevEnvironment
+
+  GetCollaboratorsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../services/collaborative-playlists-service/   
+      Handler: get-collaborators-by-playlist-id.getCollaboratorsByPlaylistIdHandler
+      Runtime: nodejs18.x
+      Layers:
+        - !Ref CommonLayer
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: A function to get collaborators by playlist id.
+      Policies:
+        # Give Create/Read/Update/Delete Permissions to the PlaylistTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PlaylistsTableName
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTableName
+      Environment:
+        Variables:
+          PLAYLISTS_TABLE: !Ref PlaylistsTableName
+          USERS_TABLE: !Ref UsersTableName
 
   SyncCollaboratorsFunction:
     Type: AWS::Serverless::Function
@@ -968,6 +1011,8 @@ Outputs:
     Value: !GetAtt AddCollaboratorsFunction.Arn
   DeleteCollaboratorsFunctionArn:
     Value: !GetAtt DeleteCollaboratorsFunction.Arn
+  GetCollaboratorsFunctionArn:
+    Value: !GetAtt GetCollaboratorsFunction.Arn
   SyncCollaboratorsFunctionArn:
     Value: !GetAtt SyncCollaboratorsFunction.Arn
   AddSongsFunctionArn:

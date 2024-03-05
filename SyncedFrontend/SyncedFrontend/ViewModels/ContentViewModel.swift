@@ -16,22 +16,27 @@ class ContentViewModel: ObservableObject {
             self.isLoading = true
         }
         
-        checkUserSession()
-        do {
-            try await collaborativePlaylistService.updatePlaylists()
-        } catch{
-            print("Update playlists failed")
-        }
-        
-        DispatchQueue.main.async {
-            self.isLoading = false
-        }
-    }
-    
-    private func checkUserSession() {
-        authenticationService.checkSession { [weak self] success in
+        authenticationService.checkSession { success in
             DispatchQueue.main.async {
-                self?.isLoggedIn = success
+                self.isLoggedIn = success
+            }
+            
+            if success {
+                Task {
+                    do {
+                        try await self.collaborativePlaylistService.updatePlaylists()
+                    } catch {
+                        print("Update playlists failed")
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
             }
         }
     }

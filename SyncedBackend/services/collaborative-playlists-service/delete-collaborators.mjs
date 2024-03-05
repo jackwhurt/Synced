@@ -1,112 +1,94 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, TransactWriteCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, TransactWriteCommand, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { createNotifications } from '/opt/nodejs/create-notifications.mjs';
+import { getCollaboratorsByPlaylistId } from '/opt/nodejs/get-collaborators.mjs';
 
 const client = new DynamoDBClient({});
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
+const activitiesTable = process.env.ACTIVITIES_TABLE;
 const playlistsTable = process.env.PLAYLISTS_TABLE;
+const usersTable = process.env.USERS_TABLE;
+const isDevEnvironment = process.env.DEV_ENVIRONMENT === 'true';
 
 export const deleteCollaboratorsHandler = async (event) => {
 	console.info('received:', event);
+	const { valid, response } = validateEvent(event);
+	if (!valid) return response;
 
-	if (!event.body) {
-		return { statusCode: 400, body: JSON.stringify({ message: 'Missing body' }) };
-	}
-
-	const { playlistId, collaboratorIds } = JSON.parse(event.body);
-	if (!playlistId || !collaboratorIds || collaboratorIds.length === 0) {
-		return { statusCode: 400, body: JSON.stringify({ message: 'Missing required fields' }) };
-	}
-
-	const claims = event.requestContext.authorizer?.claims;
-	if (!claims) {
-		return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorised' }) };
-	}
-
-	const cognitoUserId = claims['sub'];
-
-	// Retrieve playlist metadata
+	const { playlistId, collaboratorIds, userId } = response;
 	const playlistMetadata = await getPlaylistMetadata(playlistId);
-	if (!playlistMetadata) {
-		return { statusCode: 404, body: JSON.stringify({ message: 'Playlist not found' }) };
-	}
-
-	// Check if the user is authorised to modify the playlist
-	if (playlistMetadata.createdBy !== cognitoUserId) {
-		return {
-			statusCode: 403,
-			body: JSON.stringify({ message: 'Not authorised to modify this playlist' })
-		};
-	}
+	if (!playlistMetadata) return errorResponse(404, 'Playlist not found');
+	if (playlistMetadata.createdBy !== userId || collaboratorIds.includes(playlistMetadata.createdBy)) return errorResponse(403, 'Not authorised to modify this data');
 
 	try {
-		// Retrieve existing collaborators
 		const existingCollaborators = await getPlaylistCollaborators(playlistId);
 		const isValidRequest = collaboratorIds.every(id => existingCollaborators.includes(id));
-
-		if (!isValidRequest) {
-			return {
-				statusCode: 400,
-				body: JSON.stringify({ message: 'Invalid collaborator ID(s)' })
-			};
-		}
+		if (!isValidRequest) return errorResponse(400, 'Invalid collaborator ID(s)');
 
 		await deleteCollaborators(playlistId, collaboratorIds);
+		await sendNotifications(playlistId, userId);
 
-		return {
-			statusCode: 200,
-			body: JSON.stringify({
-				message: 'Collaborators deleted successfully',
-				playlistId,
-				collaboratorIds
-			})
-		};
+		return successResponse({ playlistId, collaboratorIds });
 	} catch (err) {
 		console.error('Error', err);
-
-		if (err.name === 'TransactionCanceledException') {
-			return {
-				statusCode: 400,
-				body: JSON.stringify({ message: 'Invalid collaborator criteria' })
-			};
-		}
-
-		return {
-			statusCode: 500,
-			body: JSON.stringify({ message: 'Error deleting collaborators' })
-		};
+		return handleError(err);
 	}
 };
 
-async function deleteCollaborators(playlistId, collaboratorIds) {
-	const transactItems = [];
+function validateEvent(event) {
+	if (!event.body) return { valid: false, response: errorResponse(400, 'Missing body') };
+	const { playlistId, collaboratorIds } = JSON.parse(event.body);
+	if (!playlistId || !collaboratorIds || collaboratorIds.length === 0) return { valid: false, response: errorResponse(400, 'Missing required fields') };
+	const claims = event.requestContext.authorizer?.claims;
+	if (!claims) return { valid: false, response: errorResponse(401, 'Unauthorised') };
+	const userId = claims['sub'];
+	return { valid: true, response: { playlistId, collaboratorIds, userId } };
+}
 
-	// Decrement the counter and delete collaborators atomically
+function errorResponse(statusCode, message) {
+	console.info('returned:',  { statusCode, body: JSON.stringify({ error: message }) });
+
+	return { statusCode, body: JSON.stringify({ error: message }) };
+}
+
+function successResponse(body) {
+	console.info('returned:',  { statusCode: 200, body: JSON.stringify(body) });
+
+	return { statusCode: 200, body: JSON.stringify(body) };
+}
+
+function handleError(err) {
+	const message = err.name === 'TransactionCanceledException' ? 'Invalid collaborator criteria' : 'Error deleting collaborators';
+	const statusCode = err.name === 'TransactionCanceledException' ? 400 : 500;
+	return errorResponse(statusCode, message);
+}
+
+async function deleteCollaborators(playlistId, collaboratorIds) {
+	const transactItems = collaboratorIds.flatMap(collaboratorId => [
+		{
+			Delete: {
+				TableName: playlistsTable,
+				Key: { PK: `cp#${playlistId}`, SK: `collaborator#${collaboratorId}` }
+			}
+		},
+		{
+			Delete: {
+				TableName: activitiesTable,
+				Key: { PK: `userId#${collaboratorId}`, SK: `requestPlaylist#${playlistId}` }
+			}
+		}
+	]);
+
 	transactItems.push({
 		Update: {
 			TableName: playlistsTable,
 			Key: { PK: `cp#${playlistId}`, SK: 'metadata' },
 			UpdateExpression: 'ADD #collaboratorCount :decr',
-			ExpressionAttributeNames: {
-				'#collaboratorCount': 'collaboratorCount'
-			},
-			ExpressionAttributeValues: {
-				':decr': -collaboratorIds.length
-			},
+			ExpressionAttributeNames: { '#collaboratorCount': 'collaboratorCount' },
+			ExpressionAttributeValues: { ':decr': -collaboratorIds.length },
 			ReturnValuesOnConditionCheckFailure: 'ALL_OLD'
 		}
-	});
-
-	collaboratorIds.forEach(collaboratorId => {
-		transactItems.push({
-			Delete: {
-				TableName: playlistsTable,
-				Key: {
-					PK: `cp#${playlistId}`,
-					SK: `collaborator#${collaboratorId}`
-				}
-			}
-		});
 	});
 
 	await ddbDocClient.send(new TransactWriteCommand({ TransactItems: transactItems }));
@@ -149,4 +131,16 @@ async function getPlaylistCollaborators(playlistId) {
 		console.error('Error retrieving collaborators:', err);
 		return [];
 	}
+}
+
+async function sendNotifications(playlistId, cognitoUserId) {
+    const message = '@{user} has been removed from {playlist}.';
+
+    try {
+        const collaborators = await getCollaboratorsByPlaylistId(playlistId, playlistsTable);
+        await createNotifications(collaborators.map(collaborator => collaborator.userId), message, cognitoUserId,
+            playlistId, activitiesTable, usersTable, playlistsTable, isDevEnvironment);
+    } catch (error) {
+        console.error('Notification unsuccessful', error);
+    }
 }

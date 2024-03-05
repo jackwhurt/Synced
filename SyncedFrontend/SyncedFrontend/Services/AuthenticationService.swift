@@ -73,8 +73,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
     func signUpUser(email: String, password: String, username: String, completion: @escaping (Result<AWSCognitoIdentityUserPoolSignUpResponse, Error>) -> Void) {
         let emailAttribute = AWSCognitoIdentityUserAttributeType(name: "email", value: email)
         let usernameAttribute = AWSCognitoIdentityUserAttributeType(name: "custom:username", value: username)
-        userPool.signUp(email, password: password, userAttributes: [emailAttribute, usernameAttribute], validationData: nil).continueWith { [weak self] task -> Any? in
-            guard self != nil else { return nil }
+        userPool.signUp(email, password: password, userAttributes: [emailAttribute, usernameAttribute], validationData: nil).continueWith { task -> Any? in
             DispatchQueue.main.async {
                 if let error = task.error {
                     completion(.failure(error))
@@ -86,11 +85,18 @@ class AuthenticationService: AuthenticationServiceProtocol {
         }
     }
 
-    func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
-        guard loadRefreshToken() != nil else {
-            completion(.failure(AuthenticationServiceError.noRefreshTokenFound))
-            return
-        }
+    func refreshTokenIfNeeded(completion: @escaping (Result<Void, Error>) -> Void) {
+        if let accessToken = loadAccessToken() {
+            if !isTokenExpired(accessToken) {
+                completion(.success(()))
+                return
+            }
+         }
+        
+        guard let _ = loadRefreshToken() else {
+             completion(.failure(AuthenticationServiceError.noRefreshTokenFound))
+             return
+         }
         
         guard let user = userPool.currentUser() else {
             completion(.failure(AuthenticationServiceError.noCurrentUserFound))
@@ -121,7 +127,7 @@ class AuthenticationService: AuthenticationServiceProtocol {
     }
     
     func checkSession(completion: @escaping (Bool) -> Void) {
-        refreshToken { result in
+        refreshTokenIfNeeded { result in
             switch result {
             case .success:
                 completion(true)
@@ -152,4 +158,45 @@ class AuthenticationService: AuthenticationServiceProtocol {
         return String(data: refreshTokenData, encoding: .utf8)
     }
     
+    private func loadAccessToken() -> String? {
+        guard let accessTokenData = keychainService.load(key: "accessToken") else { return nil }
+        return String(data: accessTokenData, encoding: .utf8)
+    }
+    
+    private func isTokenExpired(_ token: String) -> Bool {
+        let parts = token.split(separator: ".")
+        guard parts.count == 3 else {
+            print("Invalid token: JWT must have 3 parts")
+            return true
+        }
+
+        let payload = parts[1]
+        guard let payloadData = decodeBase64URLSafeString(String(payload)) else {
+            print("Failed to decode payload")
+            return true
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: payloadData, options: []),
+              let payloadDict = json as? [String: Any],
+              let exp = payloadDict["exp"] as? TimeInterval else {
+            print("Failed to extract expiration time")
+            return true
+        }
+
+        let expirationDate = Date(timeIntervalSince1970: exp)
+        return expirationDate < Date()
+    }
+
+    private func decodeBase64URLSafeString(_ string: String) -> Data? {
+        var base64 = string
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+
+        let remainder = base64.count % 4
+        if remainder > 0 {
+            base64.append(String(repeating: "=", count: 4 - remainder))
+        }
+
+        return Data(base64Encoded: base64)
+    }
 }

@@ -91,8 +91,9 @@ class ActivityViewModel: ObservableObject {
                 self.playlistRequests = requests.playlistRequests
             }
         } catch {
+            print("Failed to load requests: \(error)")
             DispatchQueue.main.async {
-                self.errorMessage = "Failed to load requests. Please try again later."
+                self.errorMessage = "Failed to load requests, please try again later."
             }
         }
     }
@@ -104,8 +105,9 @@ class ActivityViewModel: ObservableObject {
                 self.notifications = response
             }
         } catch {
+            print("Failed to load notifications: \(error)")
             DispatchQueue.main.async {
-                self.errorMessage = "Failed to load notifications. Please try again later."
+                self.errorMessage = "Failed to load notifications, please try again later."
             }
         }
     }

@@ -15,8 +15,13 @@ class AppSettings: ObservableObject {
     
     func setStreamingServiceConnections()  {
         Task {
-            self.isAppleMusicConnected = appleMusicService.checkCurrentAuthorizationStatus()
-            self.isSpotifyConnected = await spotifyService.checkCurrentAuthorisationStatus()
+            let appleMusicConnected = appleMusicService.checkCurrentAuthorizationStatus()
+            let spotifyConnected = await spotifyService.checkCurrentAuthorisationStatus()
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.isAppleMusicConnected = appleMusicConnected
+                self?.isSpotifyConnected = spotifyConnected
+            }
         }
     }
 }

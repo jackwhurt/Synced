@@ -2,9 +2,11 @@ import Foundation
 
 class APIService {
     private let keychainService: KeychainService
+    private let authenticationService: AuthenticationServiceProtocol
     
-    init(keychainService: KeychainService) {
+    init(keychainService: KeychainService, authenticationService: AuthenticationServiceProtocol) {
         self.keychainService = keychainService
+        self.authenticationService = authenticationService
     }
     
     func makeGetRequest<T: Decodable>(endpoint: String, model: T.Type, parameters: [String: String]? = nil) async throws -> T {
@@ -71,7 +73,7 @@ class APIService {
     }
     
     private func makeRequest<T: Decodable>(endpoint: String, httpMethod: String, model: T.Type, body: Data? = nil, parameters: [String: String]? = nil) async throws -> T {
-        guard let idToken = getIdToken() else {
+        guard let idToken = try await getIdToken() else {
             throw APIServiceError.tokenRetrievalFailed
         }
         
@@ -117,7 +119,17 @@ class APIService {
         return urlComponents.url?.absoluteString ?? endpoint
     }
     
-    private func getIdToken() -> String? {
+    private func getIdToken() async throws -> String? {
+        try await withCheckedThrowingContinuation { continuation in
+            authenticationService.checkSession { success in
+                if success {
+                    continuation.resume()
+                } else {
+                    continuation.resume(throwing: APIServiceError.tokenRetrievalFailed)
+                }
+            }
+        }
+        
         guard let idTokenData = keychainService.load(key: "idToken"), !idTokenData.isEmpty, let idToken = String(data: idTokenData, encoding: .utf8) else {
             return nil
         }

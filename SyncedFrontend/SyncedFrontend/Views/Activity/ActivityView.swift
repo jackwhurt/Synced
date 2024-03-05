@@ -9,18 +9,22 @@ struct ActivityView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                if activityViewModel.isLoading {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .padding()
+            ZStack {
+                Color(UIColor.systemGroupedBackground)
+                    .edgesIgnoringSafeArea(.all)
+                
+                VStack {
+                    if activityViewModel.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .padding()
+                    }
+                    List {
+                        ViewRequestsView(activityViewModel: activityViewModel)
+                        NotificationsView(activityViewModel: activityViewModel)
+                    }
+                    .navigationBarTitle("Activities", displayMode: .large)
                 }
-                List {
-                    ViewRequestsView(activityViewModel: activityViewModel)
-                    NotificationsView(activityViewModel: activityViewModel)
-                }
-                .navigationBarTitle("Activities")
-                .onAppear(perform: activityViewModel.loadActivities)
                 .animation(.easeInOut(duration: 0.2), value: activityViewModel.isLoading)
                 .transition(.slide)
                 .alert("Error", isPresented: Binding<Bool>(
@@ -32,6 +36,7 @@ struct ActivityView: View {
                     Text(errorMessage)
                 }
             }
+            .onAppear(perform: activityViewModel.loadActivities)
         }
     }
 }
@@ -42,7 +47,8 @@ struct ViewRequestsView: View {
     var body: some View {
         Section {
             HStack {
-                TextLink(title: "View Requests", destination: RequestView(userRequests: activityViewModel.userRequests, playlistRequests: activityViewModel.playlistRequests))
+                NavigationLink("View Requests", destination: RequestView(userRequests: activityViewModel.userRequests, playlistRequests: activityViewModel.playlistRequests))
+                    .foregroundColor(Color("SyncedBlue"))
                 let requestCount = activityViewModel.playlistRequests.count + activityViewModel.userRequests.count
                 if requestCount > 0 {
                     Text("(\(requestCount))")

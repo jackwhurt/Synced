@@ -1,6 +1,6 @@
 import SwiftUI
 
-// TODO: No same usernames & case lowercase only & plaintext
+// TODO: Loading circle
 struct SignUpView: View {
     @ObservedObject private var signUpViewModel: SignUpViewModel
     @Environment(\.presentationMode) var presentationMode
@@ -21,17 +21,22 @@ struct SignUpView: View {
                 }
                 .padding()
                 .frame(width: geometry.size.width, height: geometry.size.height)
-                .alert(isPresented: $signUpViewModel.showingSignUpError) {
-                    Alert(title: Text("Sign Up Error"), message: Text(signUpViewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
-                }
-                .alert(isPresented: $signUpViewModel.showingSignUpSuccess) {
-                    Alert(
-                        title: Text("Sign Up Success"),
-                        message: Text(signUpViewModel.signUpSuccessMessage),
-                        dismissButton: .default(Text("OK"), action: {
-                            presentationMode.wrappedValue.dismiss()
-                        })
-                    )
+                .alert(item: $signUpViewModel.alert) { alert in
+                    switch alert {
+                    case .error:
+                        Alert(title: Text("Sign Up Error"), message: Text(signUpViewModel.signUpErrorMessage), dismissButton: .default(Text("OK")))
+                    case .success:
+                        Alert(
+                            title: Text("Sign Up Success"),
+                            message: Text(signUpViewModel.signUpSuccessMessage),
+                            dismissButton: .default(Text("OK"), action: {
+                                presentationMode.wrappedValue.dismiss()
+                                signUpViewModel.email = ""
+                                signUpViewModel.password = ""
+                                signUpViewModel.username = ""
+                                signUpViewModel.confirmPassword = ""
+                            }))
+                    }
                 }
             }
             .background(Color("SyncedBackground"))
@@ -52,13 +57,17 @@ struct SignUpInputFields: View {
 
     var body: some View {
         VStack {
-            LongInputField(placeholder: "Email", text: $signUpViewModel.email)
-            LongInputField(placeholder: "Username", text: $signUpViewModel.username)
-            LongSecureInputField(placeholder: "Password", text: $signUpViewModel.password)
+            LongInputField(placeholder: "Username", text: $signUpViewModel.username, inputType: .other)
+                .onChange(of: signUpViewModel.username) {
+                    _ = signUpViewModel.validateUsernameCriteria()
+                }
+            LongInputField(placeholder: "Email", text: $signUpViewModel.email, inputType: .email)
+
+            LongSecureInputField(placeholder: "Password", text: $signUpViewModel.password, inputType: .newPassword)
                 .onChange(of: signUpViewModel.password) {
                     _ = signUpViewModel.validatePasswordCriteria()
                 }
-            LongSecureInputField(placeholder: "Confirm Password", text: $signUpViewModel.confirmPassword)
+            LongSecureInputField(placeholder: "Confirm Password", text: $signUpViewModel.confirmPassword, inputType: .confirmPassword)
                 .onChange(of: signUpViewModel.confirmPassword) {
                     _ = signUpViewModel.validatePasswordCriteria()
                 }
@@ -67,6 +76,14 @@ struct SignUpInputFields: View {
                     .foregroundColor(Color("SyncedErrorRed"))
                     .font(.caption)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 3)
+            }
+            if(signUpViewModel.usernameValidationMessage != "") {
+                Text(signUpViewModel.usernameValidationMessage)
+                    .foregroundColor(Color("SyncedErrorRed"))
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 3)
             }
         }
     }

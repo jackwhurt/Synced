@@ -4,8 +4,6 @@ class CreatePlaylistViewModel: ObservableObject {
     @Published var title: String = ""
     @Published var description: String = ""
     @Published var collaborators: [UserMetadata] = []
-    @Published var newCollaborator: UserMetadata?
-    @Published var usernameQuery: String = ""
     @Published var errorMessage: String?
     @Published var createSpotifyPlaylist: Bool = false
     @Published var createAppleMusicPlaylist: Bool = false
@@ -19,18 +17,6 @@ class CreatePlaylistViewModel: ObservableObject {
         self.collaborativePlaylistService = collaborativePlaylistService
         self.userService = userService
         self.collaborativePlaylistViewModel = collaborativePlaylistViewModel
-    }
-    
-    func addNewCollaborator() {
-        guard let collaborator = newCollaborator else {
-            return
-        }
-        collaborators.append(collaborator)
-        newCollaborator = nil
-    }
-
-    func deleteCollaborator(at offsets: IndexSet) {
-        collaborators.remove(atOffsets: offsets)
     }
 
     func save() async {
@@ -46,7 +32,7 @@ class CreatePlaylistViewModel: ObservableObject {
         } catch {
             print("Failed to save playlist: \(error)")
             DispatchQueue.main.async { [weak self] in
-                self?.errorMessage = "Failed to create playlist, please try again later"
+                self?.errorMessage = "Failed to create playlist, please try again later."
             }
         }
         
@@ -60,7 +46,7 @@ class CreatePlaylistViewModel: ObservableObject {
         } catch {
             print("Failed to retrieve users")
             DispatchQueue.main.async { [weak self] in
-                self?.errorMessage = "Failed to retrieve users, please try again later"
+                self?.errorMessage = "Failed to retrieve users, please try again later."
             }
             return []
         }

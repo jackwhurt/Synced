@@ -9,10 +9,6 @@ class DIContainer {
         return KeychainService()
     }
     
-    func provideAPIService() -> APIService {
-        return APIService(keychainService: provideKeychainService())
-    }
-    
     func provideUserService() -> UserService {
         return UserService(apiService: provideAPIService())
     }
@@ -23,6 +19,10 @@ class DIContainer {
     
     func provideSongsService() -> SongService {
         return SongService(apiService: provideAPIService())
+    }
+    
+    func provideAPIService() -> APIService {
+        return APIService(keychainService: provideKeychainService(), authenticationService: provideAuthenticationService())
     }
     
     func provideAppleMusicService() -> AppleMusicService {

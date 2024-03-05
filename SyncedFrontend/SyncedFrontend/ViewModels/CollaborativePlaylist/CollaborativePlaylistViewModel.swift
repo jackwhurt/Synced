@@ -4,6 +4,7 @@ import SwiftUI
 class CollaborativePlaylistViewModel: ObservableObject {
     @Published var playlistSongs: [SongMetadata] = []
     @Published var playlistMetadata: PlaylistMetadata?
+    @Published var collaborators: [UserMetadata] = []
     @Published var errorMessage: String?
     @Published var isEditing = false
     @Published var songsToAdd: [SongMetadata] = []
@@ -15,8 +16,8 @@ class CollaborativePlaylistViewModel: ObservableObject {
     var songsToDisplay: [SongMetadata] {
         return playlistSongs + songsToAdd
     }
+    let playlistId: String
     
-    private let playlistId: String
     private let collaborativePlaylistService: CollaborativePlaylistService
     private let imageService: ImageService
     private let authenticationService: AuthenticationServiceProtocol
@@ -39,6 +40,7 @@ class CollaborativePlaylistViewModel: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 self?.playlistMetadata = fetchedPlaylist.metadata
                 self?.playlistSongs = fetchedPlaylist.songs
+                self?.collaborators = fetchedPlaylist.collaborators
                 self?.appleMusicPlaylistId = fetchedPlaylist.appleMusicPlaylistId
             }
             setPlaylistOwner()

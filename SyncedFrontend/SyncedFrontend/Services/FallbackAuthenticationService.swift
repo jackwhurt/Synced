@@ -13,7 +13,7 @@ class FallbackAuthenticationService: AuthenticationServiceProtocol {
         completion(.failure(FallbackAuthenticationError.signupNotAvailable))
     }
     
-    func refreshToken(completion: @escaping (Result<Void, Error>) -> Void) {
+    func refreshTokenIfNeeded(completion: @escaping (Result<Void, Error>) -> Void) {
         completion(.failure(FallbackAuthenticationError.tokenRefreshNotAvailable))
     }
     

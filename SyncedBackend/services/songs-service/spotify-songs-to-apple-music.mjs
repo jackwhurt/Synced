@@ -11,14 +11,10 @@ export const spotifySongsToAppleMusicHandler = async (event) => {
     console.info('received:', event);
 
     try {
-        // Parse Spotify track list from event body
         const spotifyTracks = JSON.parse(event.body);
-
-        // Get Apple Music token
         const appleMusicToken = await getAppleMusicAccessToken();
-
-        // Search for corresponding tracks on Apple Music
         const appleMusicTracks = await searchForAppleMusicTracks(spotifyTracks, appleMusicToken);
+        
         console.info('returned:', appleMusicTracks)
 
         return createResponse(200, appleMusicTracks);
