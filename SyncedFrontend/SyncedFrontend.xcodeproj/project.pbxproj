@@ -10,6 +10,43 @@
 		61272004EE784AC82360CD24 /* Pods_Synced.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */; };
 		8002EBDE2B657CBC0017C01A /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDD2B657CBC0017C01A /* ActivityView.swift */; };
 		8002EBE02B658EB70017C01A /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDF2B658EB70017C01A /* Activity.swift */; };
+		8006E8AF2BB0A2160067CCC2 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8AD2BB0A2160067CCC2 /* MockAPIService.swift */; };
+		8006E8B42BB0A2930067CCC2 /* CollaborativePlaylistServiceUnitTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8B32BB0A2930067CCC2 /* CollaborativePlaylistServiceUnitTest.swift */; };
+		8006E8B62BB0A3770067CCC2 /* APIServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8B52BB0A3770067CCC2 /* APIServiceProtocol.swift */; };
+		8006E8B92BB0BC310067CCC2 /* APIServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8B52BB0A3770067CCC2 /* APIServiceProtocol.swift */; };
+		8006E8BA2BB0C36C0067CCC2 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8AD2BB0A2160067CCC2 /* MockAPIService.swift */; };
+		8006E8BB2BB0C4D20067CCC2 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80550D382B17CB1A00678B11 /* KeychainService.swift */; };
+		8006E8BC2BB0C4D50067CCC2 /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 805D495E2B0FFDE70081B076 /* AuthenticationService.swift */; };
+		8006E8BD2BB0C4DB0067CCC2 /* AuthenticationServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */; };
+		8006E8BF2BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8BE2BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift */; };
+		8006E8C02BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8BE2BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift */; };
+		8006E8C22BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8C12BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift */; };
+		8006E8C32BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8C12BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift */; };
+		8006E8C52BB19E040067CCC2 /* MockAppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8C42BB19E040067CCC2 /* MockAppleMusicService.swift */; };
+		8006E8C62BB19E040067CCC2 /* MockAppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8C42BB19E040067CCC2 /* MockAppleMusicService.swift */; };
+		8006E8C82BB19E290067CCC2 /* MockMusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8C72BB19E290067CCC2 /* MockMusicKitService.swift */; };
+		8006E8C92BB19E290067CCC2 /* MockMusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8C72BB19E290067CCC2 /* MockMusicKitService.swift */; };
+		8006E8CA2BB1A0620067CCC2 /* Responses.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB312B22748D00E99BF9 /* Responses.swift */; };
+		8006E8CB2BB1A0640067CCC2 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE072B29DAAF00B0FFD6 /* Errors.swift */; };
+		8006E8CC2BB1A0660067CCC2 /* Requests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184E32B482F0F0096F702 /* Requests.swift */; };
+		8006E8CD2BB1A0690067CCC2 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184F52B498B1B0096F702 /* Playlist.swift */; };
+		8006E8CE2BB1A06C0067CCC2 /* Song.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802184F72B498C620096F702 /* Song.swift */; };
+		8006E8CF2BB1A06E0067CCC2 /* Paginated.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8023D1F02B4B0BFC000A1C57 /* Paginated.swift */; };
+		8006E8D02BB1A0700067CCC2 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D896E42B5B1B8C00543685 /* User.swift */; };
+		8006E8D12BB1A0720067CCC2 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8002EBDF2B658EB70017C01A /* Activity.swift */; };
+		8006E8D22BB1A0740067CCC2 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EDF0302B8FE8A70087DD53 /* Alerts.swift */; };
+		8006E8D32BB1A0760067CCC2 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 804931582B6AAA2700A413A1 /* Notification.swift */; };
+		8006E8D42BB1A1030067CCC2 /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB2C2B20E65400E99BF9 /* AppleMusicService.swift */; };
+		8006E8D52BB1A1050067CCC2 /* ApiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E2EB332B22775F00E99BF9 /* ApiService.swift */; };
+		8006E8D62BB1A1070067CCC2 /* FallbackAuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE0B2B29EE2C00B0FFD6 /* FallbackAuthenticationService.swift */; };
+		8006E8D72BB1A10A0067CCC2 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE112B2B50FD00B0FFD6 /* MusicKitService.swift */; };
+		8006E8D82BB1A10C0067CCC2 /* CollaborativePlaylistService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE152B2B9F6B00B0FFD6 /* CollaborativePlaylistService.swift */; };
+		8006E8D92BB1A10E0067CCC2 /* SongService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8023D1EE2B4B09E6000A1C57 /* SongService.swift */; };
+		8006E8DA2BB1A1100067CCC2 /* UserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D896E72B5B1BFA00543685 /* UserService.swift */; };
+		8006E8DB2BB1A1120067CCC2 /* ActivityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806485022B66ACF600B62C93 /* ActivityService.swift */; };
+		8006E8DC2BB1A1140067CCC2 /* SpotifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF842B6945FA003EAB5F /* SpotifyService.swift */; };
+		8006E8DD2BB1A1170067CCC2 /* CachingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8020A8AF2B6D52A9004C9568 /* CachingService.swift */; };
+		8006E8DE2BB1A1190067CCC2 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8020A8B62B727C5B004C9568 /* ImageService.swift */; };
 		801CC9502B16622A006FB76D /* TextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC94F2B16622A006FB76D /* TextLink.swift */; };
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
@@ -74,15 +111,36 @@
 		80EDF0312B8FE8A80087DD53 /* Alerts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80EDF0302B8FE8A70087DD53 /* Alerts.swift */; };
 		80F9CF832B694455003EAB5F /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF822B694455003EAB5F /* AppSettings.swift */; };
 		80F9CF852B6945FA003EAB5F /* SpotifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF842B6945FA003EAB5F /* SpotifyService.swift */; };
+		937D537D7F077E6B009513F5 /* Pods_SyncedUnitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 600A748B2556B30C64BE35B0 /* Pods_SyncedUnitTest.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		8006E8982BB0556B0067CCC2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 805D49372B0FDE100081B076 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 805D493E2B0FDE100081B076;
+			remoteInfo = Synced;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		08CA0E9A35FF21220522E82D /* Pods-SyncedUnitTest.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedUnitTest.debug.xcconfig"; path = "Target Support Files/Pods-SyncedUnitTest/Pods-SyncedUnitTest.debug.xcconfig"; sourceTree = "<group>"; };
 		3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Synced.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		600A748B2556B30C64BE35B0 /* Pods_SyncedUnitTest.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SyncedUnitTest.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		70EEB0157DAEF91E69E9404A /* Pods-SyncedFrontend.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.debug.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.debug.xcconfig"; sourceTree = "<group>"; };
 		72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.release.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.release.xcconfig"; sourceTree = "<group>"; };
 		74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedFrontend.release.xcconfig"; path = "Target Support Files/Pods-SyncedFrontend/Pods-SyncedFrontend.release.xcconfig"; sourceTree = "<group>"; };
 		8002EBDD2B657CBC0017C01A /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		8002EBDF2B658EB70017C01A /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
+		8006E8942BB0556B0067CCC2 /* SyncedUnitTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SyncedUnitTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8006E8AD2BB0A2160067CCC2 /* MockAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIService.swift; sourceTree = "<group>"; };
+		8006E8B32BB0A2930067CCC2 /* CollaborativePlaylistServiceUnitTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistServiceUnitTest.swift; sourceTree = "<group>"; };
+		8006E8B52BB0A3770067CCC2 /* APIServiceProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIServiceProtocol.swift; path = "../../../../../../../../../Library/Mobile Documents/.Trash/APIServiceProtocol.swift"; sourceTree = "<group>"; };
+		8006E8BE2BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicKitServiceProtocol.swift; sourceTree = "<group>"; };
+		8006E8C12BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicServiceProtocol.swift; sourceTree = "<group>"; };
+		8006E8C42BB19E040067CCC2 /* MockAppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAppleMusicService.swift; sourceTree = "<group>"; };
+		8006E8C72BB19E290067CCC2 /* MockMusicKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMusicKitService.swift; sourceTree = "<group>"; };
 		80197DD32B7513B100711CFA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		80197DD42B7513C800711CFA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		801CC94F2B16622A006FB76D /* TextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLink.swift; sourceTree = "<group>"; };
@@ -155,10 +213,19 @@
 		80EDF0302B8FE8A70087DD53 /* Alerts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alerts.swift; sourceTree = "<group>"; };
 		80F9CF822B694455003EAB5F /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		80F9CF842B6945FA003EAB5F /* SpotifyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyService.swift; sourceTree = "<group>"; };
+		D05D39D53CE3A7415F30301E /* Pods-SyncedUnitTest.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SyncedUnitTest.release.xcconfig"; path = "Target Support Files/Pods-SyncedUnitTest/Pods-SyncedUnitTest.release.xcconfig"; sourceTree = "<group>"; };
 		D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Synced.debug.xcconfig"; path = "Target Support Files/Pods-Synced/Pods-Synced.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		8006E8912BB0556B0067CCC2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				937D537D7F077E6B009513F5 /* Pods_SyncedUnitTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		805D493C2B0FDE100081B076 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -170,6 +237,49 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8006E8952BB0556B0067CCC2 /* SyncedUnitTest */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8A32BB08B420067CCC2 /* Mocked */,
+				8006E89E2BB055DB0067CCC2 /* ViewModels */,
+				8006E89D2BB055CE0067CCC2 /* Services */,
+			);
+			path = SyncedUnitTest;
+			sourceTree = "<group>";
+		};
+		8006E89D2BB055CE0067CCC2 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8B32BB0A2930067CCC2 /* CollaborativePlaylistServiceUnitTest.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		8006E89E2BB055DB0067CCC2 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		8006E8A32BB08B420067CCC2 /* Mocked */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8A42BB08B480067CCC2 /* Services */,
+			);
+			path = Mocked;
+			sourceTree = "<group>";
+		};
+		8006E8A42BB08B480067CCC2 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8AD2BB0A2160067CCC2 /* MockAPIService.swift */,
+				8006E8C42BB19E040067CCC2 /* MockAppleMusicService.swift */,
+				8006E8C72BB19E290067CCC2 /* MockMusicKitService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		801CC9562B16730D006FB76D /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -234,6 +344,7 @@
 				8049315A2B6AECE300A413A1 /* Synced.entitlements */,
 				80D896E02B5AD40100543685 /* ci_scripts */,
 				805D49412B0FDE100081B076 /* SyncedFrontend */,
+				8006E8952BB0556B0067CCC2 /* SyncedUnitTest */,
 				805D49402B0FDE100081B076 /* Products */,
 				DD29B25B3FADFB701A0B0A36 /* Pods */,
 				885AEAF4EE7D11E35AC0DA93 /* Frameworks */,
@@ -244,6 +355,7 @@
 			isa = PBXGroup;
 			children = (
 				805D493F2B0FDE100081B076 /* Synced.app */,
+				8006E8942BB0556B0067CCC2 /* SyncedUnitTest.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -331,6 +443,9 @@
 			isa = PBXGroup;
 			children = (
 				8061CE0E2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift */,
+				8006E8B52BB0A3770067CCC2 /* APIServiceProtocol.swift */,
+				8006E8BE2BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift */,
+				8006E8C12BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -384,6 +499,7 @@
 			isa = PBXGroup;
 			children = (
 				3577DDC7AB8394E096B8D417 /* Pods_Synced.framework */,
+				600A748B2556B30C64BE35B0 /* Pods_SyncedUnitTest.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -395,6 +511,8 @@
 				74C84D90D36E8D544155A259 /* Pods-SyncedFrontend.release.xcconfig */,
 				D3180034E3B8A0121863CF47 /* Pods-Synced.debug.xcconfig */,
 				72FF33C5399CF108B4CD1F6B /* Pods-Synced.release.xcconfig */,
+				08CA0E9A35FF21220522E82D /* Pods-SyncedUnitTest.debug.xcconfig */,
+				D05D39D53CE3A7415F30301E /* Pods-SyncedUnitTest.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -402,6 +520,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		8006E8932BB0556B0067CCC2 /* SyncedUnitTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8006E89C2BB0556B0067CCC2 /* Build configuration list for PBXNativeTarget "SyncedUnitTest" */;
+			buildPhases = (
+				4C3E7CC48DFE021AB0D2EF8E /* [CP] Check Pods Manifest.lock */,
+				8006E8902BB0556B0067CCC2 /* Sources */,
+				8006E8912BB0556B0067CCC2 /* Frameworks */,
+				8006E8922BB0556B0067CCC2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8006E8992BB0556B0067CCC2 /* PBXTargetDependency */,
+			);
+			name = SyncedUnitTest;
+			productName = SyncedUnitTest;
+			productReference = 8006E8942BB0556B0067CCC2 /* SyncedUnitTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		805D493E2B0FDE100081B076 /* Synced */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 805D494D2B0FDE120081B076 /* Build configuration list for PBXNativeTarget "Synced" */;
@@ -428,9 +565,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
+				LastSwiftUpdateCheck = 1530;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
+					8006E8932BB0556B0067CCC2 = {
+						CreatedOnToolsVersion = 15.3;
+						TestTargetID = 805D493E2B0FDE100081B076;
+					};
 					805D493E2B0FDE100081B076 = {
 						CreatedOnToolsVersion = 15.0.1;
 					};
@@ -450,11 +591,19 @@
 			projectRoot = "";
 			targets = (
 				805D493E2B0FDE100081B076 /* Synced */,
+				8006E8932BB0556B0067CCC2 /* SyncedUnitTest */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		8006E8922BB0556B0067CCC2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		805D493D2B0FDE100081B076 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -484,6 +633,28 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Synced/Pods-Synced-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		4C3E7CC48DFE021AB0D2EF8E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-SyncedUnitTest-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		B7343C8C1833260C8E5E5B79 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -509,6 +680,44 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8006E8902BB0556B0067CCC2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8006E8DA2BB1A1100067CCC2 /* UserService.swift in Sources */,
+				8006E8DE2BB1A1190067CCC2 /* ImageService.swift in Sources */,
+				8006E8D72BB1A10A0067CCC2 /* MusicKitService.swift in Sources */,
+				8006E8CA2BB1A0620067CCC2 /* Responses.swift in Sources */,
+				8006E8C62BB19E040067CCC2 /* MockAppleMusicService.swift in Sources */,
+				8006E8C32BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift in Sources */,
+				8006E8B92BB0BC310067CCC2 /* APIServiceProtocol.swift in Sources */,
+				8006E8C92BB19E290067CCC2 /* MockMusicKitService.swift in Sources */,
+				8006E8CC2BB1A0660067CCC2 /* Requests.swift in Sources */,
+				8006E8D82BB1A10C0067CCC2 /* CollaborativePlaylistService.swift in Sources */,
+				8006E8DB2BB1A1120067CCC2 /* ActivityService.swift in Sources */,
+				8006E8DC2BB1A1140067CCC2 /* SpotifyService.swift in Sources */,
+				8006E8D42BB1A1030067CCC2 /* AppleMusicService.swift in Sources */,
+				8006E8D22BB1A0740067CCC2 /* Alerts.swift in Sources */,
+				8006E8AF2BB0A2160067CCC2 /* MockAPIService.swift in Sources */,
+				8006E8CF2BB1A06E0067CCC2 /* Paginated.swift in Sources */,
+				8006E8DD2BB1A1170067CCC2 /* CachingService.swift in Sources */,
+				8006E8D12BB1A0720067CCC2 /* Activity.swift in Sources */,
+				8006E8CB2BB1A0640067CCC2 /* Errors.swift in Sources */,
+				8006E8BD2BB0C4DB0067CCC2 /* AuthenticationServiceProtocol.swift in Sources */,
+				8006E8C02BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift in Sources */,
+				8006E8BC2BB0C4D50067CCC2 /* AuthenticationService.swift in Sources */,
+				8006E8CE2BB1A06C0067CCC2 /* Song.swift in Sources */,
+				8006E8D02BB1A0700067CCC2 /* User.swift in Sources */,
+				8006E8D52BB1A1050067CCC2 /* ApiService.swift in Sources */,
+				8006E8D32BB1A0760067CCC2 /* Notification.swift in Sources */,
+				8006E8BB2BB0C4D20067CCC2 /* KeychainService.swift in Sources */,
+				8006E8B42BB0A2930067CCC2 /* CollaborativePlaylistServiceUnitTest.swift in Sources */,
+				8006E8CD2BB1A0690067CCC2 /* Playlist.swift in Sources */,
+				8006E8D62BB1A1070067CCC2 /* FallbackAuthenticationService.swift in Sources */,
+				8006E8D92BB1A10E0067CCC2 /* SongService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		805D493B2B0FDE100081B076 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -543,6 +752,7 @@
 				804931592B6AAA2700A413A1 /* Notification.swift in Sources */,
 				80D896E82B5B1BFA00543685 /* UserService.swift in Sources */,
 				80F9CF852B6945FA003EAB5F /* SpotifyService.swift in Sources */,
+				8006E8C82BB19E290067CCC2 /* MockMusicKitService.swift in Sources */,
 				8061CE0F2B29EED400B0FFD6 /* AuthenticationServiceProtocol.swift in Sources */,
 				80E2EB2D2B20E65400E99BF9 /* AppleMusicService.swift in Sources */,
 				806858532B8E66BE00DD973D /* AddCollaboratorsView.swift in Sources */,
@@ -555,7 +765,9 @@
 				80B82C032B4AC5F400277AEA /* AddSongsView.swift in Sources */,
 				8064850F2B69259F00B62C93 /* ProfileViewModel.swift in Sources */,
 				80550D392B17CB1A00678B11 /* KeychainService.swift in Sources */,
+				8006E8BA2BB0C36C0067CCC2 /* MockAPIService.swift in Sources */,
 				806858552B8E66DC00DD973D /* AddCollaboratorViewModel.swift in Sources */,
+				8006E8C22BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift in Sources */,
 				80B82BFD2B49CB5F00277AEA /* CollaborativePlaylistView.swift in Sources */,
 				8020A8B52B726D32004C9568 /* SelectImage.swift in Sources */,
 				8064850D2B6923C900B62C93 /* ProfileView.swift in Sources */,
@@ -563,16 +775,19 @@
 				805D49432B0FDE100081B076 /* SyncedFrontendApp.swift in Sources */,
 				8020A8B72B727C5B004C9568 /* ImageService.swift in Sources */,
 				8061CE122B2B50FD00B0FFD6 /* MusicKitService.swift in Sources */,
+				8006E8BF2BB19D8A0067CCC2 /* MusicKitServiceProtocol.swift in Sources */,
 				8061CE0A2B29EC4400B0FFD6 /* DIContainer.swift in Sources */,
 				802184E42B482F0F0096F702 /* Requests.swift in Sources */,
 				8002EBDE2B657CBC0017C01A /* ActivityView.swift in Sources */,
 				80550D3B2B17D18500678B11 /* ContentViewModel.swift in Sources */,
 				80CE06AC2B2CB23A00D926E2 /* LoadingView.swift in Sources */,
+				8006E8B62BB0A3770067CCC2 /* APIServiceProtocol.swift in Sources */,
 				805D495F2B0FFDE70081B076 /* AuthenticationService.swift in Sources */,
 				801CC95A2B16736B006FB76D /* SignUpViewModel.swift in Sources */,
 				8068584F2B8E173B00DD973D /* CollaboratorsView.swift in Sources */,
 				802184E82B4885F30096F702 /* HomeViewModel.swift in Sources */,
 				806485032B66ACF600B62C93 /* ActivityService.swift in Sources */,
+				8006E8C52BB19E040067CCC2 /* MockAppleMusicService.swift in Sources */,
 				80E2EB342B22775F00E99BF9 /* ApiService.swift in Sources */,
 				80E2EB322B22748D00E99BF9 /* Responses.swift in Sources */,
 				8023D1F12B4B0BFC000A1C57 /* Paginated.swift in Sources */,
@@ -582,7 +797,55 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		8006E8992BB0556B0067CCC2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 805D493E2B0FDE100081B076 /* Synced */;
+			targetProxy = 8006E8982BB0556B0067CCC2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		8006E89A2BB0556B0067CCC2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 08CA0E9A35FF21220522E82D /* Pods-SyncedUnitTest.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M7B8G5NR2U;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Jack.SyncedUnitTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Synced.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Synced";
+			};
+			name = Debug;
+		};
+		8006E89B2BB0556B0067CCC2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D05D39D53CE3A7415F30301E /* Pods-SyncedUnitTest.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M7B8G5NR2U;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Jack.SyncedUnitTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Synced.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Synced";
+			};
+			name = Release;
+		};
 		805D494B2B0FDE120081B076 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -785,6 +1048,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8006E89C2BB0556B0067CCC2 /* Build configuration list for PBXNativeTarget "SyncedUnitTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8006E89A2BB0556B0067CCC2 /* Debug */,
+				8006E89B2BB0556B0067CCC2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		805D493A2B0FDE100081B076 /* Build configuration list for PBXProject "SyncedFrontend" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

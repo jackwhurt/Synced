@@ -3,11 +3,11 @@ import MusicKit
 
 // TODO: unauthorised playlist issue, i.e. user has redownloaded the app
 class CollaborativePlaylistService {
-    private let apiService: APIService
-    private let appleMusicService: AppleMusicService
-    private let musicKitService: MusicKitService
+    private let apiService: APIServiceProtocol
+    private let appleMusicService: AppleMusicServiceProtocol
+    private let musicKitService: MusicKitServiceProtocol
     
-    init(apiService: APIService, appleMusicService: AppleMusicService, musicKitService: MusicKitService) {
+    init(apiService: APIServiceProtocol, appleMusicService: AppleMusicServiceProtocol, musicKitService: MusicKitServiceProtocol) {
         self.apiService = apiService
         self.appleMusicService = appleMusicService
         self.musicKitService = musicKitService
@@ -15,7 +15,7 @@ class CollaborativePlaylistService {
     
     func getPlaylists() async throws -> [GetCollaborativePlaylistResponse] {
         do {
-            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists", model: [GetCollaborativePlaylistResponse].self)
+            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists", model: [GetCollaborativePlaylistResponse].self, parameters: nil)
             CachingService.shared.save(response, forKey: "collaborativePlaylists")
             return response
         } catch {
@@ -26,7 +26,7 @@ class CollaborativePlaylistService {
     
     func getPlaylistById(playlistId: String) async throws -> GetCollaborativePlaylistByIdResponse {
         do {
-            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/\(playlistId)", model: GetCollaborativePlaylistByIdResponse.self)
+            let response = try await apiService.makeGetRequest(endpoint: "/collaborative-playlists/\(playlistId)", model: GetCollaborativePlaylistByIdResponse.self, parameters: nil)
             CachingService.shared.save(response.metadata, forKey: "playlistMetadata_\(playlistId)")
             CachingService.shared.save(response.songs, forKey: "playlistSongs_\(playlistId)")
             return response
@@ -130,7 +130,7 @@ class CollaborativePlaylistService {
     func addCollaborators(playlistId: String, collaboratorIds: [String]) async throws {
         do {
             let body = AddCollaboratorsRequest(playlistId: playlistId, collaboratorIds: collaboratorIds)
-            let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/collaborators", model: AddCollaboratorsResponse.self, body: body)
+            let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/collaborators", model: AddCollaboratorsResponse.self, body: body, parameters: nil)
             if let error = response.error {
                 print("Failed to add collaborators, error from backend: \(error)")
                 throw CollaborativePlaylistServiceError.failedToAddCollaborators
@@ -157,7 +157,7 @@ class CollaborativePlaylistService {
 
     private func createBackendPlaylist(request: CreateCollaborativePlaylistRequest) async throws -> String {
         do {
-            let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists", model: CreateCollaborativePlaylistResponse.self, body: request)
+            let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists", model: CreateCollaborativePlaylistResponse.self, body: request, parameters: nil)
             guard let playlistID = response.id else {
                 throw CollaborativePlaylistServiceError.backendPlaylistCreationFailed
             }
@@ -193,7 +193,7 @@ class CollaborativePlaylistService {
     private func addSongsToBackendIfNeeded(playlistId: String, songsToAdd: [SongMetadata]) async throws {
         guard !songsToAdd.isEmpty else { return }
 
-        let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd))
+        let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/songs", model: AddSongsResponse.self, body: AddSongsRequest(playlistId: playlistId, songs: songsToAdd), parameters: nil)
         guard response.error == nil else {
             print("Failed to add songs on the backend")
             throw CollaborativePlaylistServiceError.failedToAddSongs
