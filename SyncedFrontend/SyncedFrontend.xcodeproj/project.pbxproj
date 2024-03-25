@@ -47,6 +47,8 @@
 		8006E8DC2BB1A1140067CCC2 /* SpotifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F9CF842B6945FA003EAB5F /* SpotifyService.swift */; };
 		8006E8DD2BB1A1170067CCC2 /* CachingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8020A8AF2B6D52A9004C9568 /* CachingService.swift */; };
 		8006E8DE2BB1A1190067CCC2 /* ImageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8020A8B62B727C5B004C9568 /* ImageService.swift */; };
+		8006E8E32BB1E2E60067CCC2 /* CollaborativePlaylistTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8006E8E22BB1E2E60067CCC2 /* CollaborativePlaylistTest.swift */; };
+		8006E8E42BB1E66E0067CCC2 /* DIContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8061CE092B29EC4400B0FFD6 /* DIContainer.swift */; };
 		801CC9502B16622A006FB76D /* TextLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC94F2B16622A006FB76D /* TextLink.swift */; };
 		801CC9522B167183006FB76D /* Logo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9512B167183006FB76D /* Logo.swift */; };
 		801CC9582B167326006FB76D /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CC9572B167326006FB76D /* LoginViewModel.swift */; };
@@ -141,6 +143,7 @@
 		8006E8C12BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicServiceProtocol.swift; sourceTree = "<group>"; };
 		8006E8C42BB19E040067CCC2 /* MockAppleMusicService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAppleMusicService.swift; sourceTree = "<group>"; };
 		8006E8C72BB19E290067CCC2 /* MockMusicKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMusicKitService.swift; sourceTree = "<group>"; };
+		8006E8E22BB1E2E60067CCC2 /* CollaborativePlaylistTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollaborativePlaylistTest.swift; sourceTree = "<group>"; };
 		80197DD32B7513B100711CFA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		80197DD42B7513C800711CFA /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		801CC94F2B16622A006FB76D /* TextLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextLink.swift; sourceTree = "<group>"; };
@@ -237,14 +240,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		8006E8952BB0556B0067CCC2 /* SyncedUnitTest */ = {
+		8006E8952BB0556B0067CCC2 /* SyncedTest */ = {
 			isa = PBXGroup;
 			children = (
-				8006E8A32BB08B420067CCC2 /* Mocked */,
-				8006E89E2BB055DB0067CCC2 /* ViewModels */,
-				8006E89D2BB055CE0067CCC2 /* Services */,
+				8006E8E02BB1E2A10067CCC2 /* Integration */,
+				8006E8DF2BB1E2950067CCC2 /* Unit */,
 			);
-			path = SyncedUnitTest;
+			path = SyncedTest;
 			sourceTree = "<group>";
 		};
 		8006E89D2BB055CE0067CCC2 /* Services */ = {
@@ -255,19 +257,12 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		8006E89E2BB055DB0067CCC2 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		8006E8A32BB08B420067CCC2 /* Mocked */ = {
+		8006E8A32BB08B420067CCC2 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
 				8006E8A42BB08B480067CCC2 /* Services */,
 			);
-			path = Mocked;
+			path = Mocks;
 			sourceTree = "<group>";
 		};
 		8006E8A42BB08B480067CCC2 /* Services */ = {
@@ -278,6 +273,31 @@
 				8006E8C72BB19E290067CCC2 /* MockMusicKitService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		8006E8DF2BB1E2950067CCC2 /* Unit */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8A32BB08B420067CCC2 /* Mocks */,
+				8006E89D2BB055CE0067CCC2 /* Services */,
+			);
+			path = Unit;
+			sourceTree = "<group>";
+		};
+		8006E8E02BB1E2A10067CCC2 /* Integration */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8E12BB1E2CE0067CCC2 /* CollaborativePlaylist */,
+			);
+			path = Integration;
+			sourceTree = "<group>";
+		};
+		8006E8E12BB1E2CE0067CCC2 /* CollaborativePlaylist */ = {
+			isa = PBXGroup;
+			children = (
+				8006E8E22BB1E2E60067CCC2 /* CollaborativePlaylistTest.swift */,
+			);
+			path = CollaborativePlaylist;
 			sourceTree = "<group>";
 		};
 		801CC9562B16730D006FB76D /* ViewModels */ = {
@@ -344,7 +364,7 @@
 				8049315A2B6AECE300A413A1 /* Synced.entitlements */,
 				80D896E02B5AD40100543685 /* ci_scripts */,
 				805D49412B0FDE100081B076 /* SyncedFrontend */,
-				8006E8952BB0556B0067CCC2 /* SyncedUnitTest */,
+				8006E8952BB0556B0067CCC2 /* SyncedTest */,
 				805D49402B0FDE100081B076 /* Products */,
 				DD29B25B3FADFB701A0B0A36 /* Pods */,
 				885AEAF4EE7D11E35AC0DA93 /* Frameworks */,
@@ -685,10 +705,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				8006E8DA2BB1A1100067CCC2 /* UserService.swift in Sources */,
+				8006E8E42BB1E66E0067CCC2 /* DIContainer.swift in Sources */,
 				8006E8DE2BB1A1190067CCC2 /* ImageService.swift in Sources */,
 				8006E8D72BB1A10A0067CCC2 /* MusicKitService.swift in Sources */,
 				8006E8CA2BB1A0620067CCC2 /* Responses.swift in Sources */,
 				8006E8C62BB19E040067CCC2 /* MockAppleMusicService.swift in Sources */,
+				8006E8E32BB1E2E60067CCC2 /* CollaborativePlaylistTest.swift in Sources */,
 				8006E8C32BB19DE20067CCC2 /* AppleMusicServiceProtocol.swift in Sources */,
 				8006E8B92BB0BC310067CCC2 /* APIServiceProtocol.swift in Sources */,
 				8006E8C92BB19E290067CCC2 /* MockMusicKitService.swift in Sources */,

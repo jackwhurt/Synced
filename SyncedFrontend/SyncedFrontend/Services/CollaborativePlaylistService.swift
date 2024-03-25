@@ -127,7 +127,7 @@ class CollaborativePlaylistService {
         }
     }
     
-    func addCollaborators(playlistId: String, collaboratorIds: [String]) async throws {
+    func addCollaborators(playlistId: String, collaboratorIds: [String]) async throws -> [String] {
         do {
             let body = AddCollaboratorsRequest(playlistId: playlistId, collaboratorIds: collaboratorIds)
             let response = try await apiService.makePostRequest(endpoint: "/collaborative-playlists/collaborators", model: AddCollaboratorsResponse.self, body: body, parameters: nil)
@@ -135,13 +135,14 @@ class CollaborativePlaylistService {
                 print("Failed to add collaborators, error from backend: \(error)")
                 throw CollaborativePlaylistServiceError.failedToAddCollaborators
             }
+            return response.collaboratorIds ?? []
         } catch {
             print("Failed to add collaborators: \(error)")
             throw CollaborativePlaylistServiceError.failedToAddCollaborators
         }
     }
     
-    func deleteCollaborators(playlistId: String, collaboratorIds: [String]) async throws {
+    func deleteCollaborators(playlistId: String, collaboratorIds: [String]) async throws -> [String] {
         do {
             let body = DeleteCollaboratorsRequest(playlistId: playlistId, collaboratorIds: collaboratorIds)
             let response = try await apiService.makeDeleteRequest(endpoint: "/collaborative-playlists/collaborators", model: DeleteCollaboratorsResponse.self, body: body)
@@ -149,6 +150,7 @@ class CollaborativePlaylistService {
                 print("Failed to delete collaborators, error from backend: \(error)")
                 throw CollaborativePlaylistServiceError.failedToAddCollaborators
             }
+            return response.collaboratorIds ?? []
         } catch {
             print("Failed to delete collaborators: \(error)")
             throw CollaborativePlaylistServiceError.failedToAddCollaborators
