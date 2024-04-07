@@ -1,6 +1,6 @@
 import Foundation
 
-class APIService {
+class APIService: APIServiceProtocol {
     private let keychainService: KeychainService
     private let authenticationService: AuthenticationServiceProtocol
     

@@ -56,13 +56,14 @@ struct ForgotPasswordAndSignUpLinks: View {
     
     var body: some View {
         HStack {
-            Spacer()
+//            Spacer()
             
-            TextLink(
-                title: "Forgot Password?",
-                // Placeholder
-                destination: LoginView(isLoggedIn: .constant(false))
-            )
+            // TODO: Implement
+//            TextLink(
+//                title: "Forgot Password?",
+//                // Placeholder
+//                destination: LoginView(isLoggedIn: .constant(false))
+//            )
 
             Spacer()
             

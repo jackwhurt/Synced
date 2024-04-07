@@ -2,7 +2,7 @@ import Foundation
 import StoreKit
 import MusicKit
 
-class AppleMusicService {
+class AppleMusicService: AppleMusicServiceProtocol {
     private let apiService: APIService
     private let musicKitService: MusicKitService
     

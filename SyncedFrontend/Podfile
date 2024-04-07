@@ -1,11 +1,17 @@
-# Uncomment the next line to define a global platform for your project
 platform :ios, '17.0'
 
 target 'Synced' do
-  # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
-  # Pods for SyncedFrontend
+  # Pods for Synced
   pod 'AWSCognito'
   pod 'AWSCognitoIdentityProvider'
+
+  target 'SyncedUnitTest' do
+    inherit! :search_paths
+    # Pods for testing
+    # If there are specific pods you use only in your tests, add them here.
+    # For example:
+    # pod 'OCMock'
+  end
 end

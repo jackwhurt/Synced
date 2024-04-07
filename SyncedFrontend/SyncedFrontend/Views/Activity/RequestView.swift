@@ -173,7 +173,7 @@ struct PlaylistOptionsView: View {
                 .font(.headline)
                 .padding()
             
-            StreamingServiceToggles(isOnAppleMusic: $spotifyPlaylist, isOnSpotify:  $appleMusicPlaylist)
+            StreamingServiceToggles(isOnAppleMusic: $appleMusicPlaylist, isOnSpotify:  $spotifyPlaylist)
                 .padding()
                 
             if isAccepting {
