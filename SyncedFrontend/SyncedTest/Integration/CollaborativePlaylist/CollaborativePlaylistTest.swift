@@ -34,7 +34,7 @@ class CollaborativePlaylistIntegrationTest: XCTestCase {
             let playlists = try await service.getPlaylistById(playlistId: testPlaylistId)
             XCTAssertEqual(playlists.playlistId, testPlaylistId)
         } catch {
-            XCTFail("Integration test for getting playlists failed with error: \(error)")
+            XCTFail("Integration test for getting playlist by id failed with error: \(error)")
         }
     }
     

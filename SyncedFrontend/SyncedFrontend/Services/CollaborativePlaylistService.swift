@@ -79,7 +79,18 @@ class CollaborativePlaylistService {
         }
 
         let newPlaylistSongs = updatePlaylistSongs(oldSongs: oldSongs, songsToAdd: songsToAdd, songsToDelete: songsToDelete)
-        try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: newPlaylistSongs)
+        //    TODO: Delete
+//        let startTime = CFAbsoluteTimeGetCurrent()
+
+//    TODO: Delete
+//        for i in 1...10 {
+            try await appleMusicService.editPlaylist(appleMusicPlaylistId: appleMusicPlaylistId, playlistId: playlistId, songs: newPlaylistSongs)
+//        }
+       
+
+//        let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+//        print("Time elapsed for block: \(timeElapsed) seconds.")
+        
         print("Successfully edited apple music playlist songs for playlist: \(playlistId)")
     }
     
